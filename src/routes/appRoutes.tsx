@@ -87,6 +87,7 @@ import StockReport from "../pages/StockReport";
 import LibraryParameterManagement from "../pages/LibraryParameterManagement";
 import UserInstituteMapping from "../pages/UserInstituteMapping";
 import FormlevelPermission from "../pages/FormlevelPermission";
+import UserDetails from "../pages/UserDetails";
 
 
 
@@ -759,6 +760,16 @@ const appRoutes: RouteType[] = [
     state: "FormlevelPermission",
     sidebarProps: {
       displayText: "Form level Permission",
+    },
+  },
+
+
+  {
+    path: "/UserDetails",
+    element: <UserDetails/>,
+    state: "UserDetails",
+    sidebarProps: {
+      displayText: "User Details",
     },
   },
 
