@@ -1,0 +1,19 @@
+/* styles.css */
+
+/* Default Font */
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Font Styles */
+.font-arial {
+    font-family: Arial, sans-serif;
+}
+
+.font-times {
+    font-family: 'Times New Roman', serif;
+}
+
+.font-courier {
+    font-family: 'Courier New', monospace;
+}
