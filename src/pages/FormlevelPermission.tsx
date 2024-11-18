@@ -91,23 +91,32 @@ const FormlevelPermission = (props: Props) => {
         }
 
         const menus = response?.data?.data?.menus;
-        const uTypePerms = response?.data?.data?.uTypePerms;
+        
 
         if (menus && menus.length > 0) {
-            console.log("Menus found:", menus);
-
+            
             const setPermissions = (menuList: any[]) => {
+                const uTypePerms=response?.data?.data?.uTypePerms;
+                // console.log("Menus found:", menus);
                 return menuList.map(menu => {
-                    const permission = uTypePerms.find((perm:any) => perm.menuId === menu.menu_id);
-                    if (permission) {
-                        menu.selected = permission.selected;
-                        menu.readPerm = permission.read;
-                        menu.writePerm = permission.write;
-                        menu.updatePerm = permission.update;
-                        menu.deletePerm = permission.delete;
-                    }
-                    if (menu.children) {
+                    console.log("menu 102", menu)
+                    console.log("menu 103", menu.selected)
+                    console.log("menu 104", menu.selected = menu.selected )
+                    menu.readPerm = uTypePerms.find((item:any)=>item.menuId==menu.menu_id && item.read==true) || null;
+                    menu.writePerm = uTypePerms.find((item:any)=>item.menuId==menu.menu_id && item.write==true) || null;
+                    menu.updatePerm = uTypePerms.find((item:any)=>item.menuId==menu.menu_id && item.update==true) || null;
+                    menu.deletePerm = uTypePerms.find((item:any)=>item.menuId==menu.menu_id && item.delete==true) || null;
+                    menu.selected = menu.selected;
+                    menu.menu_id = menu.menu_id;
+
+                    if (menu.children && menu.children.length > 0) {
                         menu.children = setPermissions(menu.children);
+                        menu.children.forEach((child:any) => {
+                            if (child.children && child.children.length > 0) {
+                                console.log("menu.children", child.children)
+                                child.children = setPermissions(child.children); 
+                            }
+                        });
                     }
                     return menu;
                 });
@@ -182,11 +191,18 @@ const FormlevelPermission = (props: Props) => {
     };
 
     const handleCheckboxChange = (menuId: number, permission: string) => {
+        // console.log(`Checkbox clicked for menu_id: ${menuId}, permission: ${permission}`);
+
         setMenuData((prevMenus: any[]) => {
             const updateMenuPermissions = (menuList: any[]) => {
                 return menuList.map((menu: any) => {
                     if (menu.menu_id === menuId) {
-                        menu[permission] = !menu[permission]; // Toggle the individual checkbox
+                            // console.log("menu.menu_id", menu.menu_id === menuId)
+                        if (permission === "selected") {
+                            menu.selected = !menu.selected;
+                        } else {
+                            menu[permission] = !menu[permission];
+                        }
                     }
                     if (menu.children && menu.children.length > 0) {
                         menu.children = updateMenuPermissions(menu.children);
@@ -195,9 +211,7 @@ const FormlevelPermission = (props: Props) => {
                 });
             };
 
-            const updatedMenus = updateMenuPermissions(prevMenus);
-            updateHeaderCheckboxes(updatedMenus, permission);
-            return updatedMenus;
+            return updateMenuPermissions(prevMenus);
         });
     };
 
@@ -210,6 +224,7 @@ const FormlevelPermission = (props: Props) => {
     };
 
     const handleParentCheckboxChange = (menuId: number, permission: string) => {
+        // console.log("menuId,permission",menuId,permission)
         const newValue = !headerCheckboxes[permission];
         setHeaderCheckboxes((prev: any) => ({
             ...prev,
@@ -220,7 +235,12 @@ const FormlevelPermission = (props: Props) => {
             const updateParentPermissions = (menuList: any[]) => {
                 return menuList.map((menu: any) => {
                     if (menu.menu_id === menuId) {
-                        menu[permission] = newValue; // Set the parent permission
+                        menu[permission] = newValue;
+                        if (menu.children && menu.children.length > 0) {
+                            menu.children.forEach((child: any) => {
+                                child[permission] = newValue;
+                            });
+                        }
                     }
                     if (menu.children && menu.children.length > 0) {
                         menu.children = updateParentPermissions(menu.children);
@@ -230,7 +250,7 @@ const FormlevelPermission = (props: Props) => {
             };
 
             const updatedMenus = updateParentPermissions(prevMenus);
-            updateHeaderCheckboxes(updatedMenus, permission); // Update header checkboxes after changing parent
+            updateHeaderCheckboxes(updatedMenus, permission);
             return updatedMenus;
         });
     };
@@ -246,7 +266,7 @@ const FormlevelPermission = (props: Props) => {
 
     const renderMenuWithPermissions = (menu: any, index: any, level: number = 0) => {
         const isExpanded = expandedRows.includes(menu.menu_id);
-        const isselectedPermChecked = isParentCheckboxChecked(menu, 'selected');
+        const isSelectedPermChecked = isParentCheckboxChecked(menu, 'selected');
         const isReadPermChecked = isParentCheckboxChecked(menu, 'readPerm');
         const isWritePermChecked = isParentCheckboxChecked(menu, 'writePerm');
         const isUpdatePermChecked = isParentCheckboxChecked(menu, 'updatePerm');
@@ -261,13 +281,12 @@ const FormlevelPermission = (props: Props) => {
                             paddingLeft: `${level * 20}px`,
                         }}
                     >
-                        {level > 0 && (
-                            <Checkbox
-                                checked={isselectedPermChecked}
-                                onChange={() => handleCheckboxChange(menu.menu_id, "selected")}
-                            />
-                        )}
-                        {menu.children && (
+
+                        <Checkbox
+                            checked={isSelectedPermChecked}
+                            onChange={() => handleCheckboxChange(menu.menu_id, "selected")}
+                        />
+                        {menu.children && menu.children.length > 0 && (
                             <IconButton onClick={() => toggleExpand(menu.menu_id)}>
                                 {isExpanded ? <KeyboardArrowDown /> : <KeyboardArrowRight />}
                             </IconButton>
@@ -277,8 +296,7 @@ const FormlevelPermission = (props: Props) => {
                         {level === 2 && <span>📄</span>}
                         {menu.menu_name}
                     </TableCell>
-
-                    {level > 0 && (
+                    {level > 1 && (
                         <>
                             <TableCell sx={{ width: "100px" }} align="center">
                                 <Checkbox
@@ -457,41 +475,51 @@ const FormlevelPermission = (props: Props) => {
                                             <TableRow>
 
                                                 <TableCell sx={{ width: "170px" }} align="center">
-                                                    <strong> <Checkbox
+                                                    <strong> 
+                                                        {/* <Checkbox
                                                         checked={headerCheckboxes.selected}
                                                         onChange={() => handleParentCheckboxChange(0, "selected")}
-                                                    /> Menu Name</strong>
+                                                    />  */}
+                                                    Menu Name</strong>
                                                 </TableCell>
                                                 <TableCell sx={{ width: "100px" }} align="center">
-                                                    <strong><Checkbox
+                                                    <strong>
+                                                        {/* <Checkbox
                                                         checked={headerCheckboxes.readPerm}
                                                         onChange={() => handleParentCheckboxChange(0, "readPerm")}
-                                                    /> View</strong>
+                                                    />  */}
+                                                    View</strong>
                                                 </TableCell>
                                                 <TableCell sx={{ width: "100px" }} align="center">
-                                                    <strong>   <Checkbox
+                                                    <strong>   
+                                                        {/* <Checkbox
                                                         checked={headerCheckboxes.writePerm}
                                                         onChange={() => handleParentCheckboxChange(0, "writePerm")}
-                                                    /> Add</strong>
+                                                    />  */}
+                                                    Add</strong>
                                                 </TableCell>
                                                 <TableCell sx={{ width: "100px" }} align="center">
-                                                    <strong><Checkbox
+                                                    <strong>
+                                                        {/* <Checkbox
                                                         checked={headerCheckboxes.updatePerm}
                                                         onChange={() => handleParentCheckboxChange(0, "updatePerm")}
-                                                    /> Update</strong>
+                                                    />  */}
+                                                    Update</strong>
                                                 </TableCell>
                                                 <TableCell sx={{ width: "100px" }} align="center">
-                                                    <strong><Checkbox
+                                                    <strong>
+                                                        {/* <Checkbox
                                                         checked={headerCheckboxes.deletePerm}
                                                         onChange={() => handleParentCheckboxChange(0, "deletePerm")}
-                                                    /> Delete</strong>
+                                                    />  */}
+                                                    Delete</strong>
                                                 </TableCell>
 
                                             </TableRow>
                                         </TableHead>
 
                                         <TableBody>
-                                            {menuData.map((menu, index) => renderMenuWithPermissions(menu, index, 0))}
+                                            {menuData.map((menu, index) => menu.parentId==null && renderMenuWithPermissions(menu, index, 0))}
                                         </TableBody>
                                     </Table>
                                     </div>
