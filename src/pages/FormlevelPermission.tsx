@@ -59,7 +59,6 @@ const FormlevelPermission = (props: Props) => {
     useEffect(() => {
         getusertypeData();
         getLibraryData();
-
     }, []);
 
 
@@ -74,24 +73,27 @@ const FormlevelPermission = (props: Props) => {
             label: item?.userTypeName,
             value: item?.userTypeId
         }));
-        //console.log("arr", arr);
+        console.log("arr", arr);
         setUserTypeNameData(arr);
     };
 
-    const getMenuPermissionData = async (id: any) => {
+    const getMenuPermissionData = async (id1: any, id2:any) => {
         const collectData = {
             "appId": menuId,
-            "instId": parseInt(instId),
-            "userTypeId": id
+            appName:menuName,
+            "instId": id1,
+            "userTypeId": id2
         }
-        const response = await api.post(`api/Admin/GetPermission`, collectData);
+        if(id1 && id2){
+        const response = await api.post(`api/Admin/GetPermissionSingleIns`, collectData);
         const instIds = response?.data?.data?.instId;
+        console.log("instIds", instIds);
         setCondition(1);
 
-        if (Array.isArray(instIds) && instIds.length > 0) {
+        if (instIds && instIds.length > 0) {
             formik.setFieldValue("instId", instIds);
         } else {
-            formik.setFieldValue("instId", []);
+            formik.setFieldValue("instId", '');
         }
 
         const menus = response?.data?.data?.menus;
@@ -130,6 +132,7 @@ const FormlevelPermission = (props: Props) => {
             const updatedMenus = setPermissions(menus);
             setMenuData(updatedMenus);
         }
+    }
     };
 
     const getLibraryData = async () => {
@@ -138,7 +141,7 @@ const FormlevelPermission = (props: Props) => {
             label: item?.institutename,
             value: item?.id,
             instId: item?.instId,
-            details: item,
+            // details: item,
         }));
         setLibraryDetails([
             { value: "-1", label: t("text.selectLibrary") },
@@ -175,7 +178,7 @@ const FormlevelPermission = (props: Props) => {
             };
             console.log("Submitting the value", submissionData);
             try {
-                const response = await api.post(`api/Admin2/UserTypeMenuPerm`, submissionData);
+                const response = await api.post(`api/Admin2/UserTypeMenuSingleIns`, submissionData);
                 if (response.data.isSuccess) {
                     toast.success(response.data.mesg);
                     formik.resetForm();
@@ -381,7 +384,8 @@ const FormlevelPermission = (props: Props) => {
     const handleUserTypeChange = async (newValue: any) => {
         console.log("newValue", newValue);
         if (newValue) {
-            await getMenuPermissionData(newValue?.value);
+            await  getMenuPermissionData(newValue?.value, formik.values.userTypeId)
+            // await getMenuPermissionData(newValue?.value);
             formik.setFieldValue("userTypeId", newValue?.value?.toString());
         }
     };
@@ -466,20 +470,24 @@ const FormlevelPermission = (props: Props) => {
                             <Grid item lg={12} md={12} xs={12}>
                                 <Autocomplete
                                     disablePortal
-                                    multiple
+                                    // multiple
                                     id="combo-box-demo"
-                                    options={Array.isArray(libraryDetails) ? libraryDetails : []}
+                                    options={libraryDetails}
                                     fullWidth
                                     size="small"
-                                    value={Array.isArray(libraryDetails) ? libraryDetails.filter((opt: any) =>
-                                        Array.isArray(formik.values.instId) && formik.values.instId.some((role: any) => role === opt.value)
-                                    ) : []}
+                                    // value={Array.isArray(libraryDetails) ? libraryDetails.filter((opt: any) =>
+                                    //     Array.isArray(formik.values.instId) && formik.values.instId.some((role: any) => role === opt.value)
+                                    // ) : []}
                                     onChange={(event, newValue: any) => {
-                                        console.log("existing values", newValue);
-                                        if (newValue) {
-                                            const selectedLibraryIds = newValue.map((item: any) => item.value);
-                                            console.log("Selected library IDs:", selectedLibraryIds);
-                                            formik.setFieldValue("instId", selectedLibraryIds);
+                                        console.log("existing value", newValue);
+                                        if (newValue) { // Check if newValue is not null
+                                            const selectedLibraryId = newValue.value; // Get the value of the selected item
+                                            console.log("Selected library ID:", selectedLibraryId);
+                                            console.log("Selected library details:", newValue);
+                                            if(formik.values.instId != null || formik.values.instId != '' && selectedLibraryId != null || selectedLibraryId !='') // Log the details of the selected item
+                                            getMenuPermissionData(formik.values.instId, selectedLibraryId); // Pass the value directly
+                                        } else {
+                                            console.warn("No library selected or newValue is empty");
                                         }
                                     }}
                                     renderInput={(params) => (
