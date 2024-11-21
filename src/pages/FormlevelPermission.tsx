@@ -454,7 +454,7 @@ const FormlevelPermission = (props: Props) => {
                                             {...params}
                                             label={
                                                 <CustomLabel
-                                                    text={t("text.selectUser")}
+                                                    text={t("text.SelectUserType")}
                                                     required={false}
                                                 />
                                             }
