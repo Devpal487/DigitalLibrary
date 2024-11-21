@@ -44,6 +44,9 @@ const FormlevelPermission = (props: Props) => {
         updatePerm: false,
         deletePerm: false
     });
+    const [permissionsData, setPermissionsData] = useState<any[]>([]);
+    const [condition, setCondition] = useState<any>(0);
+
 
     const toggleExpand = (menuId: number) => {
         setExpandedRows((prev) =>
@@ -83,11 +86,12 @@ const FormlevelPermission = (props: Props) => {
         }
         const response = await api.post(`api/Admin/GetPermission`, collectData);
         const instIds = response?.data?.data?.instId;
+        setCondition(1);
 
         if (Array.isArray(instIds) && instIds.length > 0) {
-            formik.setFieldValue("libId", instIds);
+            formik.setFieldValue("instId", instIds);
         } else {
-            formik.setFieldValue("libId", []);
+            formik.setFieldValue("instId", []);
         }
 
         const menus = response?.data?.data?.menus;
@@ -96,22 +100,23 @@ const FormlevelPermission = (props: Props) => {
         if (menus && menus.length > 0) {
             
             const setPermissions = (menuList: any[]) => {
-                const uTypePerms=response?.data?.data?.uTypePerms;
+                const uTypePerms = response?.data?.data?.uTypePerms;
                 // console.log("Menus found:", menus);
                 return menuList.map(menu => {
-                    console.log("menu 102", menu)
-                    console.log("menu 103", menu.selected)
-                    console.log("menu 104", menu.selected = menu.selected )
-                    menu.readPerm = uTypePerms.find((item:any)=>item.menuId==menu.menu_id && item.read==true) || null;
-                    menu.writePerm = uTypePerms.find((item:any)=>item.menuId==menu.menu_id && item.write==true) || null;
-                    menu.updatePerm = uTypePerms.find((item:any)=>item.menuId==menu.menu_id && item.update==true) || null;
-                    menu.deletePerm = uTypePerms.find((item:any)=>item.menuId==menu.menu_id && item.delete==true) || null;
+                    menu.readPerm = menus.find((item: any) => item.menu_id == menu.menu_id && item.read == true) || 
+                                    uTypePerms.find((item: any) => item.menuId == menu.menu_id && item.read == true) || null;
+                    menu.writePerm = menus.find((item: any) => item.menu_id == menu.menu_id && item.write == true) || 
+                                     uTypePerms.find((item: any) => item.menuId == menu.menu_id && item.write == true) || null;
+                    menu.updatePerm = menus.find((item: any) => item.menu_id == menu.menu_id && item.update == true) || 
+                                      uTypePerms.find((item: any) => item.menuId == menu.menu_id && item.update == true) || null;
+                    menu.deletePerm = menus.find((item: any) => item.menu_id == menu.menu_id && item.delete == true) || 
+                                      uTypePerms.find((item: any) => item.menuId == menu.menu_id && item.delete == true) || null;
                     menu.selected = menu.selected;
                     menu.menu_id = menu.menu_id;
 
                     if (menu.children && menu.children.length > 0) {
                         menu.children = setPermissions(menu.children);
-                        menu.children.forEach((child:any) => {
+                        menu.children.forEach((child: any) => {
                             if (child.children && child.children.length > 0) {
                                 console.log("menu.children", child.children)
                                 child.children = setPermissions(child.children); 
@@ -135,7 +140,6 @@ const FormlevelPermission = (props: Props) => {
             instId: item?.instId,
             details: item,
         }));
-        //console.log("arr", arr);
         setLibraryDetails([
             { value: "-1", label: t("text.selectLibrary") },
             ...arr,
@@ -151,28 +155,30 @@ const FormlevelPermission = (props: Props) => {
         initialValues: {
             appId: menuId,
             appName: menuName,
-            add: true,
-            update: true,
-            delete: true,
-            read: true,
-            instId: parseInt(instId),
-            userid: "",
-            libId: [],
-            stateid: 0,
-            blockid: 0,
-            districtid: 0,
-            divisionid: 0,
+            "userTypeId": 0,
+            "instId": [],
+            "uTypePerms": []
         },
         onSubmit: async (values) => {
-            // console.log("Before submission formik values", values);
-            const { stateid, blockid, districtid, divisionid, ...dataToSubmit } =
-                values;
+            console.log("Current permissionsData:", permissionsData); 
+            const uTypePerms = permissionsData.map(p => ({
+                menuId: p.menuId,
+                menuName: p.menuName,
+                read: p.readPerm || false,
+                write: p.writePerm || false,
+                update: p.updatePerm || false,
+                delete: p.deletePerm || false  
+            })); 
+            const submissionData = {
+                ...values,
+                uTypePerms
+            };
+            console.log("Submitting the value", submissionData);
             try {
-                const response = await api.post(`api/Admin2/SaveUserLib`, dataToSubmit);
+                const response = await api.post(`api/Admin2/UserTypeMenuPerm`, submissionData);
                 if (response.data.isSuccess) {
                     toast.success(response.data.mesg);
                     formik.resetForm();
-                    window.location.reload();
                 } else {
                     toast.error(response.data.mesg);
                 }
@@ -191,18 +197,35 @@ const FormlevelPermission = (props: Props) => {
     };
 
     const handleCheckboxChange = (menuId: number, permission: string) => {
-        // console.log(`Checkbox clicked for menu_id: ${menuId}, permission: ${permission}`);
-
         setMenuData((prevMenus: any[]) => {
             const updateMenuPermissions = (menuList: any[]) => {
                 return menuList.map((menu: any) => {
                     if (menu.menu_id === menuId) {
-                            // console.log("menu.menu_id", menu.menu_id === menuId)
-                        if (permission === "selected") {
-                            menu.selected = !menu.selected;
-                        } else {
-                            menu[permission] = !menu[permission];
-                        }
+                        menu[permission] = !menu[permission];
+
+                        setPermissionsData((prevPermissions) => {
+                            const existingPermission = prevPermissions.find(p => p.menuId === menuId);
+                            if (existingPermission) {
+                                return prevPermissions.map(p => 
+                                    p.menuId === menuId 
+                                    ? { 
+                                        ...p, 
+                                        [permission]: menu[permission],
+                                        menuName: menu.menu_name
+                                      } 
+                                    : p
+                                );
+                            } else {
+                                return [
+                                    ...prevPermissions,
+                                    {
+                                        menuId: menu.menu_id,
+                                        menuName: menu.menu_name,
+                                        [permission]: menu[permission]
+                                    }
+                                ];
+                            }
+                        });
                     }
                     if (menu.children && menu.children.length > 0) {
                         menu.children = updateMenuPermissions(menu.children);
@@ -216,15 +239,18 @@ const FormlevelPermission = (props: Props) => {
     };
 
     const updateHeaderCheckboxes = (menus: any[], permission: string) => {
+        console.log('menus, permission', menus, permission);
         const allChecked = menus.every(menu => menu[permission] || (menu.children && menu.children.every((child: any) => child[permission])));
+        const anyChecked = menus.some(menu => menu[permission] || (menu.children && menu.children.some((child: any) => child[permission])));
+        
         setHeaderCheckboxes((prev: any) => ({
             ...prev,
-            [permission]: allChecked
+            [permission]: allChecked,
+            [`${permission}Indeterminate`]: !allChecked && anyChecked
         }));
     };
 
     const handleParentCheckboxChange = (menuId: number, permission: string) => {
-        // console.log("menuId,permission",menuId,permission)
         const newValue = !headerCheckboxes[permission];
         setHeaderCheckboxes((prev: any) => ({
             ...prev,
@@ -239,6 +265,11 @@ const FormlevelPermission = (props: Props) => {
                         if (menu.children && menu.children.length > 0) {
                             menu.children.forEach((child: any) => {
                                 child[permission] = newValue;
+                                if (child.children && child.children.length > 0) {
+                                    child.children.forEach((subChild: any) => {
+                                        subChild[permission] = newValue;
+                                    });
+                                }
                             });
                         }
                     }
@@ -262,15 +293,14 @@ const FormlevelPermission = (props: Props) => {
         return menu[permission];
     };
 
-
-
     const renderMenuWithPermissions = (menu: any, index: any, level: number = 0) => {
         const isExpanded = expandedRows.includes(menu.menu_id);
-        const isSelectedPermChecked = isParentCheckboxChecked(menu, 'selected');
         const isReadPermChecked = isParentCheckboxChecked(menu, 'readPerm');
         const isWritePermChecked = isParentCheckboxChecked(menu, 'writePerm');
         const isUpdatePermChecked = isParentCheckboxChecked(menu, 'updatePerm');
         const isDeletePermChecked = isParentCheckboxChecked(menu, 'deletePerm');
+        const isSelectedPermChecked = menu.selected;
+
 
         return (
             <>
@@ -283,7 +313,7 @@ const FormlevelPermission = (props: Props) => {
                     >
 
                         <Checkbox
-                            checked={isSelectedPermChecked}
+                            checked={isSelectedPermChecked || false}
                             onChange={() => handleCheckboxChange(menu.menu_id, "selected")}
                         />
                         {menu.children && menu.children.length > 0 && (
@@ -291,37 +321,37 @@ const FormlevelPermission = (props: Props) => {
                                 {isExpanded ? <KeyboardArrowDown /> : <KeyboardArrowRight />}
                             </IconButton>
                         )}
-                        {level === 0 && <span>📁</span>}
-                        {level === 1 && <span>📂</span>}
-                        {level === 2 && <span>📄</span>}
-                        {menu.menu_name}
+                        {level === 0 && <span>📁{" "}</span>}
+                        {level === 1 && <span>📂{" "}</span>}
+                        {level === 2 && <span>📄{" "}</span>}
+                        {" "}{menu.menu_name}
                     </TableCell>
                     {level > 1 && (
                         <>
                             <TableCell sx={{ width: "100px" }} align="center">
                                 <Checkbox
-                                    checked={isReadPermChecked}
+                                    checked={isReadPermChecked || false}
                                     onChange={() => handleCheckboxChange(menu.menu_id, "readPerm")}
                                 />
                             </TableCell>
 
                             <TableCell sx={{ width: "100px" }} align="center">
                                 <Checkbox
-                                    checked={isWritePermChecked}
+                                    checked={isWritePermChecked || false}
                                     onChange={() => handleCheckboxChange(menu.menu_id, "writePerm")}
                                 />
                             </TableCell>
 
                             <TableCell sx={{ width: "100px" }} align="center">
                                 <Checkbox
-                                    checked={isUpdatePermChecked}
+                                    checked={isUpdatePermChecked || false}
                                     onChange={() => handleCheckboxChange(menu.menu_id, "updatePerm")}
                                 />
                             </TableCell>
 
                             <TableCell sx={{ width: "100px" }} align="center">
                                 <Checkbox
-                                    checked={isDeletePermChecked}
+                                    checked={isDeletePermChecked || false}
                                     onChange={() => handleCheckboxChange(menu.menu_id, "deletePerm")}
                                 />
                             </TableCell>
@@ -347,6 +377,15 @@ const FormlevelPermission = (props: Props) => {
             </>
         );
     };
+
+    const handleUserTypeChange = async (newValue: any) => {
+        console.log("newValue", newValue);
+        if (newValue) {
+            await getMenuPermissionData(newValue?.value);
+            formik.setFieldValue("userTypeId", newValue?.value?.toString());
+        }
+    };
+
 
     return (
         <div>
@@ -377,7 +416,7 @@ const FormlevelPermission = (props: Props) => {
                                 sx={{ padding: "20px" }}
                                 align="center"
                             >
-                                {t("text.UserInstituteMapping")}
+                                {t("text.FormlevelPermission")}
                             </Typography>
                         </Grid>
 
@@ -408,13 +447,8 @@ const FormlevelPermission = (props: Props) => {
                                     options={userTypeNameData}
                                     fullWidth
                                     size="small"
-
-                                    onChange={(event, newValue: any) => {
-                                        console.log("newValue", newValue);
-                                        if (newValue) {
-                                            getMenuPermissionData(newValue?.value);
-                                        }
-                                    }}
+                                    value={userTypeNameData.find((opt: any) => opt.value == formik.values.userTypeId) || null}
+                                    onChange={(event, newValue: any) => handleUserTypeChange(newValue)}
                                     renderInput={(params) => (
                                         <TextField
                                             {...params}
@@ -438,12 +472,15 @@ const FormlevelPermission = (props: Props) => {
                                     fullWidth
                                     size="small"
                                     value={Array.isArray(libraryDetails) ? libraryDetails.filter((opt: any) =>
-                                        Array.isArray(formik.values.libId) && formik.values.libId.some((role: any) => role === opt.value)
+                                        Array.isArray(formik.values.instId) && formik.values.instId.some((role: any) => role === opt.value)
                                     ) : []}
                                     onChange={(event, newValue: any) => {
-
                                         console.log("existing values", newValue);
-
+                                        if (newValue) {
+                                            const selectedLibraryIds = newValue.map((item: any) => item.value);
+                                            console.log("Selected library IDs:", selectedLibraryIds);
+                                            formik.setFieldValue("instId", selectedLibraryIds);
+                                        }
                                     }}
                                     renderInput={(params) => (
                                         <TextField
@@ -459,7 +496,7 @@ const FormlevelPermission = (props: Props) => {
                                 />
                             </Grid>
 
-                            <Grid item md={12} xs={12} lg={12}>
+                            {condition === 1 && <Grid item md={12} xs={12} lg={12}>
                                 <TableContainer component={Paper} >
                                     <Typography
                                         variant="h6"
@@ -475,12 +512,12 @@ const FormlevelPermission = (props: Props) => {
                                             <TableRow>
 
                                                 <TableCell sx={{ width: "170px" }} align="center">
-                                                    <strong> 
-                                                        {/* <Checkbox
+                                                    {/* <Checkbox
                                                         checked={headerCheckboxes.selected}
                                                         onChange={() => handleParentCheckboxChange(0, "selected")}
-                                                    />  */}
-                                                    Menu Name</strong>
+                                                    /> */}
+
+                                                    Menu Name
                                                 </TableCell>
                                                 <TableCell sx={{ width: "100px" }} align="center">
                                                     <strong>
@@ -524,7 +561,7 @@ const FormlevelPermission = (props: Props) => {
                                     </Table>
                                     </div>
                                 </TableContainer>
-                            </Grid>
+                            </Grid>}
 
                             <Grid item lg={6} sm={6} xs={12}>
                                 <Grid>
