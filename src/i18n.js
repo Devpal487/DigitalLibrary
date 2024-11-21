@@ -1140,7 +1140,14 @@ const resources = {
         selectDistrict:"Select District",
         selectBlock:"Select Block",
         selectLibrary:"Select Library",
+
+        LoginForNewLibrary:"Login For New Library",
+        Password:"Password",
+        RepeatPassword:"Repeat Password",
+        
+
         FormlevelPermission:"Form Level Permission",
+
 
 
 
@@ -2113,7 +2120,14 @@ const resources = {
         selectDistrict:"जिला चुनें",
         selectBlock:"ब्लॉक चुनें",
         selectLibrary:"पुस्तकालय चुनें",
+
+        LoginForNewLibrary:"नई लाइब्रेरी के लिए लॉगिन करें",
+        Password:"पासवर्ड",
+        RepeatPassword:"पासवर्ड दोहराएं",
+
         FormlevelPermission:"फॉर्म स्तर अनुमति"
+
+
 
 
       },
