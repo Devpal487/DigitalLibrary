@@ -149,6 +149,7 @@ const FormlevelPermission = (props: Props) => {
     const [lang, setLang] = useState<Language>("en");
 
     const { menuId, menuName } = getMenuData();
+    console.log("menuId, menuName", menuId, menuName);
     const instId: any = getinstId();
 
     const formik = useFormik({
