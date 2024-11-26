@@ -142,22 +142,54 @@ const FormlevelPermission = (props: Props) => {
         initialValues: {
             appId: menuId,
             appName: menuName,
-            add: true,
-            update: true,
-            delete: true,
-            read: true,
-            instId: parseInt(instId),
-            userid: "",
-            libId: [],
-            stateid: 0,
-            blockid: 0,
-            districtid: 0,
-            divisionid: 0,
+            "userTypeId": 0,
+            "instId": '',
+            "uTypePerms": []
         },
-        onSubmit: async (values) => {
-            // console.log("Before submission formik values", values);
-            const { stateid, blockid, districtid, divisionid, ...dataToSubmit } =
-                values;
+        onSubmit: async (values: any) => {
+            console.log("Current permissionsData:", permissionsData);
+            values.instId = [instIDMenupermission];
+
+            const mapMenuToPermissions = (menuList: any[], addedMenuIds: Set<number> = new Set()): { menuId: number; read: boolean; write: boolean; update: boolean; delete: boolean; selected: boolean; }[] => {
+                const permissionsArray = menuList.flatMap((menu: any) => {
+                    if (addedMenuIds.has(menu.menu_id)) {
+                        return []; 
+                    }
+                    addedMenuIds.add(menu.menu_id);
+
+                    const currentMenuPermissions = {
+                        menuId: menu.menu_id,
+                        mneuName: menu.menu_name,
+                        read: menu.readPerm,
+                        write: menu.writePerm,
+                        update: menu.updatePerm,
+                        delete: menu.deletePerm,
+                        selected: menu.selected
+                    };
+
+                    if (menu.children && menu.children.length > 0) {
+                        const childPermissions = mapMenuToPermissions(menu.children, addedMenuIds);
+                        return [currentMenuPermissions, ...childPermissions]; 
+                    }
+
+                    return [currentMenuPermissions]; 
+                });
+
+                console.log("Mapped Permissions Structure:", permissionsArray);
+                return permissionsArray;
+            };
+
+
+            // const submissionData = {
+            //     ...values,
+            //     uTypePerms: [...menuPermissionsData, ...permissionsData]
+            // };  
+            
+            values.uTypePerms = mapMenuToPermissions(menuData);
+
+
+
+            console.log("Submitting the value", values);
             try {
                 const response = await api.post(`api/Admin2/SaveUserLib`, dataToSubmit);
                 if (response.data.isSuccess) {
