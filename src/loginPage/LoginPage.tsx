@@ -75,6 +75,7 @@ function LoginPage() {
           sessionStorage.setItem("id", JSON.stringify(res.data.data.id));
           sessionStorage.setItem("userid", JSON.stringify(res.data.data.userid));
           // linkFunction(instid, res.data.data.uniqueId);userid
+          console.log("check");
 
           // menuList(res.data.data.id);
           memberLibsList(res.data.data.uniqueId);
