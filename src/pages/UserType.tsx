@@ -3,7 +3,7 @@ import { GridColDef } from "@mui/x-data-grid";
 import api from "../utils/Url";
 import Card from "@mui/material/Card";
 import {
-   Box,   Divider,
+   Box, Divider,
    Stack,
    Grid,
    Typography,
@@ -56,26 +56,19 @@ export default function UserType() {
    });
 
    const [isEdit, setisEdit] = useState(false);
+   const [item, setItem] = useState([]);
+   const [columns, setColumns] = useState<any>([]);
 
    const { t } = useTranslation();
 
-   const [userTypeOption, setUserTypeOption] = useState([
-      { value: -1, label: t("text.UserType") },
-   ]);
+   const [delID, setDelID] = useState("");
 
    useEffect(() => {
-      getUserTypeData();
+
+      fetchUserData();
    }, [])
 
-   const getUserTypeData = () => {
-      api.get(`api/Admin/getUsertype`).then((res) => {
-         const arr = res.data.data.map((item: any) => ({
-            label: item.userTypeName,
-            value: item.userTypeId,
-         }));
-         setUserTypeOption(arr);
-      });
-   };
+
 
    const formik = useFormik({
       initialValues: {
@@ -90,15 +83,25 @@ export default function UserType() {
             values
          );
          if (response.data.isSuccess) {
+            formik.setFieldValue("userTypeName", "");
+            formik.setFieldValue("userTypeId", null);
             toast.success(response.data.mesg);
          } else {
             toast.error(response.data.mesg);
          }
+         fetchUserData();
       },
    });
 
+   const handleEdit = (row: any) => {
+      //console.log(row);
+      formik.setFieldValue("userTypeName", row.userTypeName);
+      formik.setFieldValue("userTypeId", row.userTypeId);
+   }
 
-   const handleDelete = () => {
+
+   let delete_id = "";
+   const accept = () => {
       const collectData = {
          "appId": "",
          "appName": "",
@@ -107,8 +110,8 @@ export default function UserType() {
          "delete": true,
          "read": true,
          "instId": 0,
-         //id: (formik.values.userTypeId).toString()
-      }
+         "id": delete_id
+      };
       console.log("collectData " + JSON.stringify(collectData));
       api
          .post(`api/Admin/DelUserType`, collectData)
@@ -116,11 +119,99 @@ export default function UserType() {
             if (response.data.isSuccess) {
                toast.success(response.data.mesg);
             } else {
-               toast.success(response.data.mesg);
+               toast.error(response.data.mesg);
             }
+            fetchUserData();
          });
    };
 
+   const reject = () => {
+      toast.warn("Rejected: You have rejected", { autoClose: 3000 });
+   };
+
+   const handledeleteClick = (row: any) => {
+      console.log("rowwww", row);
+      delete_id = (row).toString();
+      confirmDialog({
+         message: "Do you want to delete this record ?",
+         header: "Delete Confirmation",
+         icon: "pi pi-info-circle",
+         acceptClassName: "p=-button-danger",
+         accept,
+         reject,
+      });
+      fetchUserData();
+   };
+
+
+   const fetchUserData = async () => {
+      const response = await api.get("api/Admin/getUsertype");
+      console.log("userdata", response.data.data);
+      const data = response.data.data;
+      const arr = data.map((item: any, index: any) => ({
+         id: index + 1,
+         userTypeId: item.userTypeId,
+         userTypeName: item.userTypeName
+      }));
+      setItem(arr);
+      setIsLoading(false);
+      if (data.length > 0) {
+         const columns: GridColDef[] = [
+            {
+               field: "actions",
+               headerClassName: "MuiDataGrid-colCell",
+               headerName: t("text.Action"),
+               width: 150,
+               renderCell: (params) => {
+                  return [
+                     <Stack
+                        spacing={1}
+                        direction="row"
+                        sx={{ alignItems: "center", marginTop: "5px" }}
+                     >
+                        <EditIcon
+                           style={{
+                              fontSize: "20px",
+                              color: "blue",
+                              cursor: "pointer",
+                           }}
+                           className="cursor-pointer"
+                           onClick={() => handleEdit(params.row)}
+                        />
+                        <DeleteIcon
+                           style={{
+                              fontSize: "20px",
+                              color: "red",
+                              cursor: "pointer",
+                           }}
+                           onClick={() =>
+                              handledeleteClick(params.row.userTypeId)
+                           }
+                        />
+                     </Stack>,
+                  ];
+               },
+            },
+            {
+               field: "id",
+               headerName: t("text.SrNo"),
+               flex: 1,
+               headerClassName: "MuiDataGrid-colCell",
+            },
+            {
+               field: "userTypeName",
+               headerName: t("text.UserType"),
+               flex: 3,
+               headerClassName: "MuiDataGrid-colCell",
+            },
+         ];
+         setColumns(columns as any);
+      }
+   }
+
+   const adjustedColumns = columns.map((column: any) => ({
+      ...column,
+   }));
 
 
    return (
@@ -175,8 +266,9 @@ export default function UserType() {
 
                <Box height={10} />
                <form onSubmit={formik.handleSubmit}>
-                  <Grid item xs={12} container spacing={2} sx={{ justifyContent: "center" }}>
-                     <Grid item xs={12} sm={10} lg={10}>
+                  <ConfirmDialog />
+                  <Grid item xs={12} container spacing={2} sx={{ justifyContent: "center", paddingX: "4rem" }}>
+                     <Grid item xs={12} sm={12} lg={12}>
                         <TextField
                            label={<CustomLabel text={t("text.UserType")} required />}
                            name="userTypeName"
@@ -193,36 +285,33 @@ export default function UserType() {
                         />
 
                      </Grid>
-                     <Grid item xs={6} sm={4} lg={4}>
+                     <Grid item xs={3} sm={1} lg={1}>
                         <Button variant="contained" sx={{ backgroundColor: "#3474eb" }} onClick={() => {
                            formik.submitForm();
                         }}>
                            {t("text.save")}
                         </Button>
+                     </Grid>
+                     <Grid item xs={3} sm={1} lg={1} >
                         <Button variant="contained" sx={{ backgroundColor: "#42afed" }} onClick={() => {
                            formik.setFieldValue("userTypeName", "");
                            formik.setFieldValue("userTypeId", 0);
                         }}>
                            {t("text.reset")}
                         </Button>
-                        <Button variant="contained" sx={{ backgroundColor: "#f5405e" }} onClick={handleDelete}>
-                           {t("text.delete")}
-                        </Button>
                      </Grid>
                   </Grid>
-                  <Divider sx={{ marginTop: "2rem" }} />
-                  <div style={{ marginTop: "3rem", width: "50%" }}>
-                     {userTypeOption.map((item: any) => (
-                        <a style={{ fontSize: "1.1rem", color: "blueviolet", fontStyle: "underline", margin: ".5rem", padding: ".5rem", cursor: "pointer" }} onClick={() => {
-                           formik.setFieldValue("userTypeName", item.label);
-                           formik.setFieldValue("userTypeId", item.value);
-                        }}>{item.label}</a>
-                     ))}
 
-                     </div>
                </form>
-            </Paper>
-         </Card>
+               <DataGrids
+                  isLoading={isLoading}
+                  rows={item}
+                  columns={adjustedColumns}
+                  pageSizeOptions={[5, 10, 25, 50, 100]}
+                  initialPageSize={5}
+               />
+            </Paper >
+         </Card >
          <ToastApp />
       </>
    );

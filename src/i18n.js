@@ -1142,6 +1142,10 @@ const resources = {
         selectDistrict:"Select District",
         selectBlock:"Select Block",
         selectLibrary:"Select Library",
+        delete:"Delete",
+        AssignUserType:"Assign User Type To Member",
+        MemberCode:"Member Code",
+        RevokeUserType:"Revoke User Type"
         
 
 

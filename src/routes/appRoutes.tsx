@@ -88,6 +88,8 @@ import LibraryParameterManagement from "../pages/LibraryParameterManagement";
 import UserInstituteMapping from "../pages/UserInstituteMapping";
 import FormlevelPermission from "../pages/FormlevelPermission";
 import UserDetails from "../pages/UserDetails";
+import AssignUserTypeToMember from "../pages/AssignUserTypeToMember";
+import UserType from "../pages/UserType";
 
 
 
@@ -770,6 +772,24 @@ const appRoutes: RouteType[] = [
     state: "UserDetails",
     sidebarProps: {
       displayText: "User Details",
+    },
+  },
+
+  {
+    path: "/AssignUserType",
+    element: <AssignUserTypeToMember/>,
+    state: "AssignUserTypeToMember",
+    sidebarProps: {
+      displayText: "Assign User Type To Member",
+    },
+  },
+
+  {
+    path: "/UserType",
+    element: <UserType/>,
+    state: "UserType",
+    sidebarProps: {
+      displayText: "User Type",
     },
   },
 
