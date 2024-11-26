@@ -87,7 +87,11 @@ import StockReport from "../pages/StockReport";
 import LibraryParameterManagement from "../pages/LibraryParameterManagement";
 import UserInstituteMapping from "../pages/UserInstituteMapping";
 import FormlevelPermission from "../pages/FormlevelPermission";
-import UserDetails from "../pages/UserDetails";
+
+import UserType from "../pages/UserType";
+import UserDetails from "../pages/userdetails";
+import AssignUserTypeToMember from "../pages/AssignUserTypeToMember";
+
 
 
 
@@ -772,6 +776,24 @@ const appRoutes: RouteType[] = [
       displayText: "User Details",
     },
   },
+
+  {
+    path: "/AssignUserType",
+    element: <AssignUserTypeToMember/>,
+    state: "AssignUserTypeToMember",
+    sidebarProps: {
+      displayText: "Assign User Type To Member",
+    },
+  }, 
+  {
+    path: "/UserType",
+    element: <UserType/>,
+    state: "UserType",
+    sidebarProps: {
+      displayText: "User Type",
+    },
+  },
+
 
 
 ];
