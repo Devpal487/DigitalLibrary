@@ -1140,6 +1140,20 @@ const resources = {
         selectDistrict:"Select District",
         selectBlock:"Select Block",
         selectLibrary:"Select Library",
+
+        delete:"Delete",
+        AssignUserType:"Assign User Type To Member",
+        MemberCode:"Member Code",
+        RevokeUserType:"Revoke User Type",
+        UserTypereq:"User Type is required",
+        
+
+
+
+        
+
+         
+
         LoginForNewLibrary:"Login For New Library",
         Password:"Password",
         RepeatPassword:"Repeat Password",    
@@ -1162,6 +1176,7 @@ const resources = {
         sR_InvoiceDate:"Select Sale Return Invoice Date",
         s_InvoiceNo:"Sale Invoice Number",
         s_InvoiceDate:"Select Sale Invoice Date",
+
 
 
       },
