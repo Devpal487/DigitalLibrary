@@ -273,7 +273,7 @@ const handleItemChange = (index: number, field: string, value: any) => {
   } else if (field === 'qty' || field === 'rate') {
     item[field] = value === "" ? 0 : parseFloat(value);
     item.amount = calculateAmount(item.qty, item.rate);
-    item.taxId1 = String(calculateTax(item.amount, parseFloat(item.tax1)));
+    item.taxId1 = String(calculateTax(item.amount, parseFloat(item.taxId1)));
   } else if (field === 'tax1') {
     const selectedTax = taxOption.find((tax: any) => tax.value === value?.value);
     if (selectedTax) {

@@ -186,14 +186,14 @@ import {
           itemNameId: itemNameDetails.value || "",
           rate: itemNameDetails.rate || "",
           unit: String(itemNameDetails.unitId) || "",
-          //tax1: String(itemNameDetails.taxId) || "",
-          //taxId1: String(itemNameDetails.taxName) || "",
+          tax1: String(itemNameDetails.taxId) || "",
+          taxId1: String(itemNameDetails.taxName) || "",
         };
       }
     } else if (field === 'qty' || field === 'rate') {
       item[field] = value === "" ? 0 : parseFloat(value);
       item.amount = calculateAmount(item.qty, item.rate);
-      item.taxId1 = String(calculateTax(item.amount, Number(item.tax1)));
+      item.taxId1 = String(calculateTax(item.amount, Number(item.taxId1)));
     } else if (field === 'tax1') {
       const selectedTax = taxOption.find((tax: any) => tax.value === value?.value);
       if (selectedTax) {
