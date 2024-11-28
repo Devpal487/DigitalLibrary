@@ -190,7 +190,7 @@ const handleItemChange = (index: number, field: string, value: any) => {
   } else if (field === 'qty' || field === 'rate') {
     item[field] = value === "" ? 0 : parseFloat(value);
     item.amount = calculateAmount(item.qty, item.rate);
-    item.taxId1 = String(calculateTax(item.amount, Number(item.tax1)));
+    item.taxId1 = String(calculateTax(item.amount, Number(item.taxId1)));
   } else if (field === 'tax1') {
     const selectedTax = taxOption.find((tax: any) => tax.value === value?.value);
     if (selectedTax) {
@@ -457,7 +457,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                 sx={{ padding: "20px" }}
                 align="center"
               >
-                {t("text.EditPurchaseorder")}
+                {t("text.editPurchaseorder")}
               </Typography>
             </Grid>
 

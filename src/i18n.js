@@ -685,6 +685,7 @@ const resources = {
         EnterdisplayNo:"Enter Display Number",
         SelectDocType:"Select Doc Type",
         Purchaseorder:" Create Purchase Order",
+        editPurchaseorder:" Edit Purchase Order",
         PurchaseReturnorder:" Create Purchase Return Order",
         EditPurchaseReturnorder:"Edit Purchase Return Order",
         saleinvoice:" Create Sale Invoice",
@@ -2172,6 +2173,8 @@ const resources = {
         s_InvoiceNo:"बिक्री चालान संख्या",
         s_InvoiceDate:"बिक्री चालान दिनांक चुनें",
         document_NoPR:"खरीद वापसी संख्या",
+        editPurchaseorder:"क्रय आदेश संपादित करें",
+
     },
       content: {},
     },
