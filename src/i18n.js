@@ -1145,7 +1145,8 @@ const resources = {
         delete:"Delete",
         AssignUserType:"Assign User Type To Member",
         MemberCode:"Member Code",
-        RevokeUserType:"Revoke User Type"
+        RevokeUserType:"Revoke User Type",
+        UserTypereq:"User Type is required",
         
 
 

@@ -75,6 +75,11 @@ export default function UserType() {
          "userTypeId": null,
          "userTypeName": ""
       },
+      
+      validationSchema: Yup.object({
+         userTypeName: Yup.string()
+            .required("User Type is required")
+      }),
 
       onSubmit: async (values: any) => {
          console.log("before submitting value check", values);
@@ -283,7 +288,11 @@ export default function UserType() {
                            fullWidth
                            style={{ backgroundColor: "white" }}
                         />
-
+                        {formik.touched.userTypeName && formik.errors.userTypeName ? (
+                           <div style={{ color: "red", margin: "5px" }}>
+                              {t("text.UserTypereq")}
+                           </div>
+                        ) : null}
                      </Grid>
                      <Grid item xs={3} sm={1} lg={1}>
                         <Button variant="contained" sx={{ backgroundColor: "#3474eb" }} onClick={() => {
