@@ -1,6 +1,5 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import UserInstituteMapping from "./pages/UserInstituteMapping";
 
 const storedLanguage = localStorage.getItem("preferredLanguage");
 
@@ -686,8 +685,9 @@ const resources = {
         EnterdisplayNo:"Enter Display Number",
         SelectDocType:"Select Doc Type",
         Purchaseorder:" Create Purchase Order",
+        PurchaseReturnorder:" Create Purchase Return Order",
+        EditPurchaseReturnorder:"Edit Purchase Return Order",
         saleinvoice:" Create Sale Invoice",
-        EditPurchaseorder:"Edit Purchase Order",
         Editsaleinvoice:"Edit Sale Invoice",
         entryNo:"EntryNo",
         batchNo:"BatchNo",
@@ -738,11 +738,11 @@ const resources = {
         entertaxId:"Enter TaxId",
         enterparentId:"Enter ParentId",
         ItemCategory:"ItemCategory",
-        document_No:"Enter Document Number",
+        document_No:"Purchase Number",
        p_InvoiceNo:"Enter Purchase Invoice Number",
        s_InvoiceNo:"Enter Sale Invoice Number",
-       doc_Date:"Document Date",
-       p_InvoiceDate:"Purchase Invoice Date",
+       doc_Date:"Select Document Date",
+       p_InvoiceDate:"Select Purchase Date",
        s_InvoiceDate:"Sale Invoice Date",
        supplierName:"Enter Supplier Name",
        orderNo:"Enter Order Number",
@@ -1140,15 +1140,28 @@ const resources = {
         selectDistrict:"Select District",
         selectBlock:"Select Block",
         selectLibrary:"Select Library",
-
-
         LoginForNewLibrary:"Login For New Library",
         Password:"Password",
-        RepeatPassword:"Repeat Password",
-        
-
+        RepeatPassword:"Repeat Password",    
         FormlevelPermission:"Form Level Permission",
-
+        pR_InvoiceNo:"Enter Purchase Return Invoice Number",
+        pR_InvoiceDate:"Select Purchase Return Invoice Date",
+        pR_InvoiceNoReq:"Purchase Return Invoice Number Required",
+        pR_InvoiceDateReq:"Purchase Return Invoice Date Required",
+        orderNo:"Enter Order Number",
+        supplierNameReq:"Supplier Name Required",
+        sR_InvoiceNo:"Enter Sale Return Invoice Number",
+        sR_InvoiceNoReq:"Sale Return Invoice Number Required",
+        sR_InvoiceDateReq:"Sale Return Invoice Date Required",
+        supNameReq:"Supplier Name Required",
+        orderDate:"Order Date Required",
+        orderNoReq:"Order Number Required",
+        saleReturn:"Sale Return",
+        createsaleReturn:"Create Sale Return",
+        eeditsaleReturn:"Edit Sale Return",
+        sR_InvoiceDate:"Select Sale Return Invoice Date",
+        s_InvoiceNo:"Sale Invoice Number",
+        s_InvoiceDate:"Select Sale Invoice Date",
 
 
       },
@@ -2115,18 +2128,34 @@ const resources = {
         selectDistrict:"जिला चुनें",
         selectBlock:"ब्लॉक चुनें",
         selectLibrary:"पुस्तकालय चुनें",
-
         LoginForNewLibrary:"नई लाइब्रेरी के लिए लॉगिन करें",
         Password:"पासवर्ड",
         RepeatPassword:"पासवर्ड दोहराएं",
-        FormlevelPermission:"फॉर्म स्तर अनुमति"
-
-     
-
-      
-
-
-      },
+        FormlevelPermission:"फॉर्म स्तर अनुमति",
+        pR_InvoiceNo:"खरीद वापसी चालान संख्या दर्ज करें",
+        pR_InvoiceDate:"खरीद वापसी चालान दिनांक चुनें",
+        pR_InvoiceNoReq:"खरीद वापसी चालान संख्या आवश्यक",
+        pR_InvoiceDateReq:"खरीदारी वापसी चालान तिथि आवश्यक",
+        orderNo:"ऑर्डर नंबर दर्ज करें",
+        supplierNameReq:"आपूर्तिकर्ता का नाम आवश्यक",
+        PurchaseReturnorder:"खरीद-रिटर्न ऑर्डर बनाएं",
+        EditPurchaseReturnorder:"खरीद वापसी आदेश संपादित करें",
+        sR_InvoiceNo:"बिक्री रिटर्न चालान संख्या दर्ज करें",
+        sR_InvoiceNoReq:"बिक्री वापसी चालान संख्या आवश्यक",
+        sR_InvoiceDateReq:"बिक्री वापसी चालान दिनांक आवश्यक",
+        supNameReq:"आपूर्तिकर्ता का नाम आवश्यक",
+        orderDate:"ऑर्डर दिनांक आवश्यक",
+        orderNoReq:"आदेश क्रमांक आवश्यक",
+        saleReturn:"बिक्री वापसी",
+        createsaleReturn:"बिक्री रिटर्न बनाएं",
+        eeditsaleReturn:"बिक्री रिटर्न संपादित करें",
+        sR_InvoiceDate:"बिक्री वापसी चालान दिनांक चुनें",
+        doc_Date:"दस्तावेज़ दिनांक चुनें",
+        document_No:"खरीद संख्या",
+        p_InvoiceDate:"खरीदारी तिथि चुनें",
+        s_InvoiceNo:"बिक्री चालान संख्या",
+        s_InvoiceDate:"बिक्री चालान दिनांक चुनें",
+    },
       content: {},
     },
   },

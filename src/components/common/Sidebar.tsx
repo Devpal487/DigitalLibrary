@@ -214,8 +214,8 @@ export default function MiniDrawer({ items }: any) {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [profileDrawerOpen, setProfileDrawerOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [collapseIndex, setCollapseIndex] = React.useState<any>(-1);
-  const [collapseIndex2, setCollapseIndex2] = React.useState<any>(-1);
+  // const [collapseIndex, setCollapseIndex] = React.useState<any>(-1);
+  // const [collapseIndex2, setCollapseIndex2] = React.useState<any>(-1);
   const [openlogo, setOpenlogo] = React.useState(!isMobile);
   const [homeColor, setHomeColor] = React.useState("inherit");
   const [selectedSubMenu, setSelectedSubMenu] = React.useState(null);
@@ -226,52 +226,64 @@ export default function MiniDrawer({ items }: any) {
 
   let navigate = useNavigate();
 
-  function searchMenuItems(items: any, query: string) {
-    const results = [];
-
-    for (const menuItem of items) {
-      if (menuItem.name.toLowerCase().includes(query.toLowerCase())) {
-        results.push(menuItem);
-      } else if (menuItem.items && menuItem.items.length > 0) {
-        const matchingSubItems = menuItem.items.filter(
-          (subItem: { name: string }) =>
-            subItem.name.toLowerCase().includes(query.toLowerCase())
-        );
-        if (matchingSubItems.length > 0) {
-          results.push({ ...menuItem, items: matchingSubItems });
+  const searchMenuItems = (items: any[], searchValue: string): any[] => {
+    const lowerCaseSearchValue = searchValue.toLowerCase();
+  
+    // Recursive function focusing only on the `name` field
+    const searchRecursive = (menuItems: any[]): any[] => {
+      return menuItems.reduce((acc: any[], item: any) => {
+        // Check if the current item's name matches the search value
+        if (item.name && item.name.toLowerCase().includes(lowerCaseSearchValue)) {
+          acc.push(item); // Push matching item
         }
-      }
-    }
-    return results;
-  }
+  
+        // Search recursively in child items
+        if (item.items && item.items.length > 0) {
+          acc.push(...searchRecursive(item.items));
+        }
+  
+        return acc;
+      }, []);
+    };
+  
+    return searchRecursive(items);
+  };
+  
 
   const handleNavigation = (path: any) => {
     navigate(path);
   };
 
   const handleAutocompleteChange = (event: any, value: any) => {
-    const selectedItem = items.find((item: any) =>
-      item.items.some((subItem: any) => subItem.name === value)
-    );
-    if (selectedItem) {
-      const selectedSubItem = selectedItem.items.find(
-        (subItem: any) => subItem.name === value
-      );
-      if (selectedSubItem) {
-        handleNavigation(selectedSubItem.path);
+    const findItemByName = (items: any[], name: string): any | null => {
+      for (const item of items) {
+        if (item.name === name) return item;
+        if (item.items && item.items.length > 0) {
+          const found = findItemByName(item.items, name);
+          if (found) return found;
+        }
       }
+      return null;
+    };
+  
+    const selectedSubItem = findItemByName(items, value);
+  
+    if (selectedSubItem) {
+      // console.log("Selected Item:", selectedSubItem);
+  
+      if (selectedSubItem.path && selectedSubItem.path.trim() !== "") {
+        handleNavigation(selectedSubItem.path);
+      } else {
+        // console.warn("Path not found for the selected item. No action taken.");
+        // Optionally, provide feedback or navigation to a default page.
+      }
+    } else {
+      // console.warn("Item not found for value:", value);
     }
   };
 
-  const allMenuNames = items.reduce((acc: any, item: { items: any[] }) => {
-    if (item.items) {
-      return [
-        ...acc,
-        ...item.items.map((subItem: { name: any }) => subItem.name),
-      ];
-    }
-    return acc;
-  }, []);
+  
+  
 
   const themes = [
     { name: "light-theme", icon: <Brightness5 /> },
@@ -282,12 +294,14 @@ export default function MiniDrawer({ items }: any) {
     { name: "bhagwa-theme", icon: <Flag /> },
   ];
 
-  const handleSearchInputChange = (e: any) => {
-    //console.log("first 1", e.target.value);
-    const value = e.target.value;
-    setSearchValue(value);
+  // console.log("items", items);
 
-    const filtered = searchMenuItems(items, value);
+  const handleSearchInputChange = (e: any) => {
+    const value = e.target.value;
+    console.log("handleSearchInputChange", value);  
+    setSearchValue(value);
+  
+    const filtered = searchMenuItems(items, value); 
     setFilteredItems(filtered);
   };
 
@@ -326,11 +340,8 @@ export default function MiniDrawer({ items }: any) {
             );
 
             if (pathrow) {
-              //console.log("data", pathrow);
               setMenuData(pathrow.menuId);
               break;
-              // setPermissionData(pathrow);
-              // fetchZonesData();
             }
           }
         }
@@ -345,10 +356,7 @@ export default function MiniDrawer({ items }: any) {
     };
   });
 
-  const handleSubMenuClick = (index: any) => {
-    //console.log(index);
-    setSelectedSubMenu(index);
-  };
+
 
   const resetHomeColor = () => {
     setHomeColor("#FF0000");
@@ -385,15 +393,6 @@ export default function MiniDrawer({ items }: any) {
     setOpenlogo(false);
   };
 
-  // const Logout = () => {
-  //   localStorage.clear();
-  //   sessionStorage.clear();
-  //   navigate("/");
-  // };
-
-  // var uniqId = sessionStorage.getItem("uniqueId");
-  // var user = sessionStorage.getItem("userid");
-
   const Logout = () => {
     const collectData = {
       userId: userName,
@@ -413,20 +412,17 @@ export default function MiniDrawer({ items }: any) {
     });
   };
 
-  function onClick(e: any, item: any) {
-    //console.log("🚀 ~ onClick ~ item:", item);
-    // let path = item.path;
-    // console.log("🚀 ~ onClick ~ path:", path)
+  function onClick(item: any) {
+    console.log("🚀 ~ onClick ~ item:", item);
 
     var menuId = item.id;
     var menu_name = item.path;
     const path2 =
       item.path + "?appId=" + menuId + "&Appname=" + menu_name + ".aspx";
     const path = item.path;
-    //console.log("🚀 ~ onClick ~ path:", path);
+    console.log(path)
 
     if (path == "" || path == null || path == "undefind") {
-      //console.log("Path Not Found ????");
     } else {
       sessionStorage.setItem("menuId", menuId);
       sessionStorage.setItem("menuName", menu_name);
@@ -441,11 +437,6 @@ export default function MiniDrawer({ items }: any) {
   if (userName) {
     userName = userName.replace(/"/g, "");
   }
-
-  //const [username, setuserName] = React.useState<any>("");
-
-  //let NodeId = localStorage.getItem("id");
-  // console.log('CheckNodeId',NodeId);
 
   const defaultSelectedNodeId = parseInt(sessionStorage.getItem("instId") + "");
 
@@ -467,15 +458,12 @@ export default function MiniDrawer({ items }: any) {
     uniqueId = uniqueId.replace(/"/g, "");
   }
 
-  //var uniqueId = sessionStorage.getItem("uniqueId");
 
   const [nodeData, setNodeData] = React.useState<any>([]);
-  const [selectedNode, setSelectedNode] = React.useState<any>(null);
 
   const getNode = () => {
     api.get(`api/Login/GetMemberLibs?uniqueid=${uniqueId}`).then((res) => {
       const arr: any = [];
-      //console.log("CheckInstitute" + JSON.stringify(res.data.data));
       for (let index = 0; index < res.data.data.length; index++) {
         arr.push({
           id: res.data.data[index]["id"],
@@ -498,7 +486,6 @@ export default function MiniDrawer({ items }: any) {
   };
 
   const handleCheckboxChange = (id: any, name: any) => {
-    // setSelectedNode({ id, name });
     setnodeId(id);
     setnodeNames(name);
   };
@@ -506,16 +493,13 @@ export default function MiniDrawer({ items }: any) {
   const [nodeNames, setnodeNames] = React.useState<any>("");
 
   const [nodeId, setnodeId] = React.useState<any>();
-  //console.log('CheckNodeId',nodeId);
 
   const handleSave = () => {
     if (nodeId && nodeNames) {
       sessionStorage.setItem("instId", nodeId);
 
       sessionStorage.setItem("institutename", nodeNames);
-      //console.log("Checked Save:", { nodeId, nodeNames });
     } else {
-      //console.log("No institute selected.");
     }
     handleCloseModal();
   };
@@ -531,56 +515,7 @@ export default function MiniDrawer({ items }: any) {
   var currentLanguage = localStorage.getItem("preferredLanguage");
   var newLanguage = currentLanguage === "hi" ? "English" : "हिंदी";
 
-  //onst userData = JSON.parse(localStorage.getItem("userdata")!) || {};
-  // const userDetail = userData[0]?.userdetail || [];
-  // console.log(userDetail);
-
-  const collapsehamndle = (index: any) => {
-    // console.log(index);
-    if (index == collapseIndex) {
-      setCollapseIndex(-1);
-    } else {
-      setCollapseIndex(index);
-    }
-  };
-
-  const collapsehamndle2 = (index: any) => {
-    // console.log(index);
-    if (index == collapseIndex2) {
-      setCollapseIndex2(-1);
-    } else {
-      setCollapseIndex2(index);
-    }
-  };
-
-  // console.log("items", items);
-
-  const getImageForFirstName = (
-    firsT_NAME: any,
-    middlE_NAME: any,
-    suR_NAME: any
-  ) => {
-    const firstLetter = firsT_NAME ? firsT_NAME.charAt(0).toUpperCase() : "";
-    const secondLetter = middlE_NAME ? middlE_NAME.charAt(0).toUpperCase() : "";
-    const thirdLetter = suR_NAME ? suR_NAME.charAt(0).toUpperCase() : "";
-    return `${firstLetter}${secondLetter}${thirdLetter}`;
-  };
-
-  const getGenderText = (gendeR_ID: any) => {
-    switch (gendeR_ID) {
-      case 1:
-        return "Male";
-      case 2:
-        return "Female";
-      case 3:
-        return "Other";
-      default:
-        return "Unknown";
-    }
-  };
-
   const handleMyProfileClick = () => {
-    // console.log("My Profile clicked" + profileDrawerOpen);
 
     setShowThemeMenu((prevState) => !prevState);
 
@@ -593,7 +528,6 @@ export default function MiniDrawer({ items }: any) {
 
   function handleClicked(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     event.preventDefault();
-    // console.info("You clicked a breadcrumb.");
   }
 
   const handleClickhome = () => {
@@ -601,30 +535,6 @@ export default function MiniDrawer({ items }: any) {
     navigate(path);
   };
 
-  function FirstLetters(props: any) {
-    const { text } = props;
-
-    const words = text.split(" ");
-
-    // Extract the first letter from each word
-    const firstLetters = words.map((word: any) => word.charAt(0));
-
-    // Join the first letters back into a string
-    const result = firstLetters.join("");
-
-    return <div>{result}</div>;
-  }
-
-  const imageSize = isMobile
-    ? open
-      ? { width: 30, height: 30 }
-      : { width: 40, height: 40 }
-    : { width: 60, height: 60 };
-
-  const handleRightClick = (path: any) => (e: any) => {
-    e.preventDefault();
-    window.open(path, "_blank");
-  };
   const [showThemeMenu, setShowThemeMenu] = React.useState(false);
 
   const [selectedTheme, setSelectedTheme] = React.useState(() => {
@@ -670,21 +580,71 @@ export default function MiniDrawer({ items }: any) {
 
   const { institutename, libraryname, address, city, institute } = data;
 
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
-  const [expandedCategoryIndex, setExpandedCategoryIndex] =
-    React.useState<any>(null);
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+    const [selectedMenu, setSelectedMenu] = React.useState<any | null>(null);
+    const [collapseIndexs, setCollapseIndexs] = React.useState<number | null>(null);
+    const [collapseIndexs2, setCollapseIndexs2] = React.useState<number | null>(null);
+    
+    React.useEffect(() => {
+      const savedMenu = localStorage.getItem("selectedMenu");
+      if (savedMenu) {
+        const parsedMenu = JSON.parse(savedMenu);
+        setSelectedMenu(parsedMenu);
+    
+        // Automatically expand the saved menu hierarchy
+        setCollapseIndexs(parsedMenu.parentIndex ?? null);
+        setCollapseIndexs2(parsedMenu.childIndex ?? null);
+      }
+    }, []);
+    
+    const handleMenuClick = (menu: any) => {
+      if (!menu) return;
+    
+      const { parentIndex, childIndex, subchildIndex, child, subchild } = menu;
+    
+      // Check if we're opening a new page or staying within the same structure
+      const isNewPage =
+        selectedMenu?.parentIndex !== parentIndex ||
+        selectedMenu?.childIndex !== childIndex ||
+        selectedMenu?.subchildIndex !== subchildIndex;
+    
+      // Update selected menu only for new page
+      const newSelectedMenu = {
+        parentIndex: parentIndex ?? null,
+        childIndex: childIndex ?? null,
+        subchildIndex: subchildIndex ?? null,
+        ...(subchild ? { subchild } : child ? { child } : {}),
+      };
+    
+      // Navigate to new page if a path exists
+      if (subchild?.path) {
+        onClick(subchild);
+      } else if (child?.path && (!child.items || !child.items.length)) {
+        onClick(child);
+      }
+    
+      // Reset state only if navigating to a new page
+      if (isNewPage) {
+        setSelectedMenu(newSelectedMenu);
+        localStorage.setItem("selectedMenu", JSON.stringify(newSelectedMenu));
+    
+        // Reset menu expansion based on the new page
+        setCollapseIndexs(parentIndex);
+        // setCollapseIndexs2(childIndex ?? null);
+      }
+    };
+    
+    
+    const collapseHandle = (index: number) => {
+      setCollapseIndexs(collapseIndexs === index ? null : index);
+      // setCollapseIndexs2(null); 
+    };
+    
+    
+  const collapseHandle2 = (index: number) => {
+    // console.log(index)
+    setCollapseIndexs2(collapseIndexs2 === index ? null : index);
   };
-
-  const handleCategoryToggle = (index: number) => {
-    setExpandedCategoryIndex(expandedCategoryIndex === index ? null : index);
-  };
-
-  // const userData = JSON.parse(sessionStorage.getItem("0th")!) || {};
-  // const userDetail = userData[0]?.userdetail || [];
-
+  
   return (
     <Box sx={{ display: "flex" }}>
       <ToastContainer />
@@ -1054,12 +1014,7 @@ export default function MiniDrawer({ items }: any) {
               freeSolo
               fullWidth
               size="small"
-              options={items.reduce((acc: any, item: any) => {
-                if (item.items) {
-                  acc.push(...item.items.map((subItem: any) => subItem.name));
-                }
-                return acc;
-              }, [])}
+             options={filteredItems.map((item) => item.name)}
               onChange={handleAutocompleteChange}
               renderInput={(params) => (
                 <TextField
@@ -1110,6 +1065,16 @@ export default function MiniDrawer({ items }: any) {
                   onClick={() => {
                     routeChangeHome();
                     resetHomeColor();
+
+                    setCollapseIndexs(null); // Close all parent menus
+                    setCollapseIndexs2(null); // Close all child menus
+                    setSelectedMenu({ // Reset selected menu to no highlight
+                      parentIndex: null,
+                      childIndex: null,
+                      subchildIndex: null,
+                      subchild: null,
+                      child: null,
+                    });
                   }}
                 >
                   <ListItemIcon
@@ -1129,282 +1094,188 @@ export default function MiniDrawer({ items }: any) {
           </List>
 
           <List sx={{ padding: 0 }}>
-            {items.map((text: any, index: any) => (
-              <React.Fragment key={index}>
-                <Divider />
+      {items.map((parent: any, parentIndex: number) => (
+        <React.Fragment key={parentIndex}>
+          <Divider />
+          {/* Parent Item */}
+          <ListItem
+            onClick={() => collapseHandle(parentIndex)}
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "10px 16px",
+              backgroundColor:
+      selectedMenu?.parentIndex === parentIndex &&
+      selectedMenu?.childIndex === null &&
+      selectedMenu?.subchildIndex === null
+        ? "#FF9933" // Saffron color for active parent menu
+        : "#f5f5f5",
+    fontWeight: 
+      selectedMenu?.parentIndex === parentIndex ? 600 : "normal", // Bold active menu
+    color: 
+      selectedMenu?.parentIndex === parentIndex ? "#2B4593" : "inherit", // Contrast text
+    borderRadius: "6px", // Optional rounded corners
+    margin: "5px", // Maintain consistent spacing
+    cursor: "pointer",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <span style={{ fontSize: "1.2rem" }}>📁</span>
+              <ListItemText
+                primary={parent.name}
+                primaryTypographyProps={{ fontWeight: "500", fontSize: "1rem" }}
+              />
+            </div>
+            <ListItemIcon>
+              {parent.items && parent.items.length > 0 ? (
+                collapseIndexs === parentIndex ? (
+                  <ExpandLessIcon />
+                ) : (
+                  <ExpandMoreIcon />
+                )
+              ) : null}
+            </ListItemIcon>
+          </ListItem>
 
-                <ListItem
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                  onClick={() => collapsehamndle(index)}
-                >
+          <Divider />
+
+          {/* Child Items */}
+          <Collapse
+            in={collapseIndexs === parentIndex}
+            timeout="auto"
+            unmountOnExit
+            sx={{ paddingLeft: "16px" }}
+          >
+            <List>
+              {parent.items.map((child: any, childIndex: number) => (
+                <React.Fragment key={childIndex}>
                   <ListItem
+                    onClick={() => {
+                      collapseHandle2(childIndex);
+                      handleMenuClick({
+                        child,
+                        parentIndex,
+                        childIndex,
+                      });
+                    }}
                     sx={{
-                      justifyContent: open ? "initial" : "center",
-                      paddingLeft: 2,
-                      paddingRight: 0,
-                      paddingTop: 0,
-                      paddingBottom: 0,
-                      cursor: "pointer",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "8px 16px",
+                      borderRadius: "6px",
+                      backgroundColor:
+      selectedMenu?.parentIndex === parentIndex &&
+      selectedMenu?.childIndex === childIndex &&
+      selectedMenu?.subchildIndex === null
+    ? "" // Saffron color for active child menu
+    : child.items && child.items.length > 0
+    ? "#e9f7ff" // Light blue for menus with sub-items
+    : "#fff3e0",    //fff3e0 #E9F7FF
+    fontWeight: 
+      selectedMenu?.parentIndex === parentIndex &&
+      selectedMenu?.childIndex === childIndex
+        ? 600
+        : "normal", // Bold active child menu
+    color: 
+      selectedMenu?.parentIndex === parentIndex &&
+      selectedMenu?.childIndex === childIndex
+        ? "#2B4593"
+        : "inherit",
+    margin: "5px",
+    cursor: "pointer",
                     }}
                   >
-                    {open ? (
-                      <ListItemIcon
-                        sx={{
-                          minWidth: 0,
-                          mr: open ? 1 : "auto",
-                          justifyContent: "center",
-                          color:
-                            index === collapseIndex ? "#FF0000" : "inherit",
-                          fontWeight: 600,
-                        }}
-                        title={text.name}
-                      ></ListItemIcon>
-                    ) : (
-                      <div
-                        style={{
-                          minWidth: 24,
-                          minHeight: 24,
-                          borderRadius: "50%",
-                          backgroundColor: "lightgray",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          marginRight: 8,
-                          // color: "Black",
-                          color:
-                            index === collapseIndex ? "#FF0000" : "inherit",
-                        }}
-                        title={text.name}
-                      >
-                        {text.name.charAt(0)}
-                      </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                      }}
+                    >
+                      <span style={{ fontSize: "1.2rem" }}>
+                    {child.items && child.items.length > 0 ? "📂" : "📄"}
+                  </span>
+                  <ListItemText
+                    primary={child.name}
+                    primaryTypographyProps={{ fontSize: "0.95rem" }}
+                  />
+                    </div>
+                    {child.items && child.items.length > 0 && (
+                      <ListItemIcon>
+                        {collapseIndexs2 === childIndex ? (
+                          <ExpandLessIcon />
+                        ) : (
+                          <ExpandMoreIcon />
+                        )}
+                      </ListItemIcon>
                     )}
-                    <ListItemText
-                      primary={text.name}
-                      sx={{ opacity: open ? 1 : 0 }}
-                    />{" "}
                   </ListItem>
-                  <ListItemIcon
-                    sx={{ opacity: open ? 1 : 0, justifyContent: "end" }}
+                  <Collapse
+                    in={collapseIndexs2 === childIndex}
+                    timeout="auto"
+                    unmountOnExit
+                    sx={{ paddingLeft: "16px" }}
                   >
-                    {collapseIndex == index ? (
-                      <ExpandLessIcon
-                        className={
-                          "sidebar-item-expand-arrow" +
-                          " sidebar-item-expand-arrow-expanded"
-                        }
-                      />
-                    ) : (
-                      <ExpandMoreIcon className="sidebar-item-expand-arrow" />
-                    )}
-                  </ListItemIcon>
-                </ListItem>
-                <Divider />
-
-                <Collapse
-                  in={collapseIndex === index}
-                  timeout={{ enter: 1000, exit: 900 }}
-                  sx={{ transition: "all 0.8s ease", overflow: "hidden" }}
-                  unmountOnExit
-                >
-                  <List sx={{ paddingLeft: open ? 2 : 0 }}>
-                    {items[index].items.map((text: any, index2: any) => (
-                      <List sx={{ pl: 2 }}>
-                        <ListItem
-                          key={index2}
-                          sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            paddingLeft: 2,
-                            paddingRight: 0,
-                            paddingTop: 0,
-                            paddingBottom: 0,
-                            backgroundColor:
-                              selectedSubMenu == index2 ? "#FF7722" : "inherit",
-                            color:
-                              selectedSubMenu == index2
-                                ? "white"
-                                : `var(--drawer-color)`,
-                            borderRadius: "10px",
+                    <List>
+                      {child.items.map(
+                        (subchild: any, subchildIndex: number) => (
+                          <ListItem
+                            key={subchildIndex}
+                            onClick={() =>
+                              handleMenuClick({
+                                subchild,
+                                parentIndex,
+                                childIndex,
+                                subchildIndex,
+                              })
+                            }
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              padding: "6px 16px",
+                              borderRadius: "6px",
+                              backgroundColor:
+                              selectedMenu?.parentIndex === parentIndex &&
+                              selectedMenu?.childIndex === childIndex &&
+                              selectedMenu?.subchildIndex === subchildIndex
+                                ? "#FF9933" // Saffron color for active subchild menu
+                                : "#fff3e0",
+                            fontWeight: 
+                              selectedMenu?.parentIndex === parentIndex &&
+                              selectedMenu?.childIndex === childIndex &&
+                              selectedMenu?.subchildIndex === subchildIndex
+                                ? 600
+                                : "normal", // Bold active subchild menu
+                            color: 
+                              selectedMenu?.parentIndex === parentIndex &&
+                              selectedMenu?.childIndex === childIndex &&
+                              selectedMenu?.subchildIndex === subchildIndex
+                                ? "#2B4593"
+                                : "inherit", 
+                            margin: "5px",
                             cursor: "pointer",
-                            "&:hover": {
-                              backgroundColor: "lightgray",
-                              color: "black",
-                            },
-                            // title={text.name}
-                          }}
-                          onClick={(e) => {
-                            onClick(e, text);
-                            handleSubMenuClick(index2);
-                            collapsehamndle2(index2);
-                          }}
-                          onContextMenu={handleRightClick(text.path)}
-                        >
-                          {open ? (
-                            <ListItem
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                paddingLeft: 2,
-                                paddingRight: 0,
-                                paddingTop: 0,
-                                paddingBottom: 0,
-                                cursor: "pointer",
-                              }}
-                            >
-                              <p
-                                style={{
-                                  fontWeight: 500,
-                                  paddingTop: "3px",
-                                  paddingBottom: "3px",
-                                  opacity: open ? 1 : 0,
-                                  margin: 0,
-                                }}
-                              >
-                                {text.name}
-                              </p>
-                              {items[index].items.length > 0 ? (
-                                <ListItemIcon
-                                  sx={{
-                                    opacity: open ? 1 : 0,
-                                    minWidth: "auto",
-                                    textAlign: "right",
-                                  }}
-                                >
-                                  {collapseIndex2 === index2 ? (
-                                    <ExpandLessIcon
-                                      className={
-                                        "sidebar-item-expand-arrow" +
-                                        " sidebar-item-expand-arrow-expanded"
-                                      }
-                                    />
-                                  ) : (
-                                    <ExpandMoreIcon className="sidebar-item-expand-arrow" />
-                                  )}
-                                </ListItemIcon>
-                              ) : null}
-                            </ListItem>
-                          ) : (
-                            <ListItemIcon
-                              sx={{
-                                minWidth: 0,
-                                mr: open ? 3 : "auto",
-                                justifyContent: "center",
-                                color: open ? "#FF0000" : "inherit",
-                                backgroundColor:
-                                  selectedSubMenu == index2
-                                    ? "#FF7722"
-                                    : "inherit",
-                                Color:
-                                  selectedSubMenu == index2 ? "white" : "black",
-                                borderRadius: "25px",
-                                padding: "5px 10px",
-                              }}
-                              title={text.name}
-                            >
-                              {/* <TouchAppIcon />  {text.name.charAt(0)} */}
-                              <FirstLetters text={text.name} />
-                            </ListItemIcon>
-                          )}
-                        </ListItem>
-                        <Collapse
-                          in={collapseIndex2 === index2}
-                          timeout={{ enter: 1000, exit: 900 }}
-                          sx={{
-                            transition: "all 0.8s ease",
-                            overflow: "hidden",
-                          }}
-                          unmountOnExit
-                        >
-                          <List sx={{ paddingLeft: open ? 2 : 0 }}>
-                            {items[index].items[index2].items.map(
-                              (text2: any, index3: any) => (
-                                <List sx={{ pl: 2 }}>
-                                  <ListItem
-                                    key={index3}
-                                    sx={{
-                                      display: "flex",
-                                      justifyContent: "space-between",
-                                      alignItems: "center",
-                                      paddingLeft: 2,
-                                      paddingRight: 0,
-                                      paddingTop: 0,
-                                      paddingBottom: 0,
-                                      backgroundColor:
-                                        selectedSubMenu == index3
-                                          ? "#FF7722"
-                                          : "inherit",
-                                      color:
-                                        selectedSubMenu == index3
-                                          ? "white"
-                                          : `var(--drawer-color)`,
-                                      borderRadius: "10px",
-                                      cursor: "pointer",
-                                      "&:hover": {
-                                        backgroundColor: "lightgray",
-                                        color: "black",
-                                      },
-                                      // title={text.name}
-                                    }}
-                                    onClick={(e) => {
-                                      onClick(e, text2);
-                                      handleSubMenuClick(index3);
-                                    }}
-                                    onContextMenu={handleRightClick(text2.path)}
-                                  >
-                                    {open ? (
-                                      <p
-                                        style={{
-                                          fontWeight: 500,
-                                          paddingTop: "3px",
-                                          paddingBottom: "3px",
-                                          opacity: open ? 1 : 0,
-                                        }}
-                                      >
-                                        {text2.name}
-                                      </p>
-                                    ) : (
-                                      <ListItemIcon
-                                        sx={{
-                                          minWidth: 0,
-                                          mr: open ? 3 : "auto",
-                                          justifyContent: "center",
-                                          color: open ? "#FF0000" : "inherit",
-                                          backgroundColor:
-                                            selectedSubMenu == index3
-                                              ? "#FF7722"
-                                              : "inherit",
-                                          Color:
-                                            selectedSubMenu == index3
-                                              ? "white"
-                                              : "black",
-                                          borderRadius: "25px",
-                                          padding: "5px 10px",
-                                        }}
-                                        title={text2.name}
-                                      >
-                                        <FirstLetters text={text2.name} />
-                                      </ListItemIcon>
-                                    )}
-                                  </ListItem>
-                                </List>
-                              )
-                            )}
-                          </List>
-                        </Collapse>
-                      </List>
-                    ))}
-                  </List>
-                </Collapse>
-              </React.Fragment>
-            ))}
-          </List>
+                            }}
+                          >
+                            <span style={{ fontSize: "1.2rem" }}>📄</span>
+                            <ListItemText
+                              primary={subchild.name}
+                              primaryTypographyProps={{ fontSize: "0.9rem" }}
+                            />
+                          </ListItem>
+                        )
+                      )}
+                    </List>
+                  </Collapse>
+                </React.Fragment>
+              ))}
+            </List>
+          </Collapse>
+        </React.Fragment>
+      ))}
+    </List>
+
         </React.Fragment>
       </Drawer>
 
