@@ -34,6 +34,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 import "react-transliterate/dist/index.css";
 import CustomLabel from "../utils/CustomLabel";
+import { getId } from "../utils/Constant";
 
 interface MenuPermission {
   isAdd: boolean;
@@ -43,9 +44,9 @@ interface MenuPermission {
 }
 
 export default function OrderItemList() {
+  const userId = getId();
   const [zones, setZones] = useState([]);
   const [columns, setColumns] = useState<any>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState<any>(null);
 
@@ -129,6 +130,8 @@ export default function OrderItemList() {
   const getProgram = () => {
     const collectData = {
       id: -1,
+      "userTypeId": -1,
+      "userId": userId
     };
     api.post(`api/statusmaster/GetStatusMaster`, collectData).then((res) => {
       //console.log("checkMemb", res?.data);
@@ -137,8 +140,8 @@ export default function OrderItemList() {
 
       for (let index = 0; index < res?.data?.data?.length; index++) {
         arr.push({
-          value: res?.data?.data[index]["id"],
-          label: res?.data?.data[index]["status"],
+          value: res?.data?.data[index]["statusId"],
+          label: res?.data?.data[index]["statusName"],
         });
       }
       setProgram(arr);
