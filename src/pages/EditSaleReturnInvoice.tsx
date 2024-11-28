@@ -25,45 +25,42 @@ import {
   import { Language } from "react-transliterate";
   import Languages from "../utils/Languages";
   import { getISTDate } from "../utils/Constant";
+import dayjs from "dayjs";
   
   const EditSaleReturnInvoice = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const initialRows :any = {
+      id: -1,
+      saleid: -1,
+      user_Id: 0,
+      itemNameId:'',
+      unit: "",
+      qty: '',
+      rate: '',
+      amount: '',
+      tax1: "",
+      taxId1: "",
+      tax2: "P",
+      discount: 0.00,
+      discountAmount: '',
+      netAmount: '',
+      documentNo: "",
+      documentDate: "",
+      invoiceNo: "",
+      supplier: "",
+      orderNo: "",
+      mrnNo: "",
+      mrnDate: "",
+      taxId3: "",
+      tax3: "",
+    };
+    const [items, setItems] = useState<any>([{...initialRows}]);
+
     const { defaultValuestime } = getISTDate();
     const [lang, setLang] = useState<Language>("en");
     const [toaster, setToaster] = useState(false);
-    const [itemNameData, setItemNameData] = useState("");
-    const [unitData, setUnitNameData] = useState("");
     const location = useLocation();
-    const [items, setItems] = useState<any>([
-      {
-        id: -1,
-        saleid: -1,
-        user_Id: 0,
-        itemNameId:0,
-        unit: "",
-        qty: 0,
-        rate: 0,
-        amount: 0,
-        tax1: "",
-        taxId1: "",
-        tax2: "P",
-        discount: 0,
-        discountAmount: 0,
-        netAmount: 0,
-        documentNo: "",
-        documentDate: "",
-        invoiceNo: "",
-        supplier: "",
-        orderNo: "",
-        mrnNo: "",
-        mrnDate: "",
-        taxId3: "",
-        tax3: "",
-      },
-    ]);
-  
-   // console.log('items',items)
     const [taxOption, setTaxOption] = useState([
       { value: "-1", label: t("text.tax") },
     ]);
@@ -78,7 +75,6 @@ import {
       { value: "-1", label: t("text.SelectSupplierName") },
     ]);
   
-    console.log("items", items);
   
     const back = useNavigate();
   
@@ -107,6 +103,7 @@ import {
   
       setOption(arr);
     };
+
     const getTaxData = async () => {
       const res = await api.post(`api/TaxMaster/GetTaxMaster`, { taxId: -1 });
       const arr =
@@ -117,6 +114,7 @@ import {
   
       setTaxOption(arr);
     };
+
     const GetUnitData = async () => {
       const collectData = {
         unitId: -1,
@@ -164,33 +162,17 @@ import {
       }
       setContentOptions(arr);
     };
-  
-    const validateItem = (item: any) => {
-      console.log("🚀 ~ validateItem ~ item:", item);
-      return (
-        item.itemNameId &&
-        item.unit &&
-        item.qty &&
-        item.rate &&
-        item.amount &&
-        item.tax1 &&
-        item.taxId1 &&
-        item.discount &&
-        item.discountAmount &&
-        item.netAmount
-      );
-    };
-  
+
     const formik = useFormik({
       initialValues: {
         id: location.state.id,
         document_No: location.state.document_No,
-        s_InvoiceNo: location.state.s_InvoiceNo,
-        doc_Date: new Date().toISOString().slice(0, 10),
-        s_InvoiceDate: new Date().toISOString().slice(0, 10),
+        sR_InvoiceNo: location.state.sR_InvoiceNo,
+        doc_Date: dayjs(location.state.doc_Date).format("YYYY-MM-DD"),
+        sR_InvoiceDate: dayjs(location.state.sR_InvoiceDate).format("YYYY-MM-DD") || '',
         supplierName: location.state.supplierName,
         supplierId:location.state.supplierId,
-        orderNo: location.state.orderNo,
+        orderNo: location.state.orderNo || '',
         tax: location.state.tax,
         freight: location.state.freight,
         amount: location.state.amount,
@@ -199,27 +181,25 @@ import {
         remark: location.state.remark,
         instId: location.state.instId,
         sessionId: location.state.sessionId,
-        saleinv: [],
+        saleretnchild: [],
       },
       validationSchema: Yup.object().shape({
-        document_No: Yup.string().required(t("Document No. required")),
+        // document_No: Yup.string().required(t("Document No. required")),
         orderNo: Yup.string().required(t("Order No. required")),
-        doc_Date: Yup.date().required(t("Order Date required")),
-        s_InvoiceDate: Yup.date().required(t("Invoice Date required")),
+        // doc_Date: Yup.date().required(t("Order Date required")),
+        sR_InvoiceDate: Yup.date().required(t("Invoice Date required")),
         supplierName: Yup.string().required(t("Supplier Name required")),
       }),
       onSubmit: async (values) => {
         console.log("Form Submitted with values:", values);
   
         const validItems = items.filter((item: any) => validateItem(item));
-        const updatedItems = validItems.map((item: any, index: any) => {
-          const documentDate = values.doc_Date;
-  
+        const updatedItems = validItems.map((item: any, index: any) => {  
           const baseItem = {
             ...item,
             documentNo: values.document_No,
             documentDate: defaultValuestime,
-            invoiceNo: values.s_InvoiceNo,
+            invoiceNo: values.sR_InvoiceNo,
             supplier: values.supplierName,
             orderNo: values.orderNo,
             mrnNo: "",
@@ -233,20 +213,20 @@ import {
           }
           return item;
         });
-        values.saleinv = updatedItems;
+        values.saleretnchild = updatedItems;
   
         console.log("Form Submitted with values:", values);
         console.log("Updated Items:", updatedItems);
   
         try {
           const response = await api.post(
-            `api/SaleInvoice/AddUpdateSaleInvoice`,
+            `api/SaleReturn/AddUpdateSaleReturn`,
             values
           );
           if (response.data.isSuccess) {
             setToaster(false);
             toast.success(response.data.mesg);
-            navigate("/Purchaseorder");
+            navigate("/SaleReturn");
           } else {
             setToaster(true);
             toast.error(response.data.mesg);
@@ -258,76 +238,151 @@ import {
       },
     });
   
-    const handleItemChange = (index: any, field: any, value: any) => {
-      console.log("🚀 ~ handleItemChange ~ value:", field, value);
-      const updatedItems = [...items];
-      const item = updatedItems[index];
-  
-      if (["qty", "rate", "discount"].includes(field)) {
-        value = Math.max(0, Number(value));
-      }
-  
-      item[field] = value;
-  
-      item.amount = item.qty * item.rate;
-      let abc = (item.amount * parseFloat(item.tax1)) / 100;
-      item.taxId1 = String(abc);
-  
-      item.discountAmount =
-        item.tax2 === "P"
-          ? (item.amount * parseFloat(item.discount)) / 100
-          : parseFloat(item.discount);
-  
-      item.netAmount =
-        item.amount + parseFloat(item.taxId1) - item.discountAmount;
-  
-      setItems(updatedItems);
-  
-      if (validateItem(item) && index === items.length - 1) {
-        handleAddItem();
-      }
-    };
-  
-    const handleRemoveItem = (index: any) => {
-      const updatedItems = items.filter((_: any, i: any) => i !== index);
-      setItems(updatedItems);
-    };
-    const handleAddItem = () => {
-      setItems([
-        ...items,
-        {
-          itemNameId: "",
-          unit: "",
-          qty: 0,
-          rate: 0,
-          amount: 0,
-          tax1: "",
-          taxId1: "",
-          tax2: "P",
-          discount: 0,
-          discountAmount: 0,
-          netAmount: 0,
-          documentNo: formik.values.document_No,
-          documentDate: formik.values.doc_Date,
-          invoiceNo: formik.values.s_InvoiceNo,
-          supplier: formik.values.supplierName,
-          orderNo: formik.values.orderNo,
-          mrnNo: "",
-          mrnDate: "",
-          taxId3: "",
-          tax3: "",
-        },
-      ]);
-    };
-  
-    const totalAmount = items.reduce(
-      (acc: any, item: any) => acc + item.netAmount,
-      0
+const validateItem = (item: any) => {
+    // console.log("🚀 ~ validateItem ~ item:", item);
+    return (
+      item.itemNameId &&
+      item.unit &&
+      item.qty &&
+      item.rate &&
+      item.amount &&
+      item.tax1 &&
+      item.taxId1 
     );
+  };
+
+const handleItemChange = (index: number, field: string, value: any) => {
+  const updatedItems = [...items];
+  let item = { ...updatedItems[index] };
+
+  if (field === 'itemNameId') {
+    const itemNameDetails = value;
+    if (itemNameDetails) {
+      item = {
+        ...item,
+        itemNameId: itemNameDetails.value || "",
+        rate: itemNameDetails.rate || "",
+        unit: String(itemNameDetails.unitId) || "",
+        tax1: String(itemNameDetails.taxId) || "",
+        taxId1: String(itemNameDetails.taxName) || "",
+      };
+    }
+  } else if (field === 'qty' || field === 'rate') {
+    item[field] = value === "" ? 0 : parseFloat(value);
+    item.amount = calculateAmount(item.qty, item.rate);
+    item.taxId1 = String(calculateTax(item.amount, parseFloat(item.tax1)));
+  } else if (field === 'tax1') {
+    const selectedTax = taxOption.find((tax: any) => tax.value === value?.value);
+    if (selectedTax) {
+      item.tax1 = String(selectedTax.value);
+      item.taxId1 = String(calculateTax(item.amount, parseFloat(selectedTax.label)));
+    }
+  } else if (field === 'tax2') {
+    item.tax2 = value || '';
+  }else if (field === 'unit') {
+    item[field] = value ;
+  } else if (field === 'discount') {
+    item.discount = value === '' ? 0 : parseFloat(value);
+    const discountAmount:any = calculateDiscount(item.amount, item.discount, (item.tax2));
+    item.discountAmount = discountAmount;
+    item.netAmount = calculateNetAmount(item.amount, parseFloat(item.taxId1), discountAmount);
+  }
+
+  // Recalculate dependent fields
+  if (field !== 'discount' && field !== 'tax2') {
+    const discountAmount:any = calculateDiscount(item.amount, item.discount, item.tax2);
+    item.discountAmount = discountAmount;
+    let result =  calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
+    console.log("Result", result);
+    item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
+  }
+
+  updatedItems[index] = item;
+  setItems(updatedItems);
+
+  if (validateItem(item) && index === updatedItems.length - 1) {
+    handleAddItem();
+  }
+
+
+  console.log("🚀 ~ Updated items:", updatedItems);
+};
+const calculateAmount = (qty: number, rate: number) => {
+  const amount = qty * rate;
+  return (amount.toFixed(2));
+};
+
+const calculateTax = (amount: number, taxRate: number) => {
+  const tax = (amount * taxRate) / 100;
+  return (tax.toFixed(2));
+};
+
+const calculateDiscount = (amount: number, discount: number, type: string) => {
+  let discountValue = 0;
+  if (type === 'P') {
+    discountValue = (amount * discount) / 100;
+  } else if (type === 'F') {
+    discountValue = discount;
+  }
+  return (discountValue.toFixed(2));
+};
+
+const calculateNetAmount = (amount: number, tax: number, discount: number) => {
+  console.log("amount tax discount", amount, tax, discount);
+  const netAmount = Number(amount) + Number(tax) - Number(discount);
+  console.log("netAmount", netAmount);
+  return (netAmount.toFixed(2));
+};
+
+  const handleRemoveItem = (index: number) => {
+    if (items.length === 1) {
+      setItems([{ ...initialRows }]);
+    } else {
+      const newData = items.filter((_:any, i:any) => i !== index);
+      setItems(newData);
+    }
+    // updateTotalAmounts(tableData);
+  };
+
+  const handleAddItem = () => {
+    setItems([
+      ...items,
+      {
+        id: -1,
+        saleid: -1,
+        user_Id: 0,
+        itemNameId: "",
+        unit: "",
+        qty: '',
+        rate: '',
+        amount: '',
+        tax1: "",
+        taxId1: "",
+        tax2: "P",
+        discount: 0.00,
+        discountAmount: '',
+        netAmount: '',
+        documentNo: formik.values.document_No,
+        documentDate: formik.values.doc_Date,
+        invoiceNo: formik.values.sR_InvoiceNo,
+        supplier: formik.values.supplierName,
+        orderNo: formik.values.orderNo,
+        mrnNo: "",
+        mrnDate: defaultValuestime,
+        taxId3: "",
+        tax3: "",
+      },
+    ]);
+  };
+
+  const totalAmount = items.reduce(
+    (acc: any, item: any) => acc + Number(item.netAmount),
+    0
+  );
   
     const getPurchaseOrderById = async (id: any) => {
-      const result = await api.post(`api/SaleInvoice/GetSaleInvoice`, { id: id });
-      const transData = result?.data?.data[0]["saleinv"];
+      const result = await api.post(`api/SaleReturn/GetSaleReturn`, { id: id });
+      const transData = result?.data?.data[0]["saleretnchild"];
   
       let arr: any = [];
       for (let i = 0; i < transData.length; i++) {
@@ -357,6 +412,7 @@ import {
           tax3: transData[i]["tax3"],
         });
       }
+      arr.push({ ...initialRows });
       setItems(arr);
     };
   
@@ -401,7 +457,7 @@ import {
                   sx={{ padding: "20px" }}
                   align="center"
                 >
-                  {t("text.Editsaleinvoice")}
+                  {t("text.eeditsaleReturn")}
                 </Typography>
               </Grid>
   
@@ -424,82 +480,54 @@ import {
             <form onSubmit={formik.handleSubmit}>
               {toaster && <ToastApp />}
               <Grid item xs={12} container spacing={2}>
-                <Grid item lg={4} xs={12}>
-                  <TextField
-                    id="document_No"
-                    name="document_No"
-                    label={
-                      <CustomLabel text={t("text.document_No")} required={true} />
-                    }
-                    value={formik.values.document_No}
-                    placeholder={t("text.document_No")}
-                    size="small"
-                    fullWidth
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    // error={formik.touched.document_No && Boolean(formik.errors.document_No)}
-                    // helperText={formik.touched.document_No && formik.errors.document_No}
-                  />
-                </Grid>
-  
                 <Grid item xs={12} sm={4} lg={4}>
                   <TextField
                     label={
                       <CustomLabel
-                        text={t("text.s_InvoiceNo")}
+                        text={t("text.sR_InvoiceNo")}
                         required={false}
                       />
                     }
                     variant="outlined"
                     fullWidth
                     size="small"
-                    name="s_InvoiceNo"
-                    id="s_InvoiceNo"
+                    name="sR_InvoiceNo"
+                    id="sR_InvoiceNo"
                     // type="date"
-                    value={formik.values.s_InvoiceNo}
-                    placeholder={t("text.s_InvoiceNo")}
+                    value={formik.values.sR_InvoiceNo}
+                    placeholder={t("text.sR_InvoiceNo")}
                     onChange={formik.handleChange}
-                  />
-                </Grid>
-  
-                <Grid item xs={12} sm={4} lg={4}>
-                  <TextField
-                    label={
-                      <CustomLabel text={t("text.doc_Date")} required={false} />
-                    }
-                    variant="outlined"
-                    fullWidth
-                    size="small"
-                    name="doc_Date"
-                    id="doc_Date"
-                    type="date"
-                    value={formik.values.doc_Date}
-                    placeholder={t("text.doc_Date")}
-                    onChange={formik.handleChange}
-                    InputLabelProps={{ shrink: true }}
                   />
                 </Grid>
   
                 <Grid item lg={4} xs={12}>
                   <TextField
-                    id="s_InvoiceDate"
-                    name="s_InvoiceDate"
+                    id="sR_InvoiceDate"
+                    name="sR_InvoiceDate"
                     label={
                       <CustomLabel
-                        text={t("text.s_InvoiceDate")}
+                        text={t("text.sR_InvoiceDate")}
                         required={true}
+                      value={formik.values.sR_InvoiceDate || ''}
                       />
                     }
-                    value={formik.values.s_InvoiceDate}
-                    placeholder={t("text.s_InvoiceDate")}
+                    value={formik.values.sR_InvoiceDate || ''}
+                    placeholder={t("text.sR_InvoiceDate")}
                     size="small"
                     type="date"
                     fullWidth
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     InputLabelProps={{ shrink: true }}
-                    // error={formik.touched.p_InvoiceDate && Boolean(formik.errors.p_InvoiceDate)}
-                    // helperText={formik.touched.p_InvoiceDate && formik.errors.p_InvoiceDate}
+                    error={
+                      formik.touched.sR_InvoiceDate &&
+                      Boolean(formik.errors.sR_InvoiceDate)
+                    }
+                    helperText={
+                      formik.touched.sR_InvoiceDate && typeof formik.errors.sR_InvoiceDate === "string" 
+                        ? formik.errors.sR_InvoiceDate 
+                        : "" // Fallback to empty string
+                    }
                   />
                 </Grid>
   
@@ -510,7 +538,7 @@ import {
                     options={Option}
                       value={
                         Option.find(
-                          (option: any) => option.value === formik.values.supplierId
+                          (option: any) => option.value == formik.values.supplierId
                         ) || null
                       }
                     fullWidth
@@ -524,6 +552,13 @@ import {
                     renderInput={(params) => (
                       <TextField
                         {...params}
+                        error={
+                          formik.touched.supplierName &&
+                          Boolean(formik.errors.supplierName)
+                        }
+                        helperText={
+                          formik.touched.supplierName && String(formik.errors.supplierName)
+                        }
                         label={
                           <CustomLabel
                             text={t("text.SelectSupplierName")}
@@ -540,16 +575,23 @@ import {
                     id="orderNo"
                     name="orderNo"
                     label={
-                      <CustomLabel text={t("text.orderNo")} required={true} />
+                      <CustomLabel text={t("text.orderNo")} required={true} value={formik.values.orderNo || ''}/>
                     }
-                    value={formik.values.orderNo}
+                    value={formik.values.orderNo || ''}
                     placeholder={t("text.orderNo")}
                     size="small"
                     fullWidth
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    // error={formik.touched.orderNo && Boolean(formik.errors.orderNo)}
-                    // helperText={formik.touched.orderNo && formik.errors.orderNo}
+                    error={
+                      formik.touched.orderNo && Boolean(formik.errors.orderNo)
+                    }
+                    // helperText={formik.touched.orderNo && String(formik.errors.orderNo)}
+                    helperText={
+                      formik.touched.orderNo && typeof formik.errors.orderNo === "string" 
+                        ? formik.errors.orderNo 
+                        : "" // Fallback to empty string
+                    }
                   />
                 </Grid>
   
@@ -671,357 +713,320 @@ import {
                   />
                 </Grid>
   
-                <Grid item lg={12} md={12} xs={12} textAlign={"center"}>
-                  {/* <Typography variant="h6" textAlign="center">
-                    {t("text.EditPurchaseorder")}
-                  </Typography> */}
-                </Grid>
-  
-  
-  
                 <Grid item lg={12} md={12} xs={12}>
                   {/* <TableContainer> */}
                   <Table
-                    style={{
-                      borderCollapse: "collapse",
-                      width: "100%",
-                      border: "1px solid black",
-                    }}
+                  style={{
+                    borderCollapse: "collapse",
+                    width: "100%",
+                    border: "1px solid black",
+                  }}
+                >
+                  <thead
+                    style={{ backgroundColor: "#2B4593", color: "#f5f5f5" }}
                   >
-                    <thead
-                      style={{ backgroundColor: "#2B4593", color: "#f5f5f5" }}
-                    >
-                      <tr>
-                        {/* <TableCell style={{ color: '#fff' }}>Sr. No.</TableCell> */}
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            textAlign: "center",
-                            padding: "5px",
-                          }}
-                        >
-                          {t("text.ItemName")}
-                        </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            textAlign: "center",
-                            padding: "5px",
-                          }}
-                        >
-                          {t("text.Unit")}
-                        </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            textAlign: "center",
-                            padding: "5px",
-                          }}
-                        >
-                          {t("text.Quantity")}
-                        </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            textAlign: "center",
-                            padding: "5px",
-                          }}
-                        >
-                          {t("text.Rate")}
-                        </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            textAlign: "center",
-                            padding: "5px",
-                          }}
-                        >
-                          {t("text.Amount")}
-                        </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            textAlign: "center",
-                            padding: "5px",
-                          }}
-                        >
-                          {t("text.Tax")}
-                        </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            textAlign: "center",
-                            padding: "5px",
-                          }}
-                        >
-                          {t("text.TaxAmount")}
-                        </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            textAlign: "center",
-                            padding: "5px",
-                          }}
-                        >
-                          {t("text.DiscountType")}
-                        </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            textAlign: "center",
-                            padding: "5px",
-                          }}
-                        >
-                          {t("text.Discount")}
-                        </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            textAlign: "center",
-                            padding: "5px",
-                          }}
-                        >
-                          {t("text.DiscountAmount")}
-                        </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            textAlign: "center",
-                            padding: "5px",
-                          }}
-                        >
-                          {t("text.NetAmount")}
-                        </th>
-                        <th
-                          style={{
-                            border: "1px solid black",
-                            textAlign: "center",
-                            padding: "5px",
-                          }}
-                        >
-                          {t("text.Action")}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {items.map((item: any, index: any) => (
-                        <tr key={item.id} style={{ border: "1px solid black" }}>
-                          {/* <TableCell>{index + 1}</TableCell> */}
-                          <td style={{ width: "180px" }}>
-                            {/* <TextField
-                                                          value={item.itemName}
-                                                          onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
-                                                          size="small"
-                                                      /> */}
-                            <Autocomplete
-                              disablePortal
-                              id="combo-box-demo"
-                              options={contentOptions}
-                              size="small"
-                              value={contentOptions.find(
-                                (opt: any) =>
-                                  opt.value === parseInt(item?.itemNameId)
-                              ) || null}
-                              onChange={(event, newValue: any) => {
-                                handleItemChange(
-                                  index,
-                                  "itemNameId",
-                                  newValue?.value
-                                );
-                                // Check if newValue is defined before accessing its properties
-                                if (newValue) {
-                                  handleItemChange(index, "rate", newValue?.rate);
-                                  handleItemChange(
-                                    index,
-                                    "unit",
-                                    newValue?.unitId?.toString()
-                                  );
-                                  handleItemChange(
-                                    index,
-                                    "tax1",
-                                    newValue?.taxId + ""
-                                  );
-  
-                                  handleItemChange(
-                                    index,
-                                    "taxId1",
-                                    newValue?.taxName
-                                  );
+                    <tr>
+                      {/* <TableCell style={{ color: '#fff' }}>Sr. No.</TableCell> */}
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          textAlign: "center",
+                          padding: "5px",
+                        }}
+                      >
+                        {t("text.ItemName")}
+                      </th>
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          textAlign: "center",
+                          padding: "5px",
+                        }}
+                      >
+                        {t("text.Unit")}
+                      </th>
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          textAlign: "center",
+                          padding: "5px",
+                        }}
+                      >
+                        {t("text.Quantity")}
+                      </th>
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          textAlign: "center",
+                          padding: "5px",
+                        }}
+                      >
+                        {t("text.Rate")}
+                      </th>
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          textAlign: "center",
+                          padding: "5px",
+                        }}
+                      >
+                        {t("text.Amount")}
+                      </th>
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          textAlign: "center",
+                          padding: "5px",
+                        }}
+                      >
+                        {t("text.Tax")}
+                      </th>
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          textAlign: "center",
+                          padding: "5px",
+                        }}
+                      >
+                        {t("text.TaxAmount")}
+                      </th>
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          textAlign: "center",
+                          padding: "5px",
+                        }}
+                      >
+                        {t("text.DiscountType")}
+                      </th>
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          textAlign: "center",
+                          padding: "5px",
+                        }}
+                      >
+                        {t("text.Discount")}
+                      </th>
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          textAlign: "center",
+                          padding: "5px",
+                        }}
+                      >
+                        {t("text.DiscountAmount")}
+                      </th>
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          textAlign: "center",
+                          padding: "5px",
+                        }}
+                      >
+                        {t("text.NetAmount")}
+                      </th>
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          textAlign: "center",
+                          padding: "5px",
+                        }}
+                      >
+                        {t("text.Action")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((item: any, index: any) => (
+                      <tr key={item.id} style={{ border: "1px solid black" }}>
+                        {/* <TableCell>{index + 1}</TableCell> */}
+                        <td style={{ width: "180px",padding:"5px"  }}>
+                          <Autocomplete
+                            disablePortal
+                            id="combo-box-demo"
+                            options={contentOptions}
+                            size="small"
+                            value={contentOptions.find(
+                              (opt: any) =>
+                                opt.value == (item?.itemNameId)
+                            ) || null}
+                            onChange={(event, newValue: any) => {
+                              handleItemChange(
+                                index,
+                                "itemNameId",
+                                newValue
+                              );
+                              
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label={
+                                  <CustomLabel text={t("text.enteritem")} />
                                 }
-                              }}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label={
-                                    <CustomLabel text={t("text.enteritem")} />
-                                  }
-                                />
-                              )}
-                            />
-                          </td>
-                          <td>
-                            <Autocomplete
-                              disablePortal
-                              id="combo-box-demo"
-                              options={unitOptions}
-                              size="small"
-                              value={unitOptions.find(
-                                (opt: any) => opt.value === parseInt(item?.unit)
-                              ) || null}
-                              onChange={(event, newValue) =>
-                                handleItemChange(
-                                  index,
-                                  "unit",
-                                  newValue?.value?.toString()
-                                )
-                              }
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label={
-                                    <CustomLabel
-                                      text={t("text.unit")}
-                                      required={false}
-                                    />
-                                  }
-                                />
-                              )}
-                            />
-                          </td>
-                          <td>
-                            <TextField
-                              type="number"
-                              value={item.qty}
-                              onChange={(e) =>
-                                handleItemChange(
-                                  index,
-                                  "qty",
-                                  parseFloat(e.target.value)
-                                )
-                              }
-                              size="small"
-                            />
-                          </td>
-                          <td>
-                            <TextField
-                              type="number"
-                              value={item.rate}
-                              onChange={(e) =>
-                                handleItemChange(
-                                  index,
-                                  "rate",
-                                  parseFloat(e.target.value)
-                                )
-                              }
-                              size="small"
-                            />
-                          </td>
-                          <td>{item.amount.toFixed(2) || 0}</td>
-                          <td>
-                            {/* <TextField
-                              type="number"
-                              value={item.tax1}
-                              onChange={(e) =>
-                                handleItemChange(
-                                  index,
-                                  "tax1",
-                                  String(e.target.value)
-                                )
-                              }
-                              size="small"
-                            /> */}
-  
-                            <Autocomplete
-                              disablePortal
-                              id="combo-box-demo"
-                              options={taxOption}
-                              size="small"
-                              value={
-                                taxOption.find(
-                                  (opt: any) => opt.value + "" === item.tax1
-                                ) || null
-                              }
-                              onChange={(event, newValue: any) => {
-                                handleItemChange(
-                                  index,
-                                  "tax1",
-                                  newValue?.value + ""
-                                );
-                                if (newValue) {
-                                  handleItemChange(
-                                    index,
-                                    "taxId1",
-                                    newValue?.label
-                                  );
-                                }
-                              }}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label={
-                                    <CustomLabel
-                                      text={t("text.SelectTax")}
-                                      required={false}
-                                    />
-                                  }
-                                />
-                              )}
-                            />
-                          </td>
-                          <td>{item.taxId1}</td>
-                          <td>
-                            <Select
-                              value={item.tax2}
-                              onChange={(e) =>
-                                handleItemChange(index, "tax2", e.target.value)
-                              }
-                              size="small"
-                            >
-                              <MenuItem value="P">Pct(%)</MenuItem>
-                              <MenuItem value="F">Fix</MenuItem>
-                            </Select>
-                          </td>
-                          <td>
-                            <TextField
-                              type="text"
-                              value={item.discount}
-                              onChange={(e) =>
-                                handleItemChange(
-                                  index,
-                                  "discount",
-                                  parseFloat(e.target.value)
-                                )
-                              }
-                              size="small"
-                            />
-                          </td>
-                          <td>{item.discountAmount.toFixed(2) || 0}</td>
-                          <td>{item.netAmount.toFixed(2) || 0}</td>
-                          <td>
-                            <Button
-                              onClick={() => handleRemoveItem(index)}
-                              variant="text"
-                              color="secondary"
-                            >
-                              <DeleteIcon />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                      <tr style={{ backgroundColor: "#2B4593" }}>
-                        <td colSpan={10} style={{ textAlign: "right" }}>
-                          <strong style={{ color: "#fff" }}>
-                            {t("text.totalAmount")}:
-                          </strong>
+                              />
+                            )}
+                          />
                         </td>
-                        <td colSpan={3}>
-                          <strong style={{ color: "#fff" }}>
-                            {totalAmount.toFixed(2)}
-                          </strong>
+                        <td>
+                          <Autocomplete
+                            disablePortal
+                            id="combo-box-demo"
+                            options={unitOptions}
+                            size="small"
+                            value={
+                              unitOptions.find(
+                                (opt: any) => opt.value == item.unit
+                              ) || null
+                            }
+                            onChange={(event, newValue) =>
+                              handleItemChange(
+                                index,
+                                "unit",
+                                newValue?.value?.toString()
+                              )
+                            }
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label={
+                                  <CustomLabel
+                                    text={t("text.unit")}
+                                    required={false}
+                                  />
+                                }
+                              />
+                            )}
+                          />
+                        </td>
+                        <td>
+                          <TextField
+                            type="text"
+                            value={item.qty}
+                            onChange={(e) =>
+                              handleItemChange(
+                                index,
+                                "qty",
+                                (e.target.value)
+                              )
+                            }
+                            size="small"
+                          />
+                        </td>
+                        <td>
+                          <TextField
+                            type="text"
+                            value={item.rate}
+                            onChange={(e) =>
+                              handleItemChange(
+                                index,
+                                "rate",
+                                (e.target.value)
+                              )
+                            }
+                            size="small"
+                          />
+                        </td>
+                        <td>{item.amount ? item.amount : 0}</td>
+                        <td>
+                          {/* <TextField
+                            type="number"
+                            value={item.tax1}
+                            onChange={(e) =>
+                              handleItemChange(
+                                index,
+                                "tax1",
+                                String(e.target.value)
+                              )
+                            }
+                            size="small"
+                          /> */}
+
+                          <Autocomplete
+                            disablePortal
+                            id="combo-box-demo"
+                            options={taxOption}
+                            size="small"
+                            value={
+                              taxOption.find(
+                                (opt: any) => opt.value == item.tax1 
+                              ) || null
+                            }
+                            onChange={(event, newValue: any) => {
+                              handleItemChange(
+                                index,
+                                "tax1",
+                                newValue
+                              );}}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label={
+                                  <CustomLabel
+                                    text={t("text.SelectTax")}
+                                    required={false}
+                                  />
+                                }
+                              />
+                            )}
+                          />
+                        </td>
+                        <td>{item.taxId1}</td>
+                        <td>
+                          <Select
+                            value={item.tax2}
+                            onChange={(e) =>
+                              handleItemChange(index, "tax2", e.target.value)
+                            }
+                            size="small"
+                          >
+                            <MenuItem value="P">Pct(%)</MenuItem>
+                            <MenuItem value="F">Fix</MenuItem>
+                          </Select>
+                        </td>
+                        <td>
+                          <TextField
+                            type="text"
+                            value={item.discount}
+                            onChange={(e) =>
+                              handleItemChange(
+                                index,
+                                "discount",
+                                (e.target.value)
+                              )
+                            }
+                            size="small"
+                          />
+                        </td>
+                        <td>{item.discountAmount ? item.discountAmount : 0}</td>
+                        <td>{item.netAmount ? item.netAmount : 0}</td>
+                        <td>
+                          <Button
+                            onClick={() => handleRemoveItem(index)}
+                            variant="text"
+                            color="secondary"
+                          >
+                            <DeleteIcon />
+                          </Button>
                         </td>
                       </tr>
-                    </tbody>
-                  </Table>
+                    ))}
+                    <tr style={{ backgroundColor: "#2B4593" }}>
+                      <td colSpan={10} style={{ textAlign: "right" }}>
+                        <strong style={{ color: "#fff" }}>
+                          {t("text.totalAmount")}:
+                        </strong>
+                      </td>
+                      <td colSpan={3}>
+                        <strong style={{ color: "#fff" }}>
+                          {/* {totalAmount.toFixed(2)} */}
+                        {isNaN(totalAmount) ? '0.00' : Number(totalAmount)}
+                        </strong>
+                      </td>
+                    </tr>
+                  </tbody>
+                </Table>
                   {/* </TableContainer> */}
                 </Grid>
   

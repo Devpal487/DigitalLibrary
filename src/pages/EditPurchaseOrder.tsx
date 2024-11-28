@@ -25,6 +25,7 @@ import api from "../utils/Url";
 import { Language } from "react-transliterate";
 import Languages from "../utils/Languages";
 import { getISTDate } from "../utils/Constant";
+import dayjs from "dayjs";
 
 const EditPurchaseOrder = () => {
   const navigate = useNavigate();
@@ -324,6 +325,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
         tax3: transData[i]["tax3"],
       });
     }
+    arr.push({ ...initialRows });
     setItems(arr);
   };
 
@@ -332,8 +334,8 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
       id: location.state.id,
       document_No: location.state.document_No,
       p_InvoiceNo: location.state.p_InvoiceNo,
-      doc_Date: new Date().toISOString().slice(0, 10),
-      p_InvoiceDate: new Date().toISOString().slice(0, 10),
+      doc_Date: dayjs(location.state.doc_Date).format("YYYY-MM-DD"),
+      p_InvoiceDate: dayjs(location.state.p_InvoiceDate).format("YYYY-MM-DD"),
       supplierName: location.state.supplierName,
       supplierId:location.state.supplierId,
       orderNo: location.state.orderNo,

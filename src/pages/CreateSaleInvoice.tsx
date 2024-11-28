@@ -32,37 +32,32 @@ const CreateSaleInvoice = () => {
   const { defaultValuestime } = getISTDate();
   const [lang, setLang] = useState<Language>("en");
   const [toaster, setToaster] = useState(false);
-  const [itemNameData, setItemNameData] = useState("");
-  const [unitData, setUnitNameData] = useState("");
-  const [SupId, setSuplierId] = useState();
-
-  const [items, setItems] = useState<any>([
-    {
-      id: -1,
-      saleid: -1,
-      user_Id: 0,
-      itemNameId: "",
-      unit: "",
-      qty: 0,
-      rate: 0,
-      amount: 0,
-      tax1: "",
-      taxId1: "",
-      tax2: "P",
-      discount: 0,
-      discountAmount: 0,
-      netAmount: 0,
-      documentNo: "",
-      documentDate: "",
-      invoiceNo: "",
-      supplier: "",
-      orderNo: "",
-      mrnNo: "",
-      mrnDate: "",
-      taxId3: "",
-      tax3: "",
-    },
-  ]);
+  const initialRows :any = {
+    id: -1,
+    saleid: -1,
+    user_Id: 0,
+    itemNameId:'',
+    unit: "",
+    qty: '',
+    rate: '',
+    amount: '',
+    tax1: "",
+    taxId1: "",
+    tax2: "P",
+    discount: 0.00,
+    discountAmount: '',
+    netAmount: '',
+    documentNo: "",
+    documentDate: "",
+    invoiceNo: "",
+    supplier: "",
+    orderNo: "",
+    mrnNo: "",
+    mrnDate: "",
+    taxId3: "",
+    tax3: "",
+  };
+  const [items, setItems] = useState<any>([{...initialRows}]);
   const [taxOption, setTaxOption] = useState([
     { value: "-1", label: t("text.SelectTax") },
   ]);
@@ -77,7 +72,7 @@ const CreateSaleInvoice = () => {
     { value: "-1", label: t("text.SelectSupplierName") },
   ]);
 
-  console.log("items", items);
+  // console.log("items", items);
 
   const back = useNavigate();
 
@@ -90,8 +85,8 @@ const CreateSaleInvoice = () => {
   }, []);
 
   const getDocNo = async () => {
-    const res = await api.post(`api/PurchaseInvoice/GetMaxDocumentNo`);
-    formik.setFieldValue("s_InvoiceNo", res?.data?.data[0]?.document_No);
+    const res = await api.post(`api/SaleInvoice/GetMaxInvoiceNo`);
+    formik.setFieldValue("s_InvoiceNo", res?.data?.data[0]?.s_InvoiceNo);
   };
 
   const getSupliar = async () => {
@@ -110,6 +105,7 @@ const CreateSaleInvoice = () => {
 
     setOption(arr);
   };
+
   const getTaxData = async () => {
     const res = await api.post(`api/TaxMaster/GetTaxMaster`, { taxId: -1 });
     const arr =
@@ -120,6 +116,7 @@ const CreateSaleInvoice = () => {
 
     setTaxOption(arr);
   };
+
   const GetUnitData = async () => {
     const collectData = {
       unitId: -1,
@@ -167,9 +164,8 @@ const CreateSaleInvoice = () => {
     }
     setContentOptions(arr);
   };
-
-  const validateItem = (item: any) => {
-    console.log("🚀 ~ validateItem ~ item:", item);
+ const validateItem = (item: any) => {
+    // console.log("🚀 ~ validateItem ~ item:", item);
     return (
       item.itemNameId &&
       item.unit &&
@@ -177,12 +173,134 @@ const CreateSaleInvoice = () => {
       item.rate &&
       item.amount &&
       item.tax1 &&
-      item.taxId1 &&
-      item.discount &&
-      item.discountAmount &&
-      item.netAmount
+      item.taxId1 
     );
   };
+
+const handleItemChange = (index: number, field: string, value: any) => {
+  const updatedItems = [...items];
+  let item = { ...updatedItems[index] };
+
+  if (field === 'itemNameId') {
+    const itemNameDetails = value;
+    if (itemNameDetails) {
+      item = {
+        ...item,
+        itemNameId: itemNameDetails.value || "",
+        rate: itemNameDetails.rate || "",
+        unit: String(itemNameDetails.unitId) || "",
+        tax1: String(itemNameDetails.taxId) || "",
+        taxId1: String(itemNameDetails.taxName) || "",
+      };
+    }
+  } else if (field === 'qty' || field === 'rate') {
+    item[field] = value === "" ? 0 : parseFloat(value);
+    item.amount = calculateAmount(item.qty, item.rate);
+    item.taxId1 = String(calculateTax(item.amount, Number(item.tax1)));
+  } else if (field === 'tax1') {
+    const selectedTax = taxOption.find((tax: any) => tax.value === value?.value);
+    if (selectedTax) {
+      item.tax1 = String(selectedTax.value);
+      item.taxId1 = String(calculateTax(item.amount, Number(selectedTax.label)));
+    }
+  } else if (field === 'tax2') {
+    item.tax2 = value || '';
+  }else if (field === 'unit') {
+    item[field] = value ;
+  } else if (field === 'discount') {
+    item.discount = value === '' ? 0 : parseFloat(value);
+    const discountAmount:any = calculateDiscount(item.amount, item.discount, item.tax2);
+    item.discountAmount = discountAmount;
+    item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
+  }
+
+  // Recalculate dependent fields
+  if (field !== 'discount' && field !== 'tax2') {
+    const discountAmount:any = calculateDiscount(item.amount, item.discount, item.tax2);
+    item.discountAmount = discountAmount;
+    item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
+  }
+
+  updatedItems[index] = item;
+  setItems(updatedItems);
+
+  if (validateItem(item) && index === updatedItems.length - 1) {
+    handleAddItem();
+  }
+
+
+  console.log("🚀 ~ Updated items:", updatedItems);
+};
+const calculateAmount = (qty: number, rate: number) => {
+  const amount = qty * rate;
+  return (amount.toFixed(2));
+};
+
+const calculateTax = (amount: number, taxRate: number) => {
+  const tax = (amount * taxRate) / 100;
+  return (tax.toFixed(2));
+};
+
+const calculateDiscount = (amount: number, discount: number, type: string) => {
+  let discountValue = 0;
+  if (type === 'P') {
+    discountValue = (amount * discount) / 100;
+  } else if (type === 'F') {
+    discountValue = discount;
+  }
+  return (discountValue.toFixed(2));
+};
+
+const calculateNetAmount = (amount: number, tax: number, discount: number) => {
+  const netAmount = amount + tax - discount;
+  return (netAmount.toFixed(2));
+};
+
+  const handleRemoveItem = (index: number) => {
+    if (items.length === 1) {
+      setItems([{ ...initialRows }]);
+    } else {
+      const newData = items.filter((_:any, i:any) => i !== index);
+      setItems(newData);
+    }
+    // updateTotalAmounts(tableData);
+  };
+
+  const handleAddItem = () => {
+    setItems([
+      ...items,
+      {
+        id: -1,
+        saleid: -1,
+        user_Id: 0,
+        itemNameId: "",
+        unit: "",
+        qty: '',
+        rate: '',
+        amount: '',
+        tax1: "",
+        taxId1: "",
+        tax2: "P",
+        discount: 0.00,
+        discountAmount: '',
+        netAmount: '',
+        documentNo: formik.values.document_No,
+        documentDate: formik.values.doc_Date,
+        invoiceNo: formik.values.s_InvoiceNo,
+        supplier: formik.values.supplierName,
+        orderNo: formik.values.orderNo,
+        mrnNo: "",
+        mrnDate: defaultValuestime,
+        taxId3: "",
+        tax3: "",
+      },
+    ]);
+  };
+
+  const totalAmount = items.reduce(
+    (acc: any, item: any) => acc + Number(item.netAmount),
+    0
+  );
 
   const formik = useFormik({
     initialValues: {
@@ -213,8 +331,8 @@ const CreateSaleInvoice = () => {
     }),
     onSubmit: async (values) => {
       console.log("Form Submitted with values:", values);
-
-      values.amount = totalAmount.toFixed(2)
+      console.log("Formik Errors:", formik.errors);
+      values.amount = totalAmount;
 
       const validItems = items.filter((item: any) => validateItem(item));
       //console.log("🚀 ~ onSubmit: ~ validateItem(item):", validateItem(item))
@@ -228,7 +346,6 @@ const CreateSaleInvoice = () => {
 
       // Map the valid items, setting values at the first index
       const updatedItems = validItems.map((item: any, index: any) => {
-        const documentDate = values.doc_Date;
 
         const baseItem = {
           ...item,
@@ -275,72 +392,6 @@ const CreateSaleInvoice = () => {
     },
   });
 
-  const handleItemChange = (index: any, field: any, value: any) => {
-    console.log("🚀 ~ handleItemChange ~ value:", field, value);
-    const updatedItems = [...items];
-    const item = updatedItems[index];
-
-    if (["qty", "rate", "discount"].includes(field)) {
-      value = Math.max(0, Number(value));
-    }
-
-    item[field] = value;
-
-    item.amount = item.qty * item.rate;
-    let abc = (item.amount * parseFloat(item.tax1)) / 100;
-    item.taxId1 = String(abc);
-
-    item.discountAmount =
-      item.tax2 === "P"
-        ? (item.amount * parseFloat(item.discount)) / 100
-        : parseFloat(item.discount);
-
-    item.netAmount =
-      item.amount + parseFloat(item.taxId1) - item.discountAmount;
-
-    setItems(updatedItems);
-
-    if (validateItem(item) && index === items.length - 1) {
-      handleAddItem();
-    }
-  };
-
-  const handleRemoveItem = (index: any) => {
-    const updatedItems = items.filter((_: any, i: any) => i !== index);
-    setItems(updatedItems);
-  };
-  const handleAddItem = () => {
-    setItems([
-      ...items,
-      {
-        itemNameId: "",
-        unit: "",
-        qty: 0,
-        rate: 0,
-        amount: 0,
-        tax1: "",
-        taxId1: "",
-        tax2: "P",
-        discount: 0,
-        discountAmount: 0,
-        netAmount: 0,
-        documentNo: formik.values.document_No,
-        documentDate: formik.values.doc_Date,
-        invoiceNo: formik.values.s_InvoiceNo,
-        supplier: formik.values.supplierName,
-        orderNo: formik.values.orderNo,
-        mrnNo: "",
-        mrnDate: "",
-        taxId3: "",
-        tax3: "",
-      },
-    ]);
-  };
-
-  const totalAmount = items.reduce(
-    (acc: any, item: any) => acc + item.netAmount,
-    0
-  );
 
   return (
     <div>
@@ -406,29 +457,6 @@ const CreateSaleInvoice = () => {
           <form onSubmit={formik.handleSubmit}>
             {toaster && <ToastApp />}
             <Grid item xs={12} container spacing={2}>
-              {/* <Grid item lg={4} xs={12}>
-                <TextField
-                  id="document_No"
-                  name="document_No"
-                  label={
-                    <CustomLabel text={t("text.document_No")} required={true} />
-                  }
-                  value={formik.values.document_No}
-                  placeholder={t("text.document_No")}
-                  size="small"
-                  fullWidth
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={
-                    formik.touched.document_No &&
-                    Boolean(formik.errors.document_No)
-                  }
-                  helperText={
-                    formik.touched.document_No && formik.errors.document_No
-                  }
-                />
-              </Grid> */}
-
               <Grid item xs={12} sm={4} lg={4}>
                 <TextField
                   label={
@@ -449,24 +477,6 @@ const CreateSaleInvoice = () => {
                   onChange={formik.handleChange}
                 />
               </Grid>
-
-              {/* <Grid item xs={12} sm={4} lg={4}>
-                <TextField
-                  label={
-                    <CustomLabel text={t("text.doc_Date")} required={false} />
-                  }
-                  variant="outlined"
-                  fullWidth
-                  size="small"
-                  name="doc_Date"
-                  id="doc_Date"
-                  type="date"
-                  value={formik.values.doc_Date}
-                  placeholder={t("text.doc_Date")}
-                  onChange={formik.handleChange}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid> */}
 
               <Grid item lg={4} xs={12}>
                 <TextField
@@ -502,11 +512,6 @@ const CreateSaleInvoice = () => {
                   disablePortal
                   id="combo-box-demo"
                   options={Option}
-                  //   value={
-                  //     Option.find(
-                  //       (option: any) => option.value === formik.values.stateId
-                  //     ) || null
-                  //   }
                   fullWidth
                   size="small"
                   onChange={(event, newValue: any) => {
@@ -542,7 +547,7 @@ const CreateSaleInvoice = () => {
                   id="orderNo"
                   name="orderNo"
                   label={
-                    <CustomLabel text={t("text.orderNo")} required={true} />
+                    <CustomLabel text={t("text.orderNo")} required={true} value={formik.values.orderNo}/>
                   }
                   value={formik.values.orderNo}
                   placeholder={t("text.orderNo")}
@@ -572,12 +577,6 @@ const CreateSaleInvoice = () => {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                 />
-              </Grid>
-
-              <Grid item lg={12} md={12} xs={12} textAlign={"center"}>
-                {/* <Typography variant="h6" textAlign="center">
-                  {t("text.saleinvoice")}
-                </Typography> */}
               </Grid>
 
               <Grid item lg={12} md={12} xs={12}>
@@ -718,28 +717,9 @@ const CreateSaleInvoice = () => {
                               handleItemChange(
                                 index,
                                 "itemNameId",
-                                newValue?.value
+                                newValue
                               );
-                              // Check if newValue is defined before accessing its properties
-                              if (newValue) {
-                                handleItemChange(index, "rate", newValue?.rate);
-                                handleItemChange(
-                                  index,
-                                  "unit",
-                                  newValue?.unitId?.toString()
-                                );
-                                handleItemChange(
-                                  index,
-                                  "tax1",
-                                  newValue?.taxId + ""
-                                );
-
-                                handleItemChange(
-                                  index,
-                                  "taxId1",
-                                  newValue?.taxName
-                                );
-                              }
+                              
                             }}
                             renderInput={(params) => (
                               <TextField
@@ -761,7 +741,7 @@ const CreateSaleInvoice = () => {
                             size="small"
                             value={
                               unitOptions.find(
-                                (opt: any) => opt.value + "" === item.unit
+                                (opt: any) => opt.value == item.unit
                               ) || null
                             }
                             onChange={(event, newValue) =>
@@ -788,35 +768,35 @@ const CreateSaleInvoice = () => {
                         </td>
                         <td>
                           <TextField
-                            type="number"
+                            type="text"
                             value={item.qty}
                             onChange={(e) =>
                               handleItemChange(
                                 index,
                                 "qty",
-                                parseFloat(e.target.value)
+                                (e.target.value)
                               )
                             }
-                            onFocus={(e) => e.target.select()}
+                            // onFocus={(e) => e.target.select()}
                             size="small"
                           />
                         </td>
                         <td>
                           <TextField
-                            type="number"
+                            type="text"
                             value={item.rate}
                             onChange={(e) =>
                               handleItemChange(
                                 index,
                                 "rate",
-                                parseFloat(e.target.value)
+                                (e.target.value)
                               )
                             }
                             onFocus={(e) => e.target.select()}
                             size="small"
                           />
                         </td>
-                        <td>{item.amount.toFixed(2)}</td>
+                        <td>{item.amount}</td>
                         <td>
                           <Autocomplete
                             disablePortal
@@ -825,23 +805,15 @@ const CreateSaleInvoice = () => {
                             size="small"
                             value={
                               taxOption.find(
-                                (opt: any) => opt.value + ""  === item.tax1 
+                                (opt: any) => opt.value == item.tax1 
                               ) || null
                             }
                             onChange={(event, newValue: any) => {
                               handleItemChange(
                                 index,
                                 "tax1",
-                                newValue?.value +""
-                              );
-                              if (newValue) {
-                                handleItemChange(
-                                  index,
-                                  "taxId1",
-                                  newValue?.label
-                                );
-                              }
-                            }}
+                                newValue
+                              );}}
                             renderInput={(params) => (
                               <TextField
                                 {...params}
@@ -876,15 +848,15 @@ const CreateSaleInvoice = () => {
                               handleItemChange(
                                 index,
                                 "discount",
-                                parseFloat(e.target.value)
+                                (e.target.value)
                               )
                             }
                             onFocus={(e) => e.target.select()}
                             size="small"
                           />
                         </td>
-                        <td>{item.discountAmount.toFixed(2)}</td>
-                        <td>{item.netAmount.toFixed(2)}</td>
+                        <td>{item.discountAmount}</td>
+                        <td>{item.netAmount}</td>
                         <td>
                           <Button
                             onClick={() => handleRemoveItem(index)}
@@ -904,7 +876,7 @@ const CreateSaleInvoice = () => {
                       </td>
                       <td colSpan={3}>
                         <strong style={{ color: "#fff" }}>
-                          {totalAmount.toFixed(2)}
+                          {totalAmount}
                         </strong>
                       </td>
                     </tr>
