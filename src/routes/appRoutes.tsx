@@ -89,11 +89,14 @@ import UserInstituteMapping from "../pages/UserInstituteMapping";
 import FormlevelPermission from "../pages/FormlevelPermission";
 
 import UserType from "../pages/UserType";
-import UserDetails from "../pages/userdetails";
 import AssignUserTypeToMember from "../pages/AssignUserTypeToMember";
-
-
-
+import UserDetails from "../pages/UserDetails";
+import CreatePurchaseReturn from "../pages/CreatePurchaseReturn";
+import EditPurchaseReturnOrder from "../pages/EditPurchaseReturnOrder";
+import PurchaseReturn from "../pages/PurchaseReturn";
+import SaleReturn from "../pages/SaleReturn";
+import EditSaleReturnInvoice from "../pages/EditSaleReturnInvoice";
+import CreateSaleReturnInvoice from "../pages/CreateSaleReturnInvoice";
 
 const appRoutes: RouteType[] = [
   {
@@ -457,11 +460,6 @@ const appRoutes: RouteType[] = [
       displayText: "Student Day Class",
     },
   },
-  // {
-  //   path: "/StudentDayClassAdd",
-  //   element: <StudentDayClassAdd/>,
-  //   state: "StudentDayClassAdd",
-  // },
 
   {
     path: "/TeachingStaff",
@@ -550,7 +548,6 @@ const appRoutes: RouteType[] = [
     },
   },
 
-  
   {
     path: "/ThemeSetting",
     element: <ThemeSetting/>,
@@ -560,7 +557,6 @@ const appRoutes: RouteType[] = [
     },
   },
 
-  
   {
     path: "/ThemeSettingAdd",
     element: <ThemeSettingAdd/>,
@@ -568,14 +564,12 @@ const appRoutes: RouteType[] = [
    
   },
 
-  
   {
     path: "/ThemeSettingEdit",
     element: <ThemeSettingEdit/>,
     state: "ThemeSettingEdit",
    
   },
-
 
   {
     path: "/WbSetting",
@@ -585,7 +579,6 @@ const appRoutes: RouteType[] = [
       displayText: "Web Setting",
     },
   },
-
   
   {
     path: "/WbSettingAdd",
@@ -594,7 +587,6 @@ const appRoutes: RouteType[] = [
    
   },
 
-  
   {
     path: "/WbSettingEdit",
     element: <WbSettingEdit/>,
@@ -624,14 +616,7 @@ const appRoutes: RouteType[] = [
     },
     
   },
-  // {
-  //   path: "Stockledger",
-  //   element: <Stockledger/>,
-  //   state: "master.Stockledger",
-  //   sidebarProps: {
-  //     displayText: "Stockledger",
-  //   },
-  // },
+  
   {
     path: "/StockLedger",
     element: <Stockledger/>,
@@ -639,14 +624,12 @@ const appRoutes: RouteType[] = [
    
   },
 
-
   {
     path: "/Masscatentry",
     element: <Masscatentry/>,
     state: "Masscatentry",
    
   },
-
 
   {
     path: "/IssuReturnTrans",
@@ -675,18 +658,6 @@ const appRoutes: RouteType[] = [
       displayText: "Hourly Report",
     },
   },
-
-
-  // {
-  //   path: "/ChatBot",
-  //   element: <ChatBot/>,
-  //   state: "ChatBot",
-  //   sidebarProps: {
-  //     displayText: "Chat Bot",
-  //   },
-  // },
-
-
   
   {
     path: "/HelpCreation",
@@ -793,8 +764,42 @@ const appRoutes: RouteType[] = [
       displayText: "User Type",
     },
   },
-
-
+{
+    path: "/PurchaseReturn",
+    element: <PurchaseReturn/>,
+    state: "PurchaseReturn",
+    sidebarProps: {
+      displayText: "Purchase Return",
+    },
+  },
+  {
+    path: "/CreatePurchaseReturn",
+    element: <CreatePurchaseReturn/>,
+    state: "CreatePurchaseReturn",
+  },
+  {
+    path: "/EditPurchaseReturnOrder",
+    element: <EditPurchaseReturnOrder/>,
+    state: "EditPurchaseReturnOrder",
+  },
+  {
+    path: "/SaleReturn",
+    element: <SaleReturn/>,
+    state: "SaleReturn",
+    sidebarProps: {
+      displayText: "Sale Return",
+    },
+  },
+  {
+    path: "/CreateSaleReturnInvoice",
+    element: <CreateSaleReturnInvoice/>,
+    state: "Create Sale Return Invoice",
+  },
+  {
+    path: "/EditSaleReturnInvoice",
+    element: <EditSaleReturnInvoice/>,
+    state: "Edit Sale Return Invoice",
+  },
 
 ];
 

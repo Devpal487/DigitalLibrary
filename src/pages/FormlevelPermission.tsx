@@ -221,7 +221,7 @@ const FormlevelPermission = (props: Props) => {
                         delete: menu.deletePerm,
                         selected: menu.selected
                     };
-
+                    console.log("currentMenuPermission", currentMenuPermissions);
                     if (menu.children && menu.children.length > 0) {
                         const childPermissions = mapMenuToPermissions(menu.children, addedMenuIds);
                         return [currentMenuPermissions, ...childPermissions]; 
@@ -292,6 +292,7 @@ const FormlevelPermission = (props: Props) => {
                                             ...p,
                                             [permission]: menu[permission],
                                             menuName: menu.menu_name,
+                                            selected : menu.selected,
                                             read: menu.readPerm === true ? true : false,
                                             write: menu.writePerm === true ? true: false,
                                             update: menu.updatePerm === true ? true: false,
@@ -306,6 +307,7 @@ const FormlevelPermission = (props: Props) => {
                                         menuId: menu.menu_id,
                                         menuName: menu.menu_name,
                                         [permission]: menu[permission],
+                                        selected : menu.selected,
                                         read: menu.readPerm === true ? true : false,
                                             write: menu.writePerm === true ? true: false,
                                             update: menu.updatePerm === true ? true: false,
@@ -379,38 +381,48 @@ const FormlevelPermission = (props: Props) => {
 
     const renderMenuWithPermissions = (menu: any, index: any, level: number = 0) => {
         const isExpanded = expandedRows.includes(menu.menu_id);
-        const isReadPermChecked = isParentCheckboxChecked(menu, 'readPerm');
-        const isWritePermChecked = isParentCheckboxChecked(menu, 'writePerm');
-        const isUpdatePermChecked = isParentCheckboxChecked(menu, 'updatePerm');
-        const isDeletePermChecked = isParentCheckboxChecked(menu, 'deletePerm');
+        const isReadPermChecked = isParentCheckboxChecked(menu, "readPerm");
+        const isWritePermChecked = isParentCheckboxChecked(menu, "writePerm");
+        const isUpdatePermChecked = isParentCheckboxChecked(menu, "updatePerm");
+        const isDeletePermChecked = isParentCheckboxChecked(menu, "deletePerm");
         const isSelectedPermChecked = menu.selected;
-
-
+    
+        // Check if children exist or are null/empty
+        const hasChildren = menu.children && menu.children.length > 0;
+    
         return (
             <>
                 <TableRow key={menu.menu_id}>
                     <TableCell
                         sx={{
-                            width: menu.children ? "170px" : "150px",
+                            width: hasChildren ? "170px" : "150px",
                             paddingLeft: `${level * 20}px`,
                         }}
                     >
-
+                        {/* Checkbox for selecting the menu */}
                         <Checkbox
                             checked={isSelectedPermChecked || false}
                             onChange={() => handleCheckboxChange(menu.menu_id, "selected")}
                         />
-                        {menu.children && menu.children.length > 0 && (
+    
+                        {/* Expand/Collapse icon for menus with children */}
+                        {hasChildren && (
                             <IconButton onClick={() => toggleExpand(menu.menu_id)}>
                                 {isExpanded ? <KeyboardArrowDown /> : <KeyboardArrowRight />}
                             </IconButton>
                         )}
+    
+                        {/* Icons based on level */}
                         {level === 0 && <span>📁{" "}</span>}
-                        {level === 1 && <span>📂{" "}</span>}
                         {level === 2 && <span>📄{" "}</span>}
+                        {level === 1 && (hasChildren ? <span>📂{" "}</span> : <span>📄{" "}</span>)}
+                        {/* {level === 2 && (hasChildren ? <span>📂{" "}</span> : <span>📄{" "}</span>)} */}
+    
                         {" "}{menu.menu_name}
                     </TableCell>
-                    {level > 1 && (
+    
+                    {/* Display checkboxes for permissions if no children or level > 1 */}
+                    {!hasChildren || level > 1 ? (
                         <>
                             <TableCell sx={{ width: "100px" }} align="center">
                                 <Checkbox
@@ -418,21 +430,18 @@ const FormlevelPermission = (props: Props) => {
                                     onChange={() => handleCheckboxChange(menu.menu_id, "readPerm")}
                                 />
                             </TableCell>
-
                             <TableCell sx={{ width: "100px" }} align="center">
                                 <Checkbox
                                     checked={isWritePermChecked || false}
                                     onChange={() => handleCheckboxChange(menu.menu_id, "writePerm")}
                                 />
                             </TableCell>
-
                             <TableCell sx={{ width: "100px" }} align="center">
                                 <Checkbox
                                     checked={isUpdatePermChecked || false}
                                     onChange={() => handleCheckboxChange(menu.menu_id, "updatePerm")}
                                 />
                             </TableCell>
-
                             <TableCell sx={{ width: "100px" }} align="center">
                                 <Checkbox
                                     checked={isDeletePermChecked || false}
@@ -440,10 +449,19 @@ const FormlevelPermission = (props: Props) => {
                                 />
                             </TableCell>
                         </>
+                    ) : (
+                        <>
+                            {/* Empty cells to maintain alignment */}
+                            <TableCell sx={{ width: "100px" }} align="center"></TableCell>
+                            <TableCell sx={{ width: "100px" }} align="center"></TableCell>
+                            <TableCell sx={{ width: "100px" }} align="center"></TableCell>
+                            <TableCell sx={{ width: "100px" }} align="center"></TableCell>
+                        </>
                     )}
                 </TableRow>
-
-                {isExpanded && menu.children && (
+    
+                {/* Recursively render children */}
+                {isExpanded && hasChildren && (
                     <TableRow>
                         <TableCell colSpan={5} style={{ padding: 0 }}>
                             <Collapse in={isExpanded} timeout="auto" unmountOnExit>
@@ -461,6 +479,7 @@ const FormlevelPermission = (props: Props) => {
             </>
         );
     };
+    
 
     const handleUserTypeChange = async (newValue: any) => {
         console.log("newValue", newValue, selectedLibraryId);
