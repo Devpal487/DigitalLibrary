@@ -45,45 +45,53 @@ interface MenuPermission {
   isDel: boolean;
 }
 
+// Define the type for userTypeMemberOptions
+interface UserTypeMemberOption {
+  label: string;
+  value: number; // or string, depending on your API response
+}
+
 export default function AssignUserTypeToMember() {
-  const [isLoading, setIsLoading] = useState(true);
-  const location = useLocation();
-  const [lang, setLang] = useState<Language>("en");
-  const [userTypeData, setUserTypeData] = useState([]);
-  const [memberCode,setMemberCode] = useState("0002");
-  const [timerCheck, setTimerCheck] = useState<NodeJS.Timeout | null>(null);
-  const [permissionData, setPermissionData] = useState<MenuPermission>({
-    isAdd: false,
-    isEdit: false,
-    isPrint: false,
-    isDel: false,
-  });
-
-  const [isEdit, setisEdit] = useState(false);
-
   const { t } = useTranslation();
-
-  const [userTypeMemberOptions, setUserTypeMemberOptions] = useState([
-    { value: -1, label: t("text.MemberCode") },
-  ]);
+  const location = useLocation();
+  const {menuId, menuName} = getMenuData();
+  const [lang, setLang] = useState<Language>("en");
+  const [userTypeMemberOptions, setUserTypeMemberOptions] = useState<UserTypeMemberOption[]>([]);
   const [userTypeOption, setUserTypeOption] = useState([
     { value: -1, label: t("text.UserType") },
   ]);
+  const [memberCode, setMemberCode] = useState<any>("")
+  const [userType, setUserType] = useState<any>([])
 
   useEffect(() => {
-    getUserTypeMember("");
     getUserTypeData();
   }, []);
 
-
-  const getUserTypeMember = (value:any) => {
+  const getCircUserSmall = (value: any) => {
+    api.get(`api/CircUser/CircUserSmall?userId=${value}`)
+      .then((res) => {
+        if(res?.data?.isSuccess){
+        const userData = res.data.data;
+        const arr = {
+          label: `${userData.userid} -- ${userData.name} (${userData.program})`,
+          value: userData.userid,
+        };
+        console.log("CircUser", arr);
+        setUserTypeMemberOptions([arr]);
+      }else{
+        toast.error(res.data.mesg)
+      }
+      })
+      .catch((error) => {
+      });
+  };
+  
+  const getUserTypeMember = (value: any) => {
     api.get(`api/Admin/GetUserTypeMemb?UserCode=${value}`)
       .then((res) => {
-        const arr = res.data.data.map((item:any) => ({
-          label: item.userCode,
-          value: item.userCode,
-        }));
-        setUserTypeMemberOptions(arr);
+        const arr = res.data.data.map((item: any) => item.userTypeID);
+        console.log("userTypeID", arr)
+        setUserType(arr)
       })
       .catch((error) => {
         console.error("Error fetching user type members:", error);
@@ -92,7 +100,6 @@ export default function AssignUserTypeToMember() {
 
   const getUserTypeData = () => {
     api.get(`api/Admin/getUsertype`).then((res) => {
-      //console.log("checkDepartment", res.data.data);
       const arr = res.data.data.map((item: any) => ({
         label: item.userTypeName,
         value: item.userTypeId,
@@ -101,20 +108,24 @@ export default function AssignUserTypeToMember() {
     });
   };
 
+  const initialValues = {
+    appName: menuName,
+    userTypeIds: [],
+    userCode: ''
+  };
 
-  const formik = useFormik({
-    initialValues: {
-      "appName": "",
-      "userTypeIds": [],
-      "userCode": ""
-    },
+  const AssignUserTypeMemberformik = useFormik({
+    initialValues: initialValues,
 
     onSubmit: async (values: any) => {
+      values.userTypeIds = userType
+      values.userCode = memberCode
+
       console.log("before submitting value check", values);
-        const response = await api.post(
-          `api/Admin/AssignUserTypeMemb`,
-          values
-        );
+      const response = await api.post(
+        `api/Admin/AssignUserTypeMemb`,
+        values
+      );
       if (response.data.isSuccess) {
         toast.success("Successfully Assigned");
       } else {
@@ -123,92 +134,41 @@ export default function AssignUserTypeToMember() {
     },
   });
 
+  const RevokeUserTypeMemberformik = useFormik({
+    initialValues: initialValues,
+
+    onSubmit: async (values: any) => {
+      values.userTypeIds = userType
+      values.userCode = memberCode
+      console.log("before revoking value check", values);
+      const response = await api.post(
+        `api/Admin/RevokeUserTypeMemb`,
+        values
+      );
+      if (response.data.isSuccess) {
+        toast.success("Successfully Revoked");
+      } else {
+        toast.error(response.data.mesg);
+      }
+    },
+  });
+
   const handleSubmitWrapper = async () => {
-    await formik.setFieldValue("userTypeIds", userTypeData);
-    await formik.handleSubmit();
+    AssignUserTypeMemberformik.handleSubmit();
+  };
+
+  const handleRevokeWrapper = async () => {
+    RevokeUserTypeMemberformik.handleSubmit();
   };
 
   const handleReset = () => {
-    getUserTypeMember(null); 
-    console.log(formik.values)
-    formik.setFieldValue("userCode", null); 
-    formik.resetForm();
+    console.log("hi");
+    setMemberCode("");
+    setUserType([]);
+    setUserTypeMemberOptions([{ value: -1, label: t("text.MemberCode") }]);
+    AssignUserTypeMemberformik.resetForm();
+    RevokeUserTypeMemberformik.resetForm();
   };
-
-
-
-  const handleRevoke = async () => {
-    const collectData = {
-      "appName": "",
-      "userTypeIds": formik.values.userTypeIds,
-       "userCode": formik.values.userCode
-    }
-    api
-      .post(`api/Admin/RevokeUserTypeMemb`, collectData)
-      .then((res) => {
-        if (res.data.isSuccess) {
-          toast.success(res.data.mesg)
-          //console.log("Revocation successful:", res.data.message);
-        } else {
-          toast.error(res.data.mesg)
-          //console.warn("Revocation unsuccessful:", res.data.message);
-        }
-      })
-      .catch((error) => {
-        console.error("Error revoking access:", error);
-      });
-  };
-
-  const [isUserCode, setUserCode] = useState<any>("");
-  const [member, setMember] = useState<any>([]);
-
-  const [Program, setProgram] = useState<any>([
-    { value: "-1", label: t("text.FindMember") },
-  ]);
-
-  const getMember = (usercode: any) => {
-    const collectData = {
-      appId: menuId,
-      appName: menuName,
-      add: true,
-      update: true,
-      delete: true,
-      read: true,
-      instId: parseInt(instId),
-      userCode: usercode,
-      fromDate: lastYearDate.toISOString(),
-      asOn: new Date().toISOString().slice(0, 10),
-    };
-    api.post(`api/Transaction/MembBalanceData`, collectData).then((res) => {
-      console.log("checkMemb", res?.data?.data);
-
-      if (res?.data?.data) {
-        setMember(res?.data?.data?.memSmall);
-       
-      }
-    });
-  };
-
-  const getProgram = (term: any) => {
-    //console.log("term", term);
-    // api.get(`api/Admin/SuggCircUser?term=${term}`).then((res) => {
-    api.get(`api/Admin/GetUserTypeMemb?UserCode=${term}`).then((res) => {
-      console.log("checkMemb", res?.data);
-
-      const arr: any = [];
-
-      for (let index = 0; index < res?.data.length; index++) {
-        arr.push({
-          value: res?.data[index]["userCode"],
-          label: res?.data[index]["userCode"],
-        });
-      }
-      setProgram(arr);
-    });
-  };
-
-
-
 
   return (
     <>
@@ -223,12 +183,10 @@ export default function AssignUserTypeToMember() {
         <Paper
           sx={{
             width: "100%",
-            overflow: "hidden",
-            // backgroundColor:"lightseagreen"
+            overflow: "hidden"
           }}
           style={{ padding: "10px" }}
         >
-
 
           <Grid item xs={12} container spacing={1}>
             <Grid item lg={10} md={10} xs={12}>
@@ -261,74 +219,29 @@ export default function AssignUserTypeToMember() {
           <Divider />
 
           <Box height={10} />
-          <form onSubmit={formik.handleSubmit}>
-            <Grid item xs={12} container spacing={2} sx={{justifyContent:"center"}}>
+          <form >
+            <Grid item xs={12} container spacing={2} sx={{ justifyContent: "center" }}>
               <Grid item xs={12} sm={6} lg={6}>
-                {/* <Autocomplete
-                  disablePortal
+                <Autocomplete
+                  // disablePortal
                   id="combo-box-demo"
                   options={userTypeMemberOptions}
                   fullWidth
                   size="small"
                   onChange={(event: any, newValue: any) => {
                     console.log(newValue?.value);
-                    getUserTypeMember(newValue?.value);
-                    setMemberCode(newValue?.value);
-                    formik.setFieldValue("userCode", newValue?.value.toString());
-                  }}
-                  onInputChange={(event: any, value: string) => {
-                    if (value.trim() != "" || value != null) {
-                      if (timerCheck) {
-                        clearTimeout(timerCheck);
-                      }
-
-                      if (value) {
-                        const checkResult = setTimeout(() => {
-                          getUserTypeMember(value);
-                        }, 500);
-                        setTimerCheck(checkResult);
-                      }
+                    setMemberCode(newValue?.value || "");
+                    // setUserType([newValue?.userTypeId])
+                    if(newValue){
+                      getUserTypeMember(newValue?.value)
                     }
                   }}
-                  renderInput={(params: any) => (
-                    <TextField
-                      {...params}
-                      label={<CustomLabel text={t("text.MemberCode")} />}
-                      name="userCode"
-                      id="userCode"
-                      placeholder={t("text.MemberCode")}
-                    />
-                  )}
-                />
-              </Grid> */}
-
-<Autocomplete
-                  disablePortal
-                  id="combo-box-demo"
-                  options={Program}
-                  fullWidth
-                  size="small"
-                  onChange={(event: any, newValue: any) => {
-                    console.log(newValue?.value);
-
-                    getMember(newValue?.value);
-
-                    setUserCode(newValue?.value);
-                  }}
-                  onInputChange={(event: any, value: string) => {
-                    if (value.trim() != "" || value != null) {
-                      if (timerCheck) {
-                        clearTimeout(timerCheck);
-                      }
-
-                      if (value) {
-                        const checkResult = setTimeout(() => {
-                          getProgram(value);
-                        }, 500);
-                        setTimerCheck(checkResult);
-                      }
+                  onInputChange={(event: any, newValue: string) => {
+                    if (event && event?.target && event?.target?.value?.length >= 4) {
+                      getCircUserSmall(event?.target?.value);
                     }
                   }}
+                  value={userTypeMemberOptions.find(option => option.value === memberCode) || null}
                   renderInput={(params: any) => (
                     <TextField
                       {...params}
@@ -338,6 +251,7 @@ export default function AssignUserTypeToMember() {
                           required={false}
                         />
                       }
+                      value={memberCode}
                     />
                   )}
                 />
@@ -357,26 +271,23 @@ export default function AssignUserTypeToMember() {
                     for (let i = 0; i < newValue.length; i++) {
                       result.push(newValue[i]["value"]);
                     }
-                    //console.log("result", result);
-                    setUserTypeData(result);
-                    formik.setFieldValue("userTypeIds", result); 
+                    setUserType(result);
                   }}
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label={
+                      label={(
                         <CustomLabel
                           text={t("text.UserType")}
                           required={false}
                         />
-                      }
-                      name="userTypeIds"
-                      id="userTypeIds"
+                      )}
                     />
                   )}
+                  value={userTypeOption.filter(option => userType.includes(option.value))}
                 />
               </Grid>
-                 
+
               <Grid item xs={6} sm={2} lg={2}>
                 <Button variant="contained" sx={{ backgroundColor: "#3474eb" }} fullWidth onClick={handleSubmitWrapper}>
                   {t("text.save")}
@@ -388,7 +299,7 @@ export default function AssignUserTypeToMember() {
                 </Button>
               </Grid>
               <Grid item xs={6} sm={3} lg={3}>
-                <Button variant="contained" sx={{ backgroundColor: "#42afed" }} fullWidth onClick={handleRevoke}>
+                <Button variant="contained" sx={{ backgroundColor: "#42afed" }} fullWidth onClick={handleRevokeWrapper}>
                   {t("text.RevokeUserType")}
                 </Button>
               </Grid>
@@ -401,4 +312,3 @@ export default function AssignUserTypeToMember() {
     </>
   );
 }
-

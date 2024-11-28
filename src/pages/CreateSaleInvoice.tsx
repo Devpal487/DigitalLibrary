@@ -91,7 +91,7 @@ const CreateSaleInvoice = () => {
 
   const getDocNo = async () => {
     const res = await api.post(`api/PurchaseInvoice/GetMaxDocumentNo`);
-    formik.setFieldValue("document_No", res?.data?.data[0]?.document_No);
+    formik.setFieldValue("s_InvoiceNo", res?.data?.data[0]?.document_No);
   };
 
   const getSupliar = async () => {
@@ -205,11 +205,11 @@ const CreateSaleInvoice = () => {
       saleinv: [],
     },
     validationSchema: Yup.object().shape({
-      document_No: Yup.string().required(t("Document No. required")),
+      // document_No: Yup.string().required(t("Document No. required")),
       orderNo: Yup.string().required(t("Order No. required")),
-      doc_Date: Yup.date().required(t("Order Date required")),
+      // doc_Date: Yup.date().required(t("Order Date required")),
       s_InvoiceDate: Yup.date().required(t("Invoice Date required")),
-      supplierName: Yup.string().required(t("Supplier Name required")),
+      supplierName: Yup.string().required(t("text.supNameReq")),
     }),
     onSubmit: async (values) => {
       console.log("Form Submitted with values:", values);
@@ -406,7 +406,7 @@ const CreateSaleInvoice = () => {
           <form onSubmit={formik.handleSubmit}>
             {toaster && <ToastApp />}
             <Grid item xs={12} container spacing={2}>
-              <Grid item lg={4} xs={12}>
+              {/* <Grid item lg={4} xs={12}>
                 <TextField
                   id="document_No"
                   name="document_No"
@@ -427,14 +427,15 @@ const CreateSaleInvoice = () => {
                     formik.touched.document_No && formik.errors.document_No
                   }
                 />
-              </Grid>
+              </Grid> */}
 
               <Grid item xs={12} sm={4} lg={4}>
                 <TextField
                   label={
                     <CustomLabel
-                      text={t("text.p_InvoiceNo")}
-                      required={false}
+                      text={t("text.s_InvoiceNo")}
+                      required={true}
+                      value={formik.values.s_InvoiceNo}
                     />
                   }
                   variant="outlined"
@@ -444,12 +445,12 @@ const CreateSaleInvoice = () => {
                   id="s_InvoiceNo"
                   // type="date"
                   value={formik.values.s_InvoiceNo}
-                  placeholder={t("text.p_InvoiceNo")}
+                  placeholder={t("text.s_InvoiceNo")}
                   onChange={formik.handleChange}
                 />
               </Grid>
 
-              <Grid item xs={12} sm={4} lg={4}>
+              {/* <Grid item xs={12} sm={4} lg={4}>
                 <TextField
                   label={
                     <CustomLabel text={t("text.doc_Date")} required={false} />
@@ -465,7 +466,7 @@ const CreateSaleInvoice = () => {
                   onChange={formik.handleChange}
                   InputLabelProps={{ shrink: true }}
                 />
-              </Grid>
+              </Grid> */}
 
               <Grid item lg={4} xs={12}>
                 <TextField
@@ -473,12 +474,13 @@ const CreateSaleInvoice = () => {
                   name="s_InvoiceDate"
                   label={
                     <CustomLabel
-                      text={t("text.p_InvoiceDate")}
+                      text={t("text.s_InvoiceDate")}
                       required={true}
+                      value={formik.values.s_InvoiceDate}
                     />
                   }
                   value={formik.values.s_InvoiceDate}
-                  placeholder={t("text.p_InvoiceDate")}
+                  placeholder={t("text.s_InvoiceDate")}
                   size="small"
                   type="date"
                   fullWidth
@@ -516,10 +518,18 @@ const CreateSaleInvoice = () => {
                   renderInput={(params) => (
                     <TextField
                       {...params}
+                      error={
+                        formik.touched.supplierName &&
+                        Boolean(formik.errors.supplierName)
+                      }
+                      helperText={
+                        formik.touched.supplierName && formik.errors.supplierName
+                      }
                       label={
                         <CustomLabel
                           text={t("text.SelectSupplierName")}
-                          required={false}
+                          required={true}
+                          value={formik.values.supplierName}
                         />
                       }
                     />
@@ -547,87 +557,6 @@ const CreateSaleInvoice = () => {
                 />
               </Grid>
 
-              {/* <Grid item lg={4} xs={12}>
-                                <Autocomplete
-                                    disablePortal
-                                    id="combo-box-demo"
-                                    options={taxOption}
-                                    fullWidth
-                                    size="small"
-                                    onChange={(event: any, newValue: any) => {
-                                        console.log(newValue?.value);
-
-                                        formik.setFieldValue("tax", newValue?.value?.toString());
-                                    }}
-                                    renderInput={(params) => (
-                                        <TextField {...params} label={<CustomLabel text={t("text.tax")} required={false} />} />
-                                    )}
-                                />
-                            </Grid> */}
-
-              {/* <Grid item lg={4} xs={12}>
-                                <TextField
-                                    id="freight"
-                                    name="freight"
-                                    label={<CustomLabel text={t("text.freight")} required={false} />}
-                                    value={formik.values.freight}
-                                    placeholder={t("text.freight")}
-                                    size="small"
-                                    fullWidth
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                // error={formik.touched.freight && Boolean(formik.errors.freight)}
-                                // helperText={formik.touched.freight && formik.errors.freight}
-                                />
-                            </Grid>
-
-                            <Grid item lg={4} xs={12}>
-                                <TextField
-                                    id="amount"
-                                    name="amount"
-                                    label={<CustomLabel text={t("text.amount")} required={false} />}
-                                    value={formik.values.amount}
-                                    placeholder={t("text.amount")}
-                                    size="small"
-                                    fullWidth
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                // error={formik.touched.amount && Boolean(formik.errors.amount)}
-                                // helperText={formik.touched.amount && formik.errors.amount}
-                                />
-                            </Grid>
-
-                            <Grid item lg={4} xs={12}>
-                                <TextField
-                                    id="acc_code"
-                                    name="acc_code"
-                                    label={<CustomLabel text={t("text.acc_code")} required={false} />}
-                                    value={formik.values.acc_code}
-                                    placeholder={t("text.acc_code")}
-                                    size="small"
-                                    fullWidth
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                // error={formik.touched.acc_code && Boolean(formik.errors.acc_code)}
-                                // helperText={formik.touched.acc_code && formik.errors.acc_code}
-                                />
-                            </Grid>
-
-                            <Grid item lg={4} xs={12}>
-                                <TextField
-                                    id="others"
-                                    name="others"
-                                    label={<CustomLabel text={t("text.others")} required={false} />}
-                                    value={formik.values.others}
-                                    placeholder={t("text.others")}
-                                    size="small"
-                                    fullWidth
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                // error={formik.touched.others && Boolean(formik.errors.others)}
-                                // helperText={formik.touched.others && formik.errors.others}
-                                />
-                            </Grid> */}
 
               <Grid item lg={4} xs={12}>
                 <TextField
@@ -642,8 +571,6 @@ const CreateSaleInvoice = () => {
                   fullWidth
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  //error={formik.touched.remark && Boolean(formik.errors.remark)}
-                  //helperText={formik.touched.remark && formik.errors.remark}
                 />
               </Grid>
 
@@ -781,12 +708,7 @@ const CreateSaleInvoice = () => {
                     {items.map((item: any, index: any) => (
                       <tr key={item.id} style={{ border: "1px solid black" }}>
                         {/* <TableCell>{index + 1}</TableCell> */}
-                        <td style={{ width: "180px" }}>
-                          {/* <TextField
-                                                        value={item.itemName}
-                                                        onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
-                                                        size="small"
-                                                    /> */}
+                        <td style={{ width: "180px", padding:"5px" }}>
                           <Autocomplete
                             disablePortal
                             id="combo-box-demo"
@@ -822,11 +744,11 @@ const CreateSaleInvoice = () => {
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                // label={
-                                //   <CustomLabel text={t("text.enteritem")} />
-                                // }
+                                label={
+                                  <CustomLabel text={t("text.enteritem")} />
+                                }
 
-                                placeholder={t("text.enteritem")} 
+                                // placeholder={t("text.enteritem")} 
                               />
                             )}
                           />
@@ -852,14 +774,14 @@ const CreateSaleInvoice = () => {
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                // label={
-                                //   <CustomLabel
-                                //     text={t("text.unit")}
-                                //     required={false}
-                                //   />
-                                // }
+                                label={
+                                  <CustomLabel
+                                    text={t("text.unit")}
+                                    required={false}
+                                  />
+                                }
 
-                                placeholder={t("text.unit")}
+                                // placeholder={t("text.unit")}
                               />
                             )}
                           />
@@ -896,20 +818,6 @@ const CreateSaleInvoice = () => {
                         </td>
                         <td>{item.amount.toFixed(2)}</td>
                         <td>
-                          {/* <TextField
-                            type="number"
-                            value={item.tax1}
-                            onChange={(e) =>
-                              handleItemChange(
-                                index,
-                                "tax1",
-                                String(e.target.value)
-                              )
-                            }
-                            onFocus={(e) => e.target.select()}
-                            size="small"
-                          /> */}
-
                           <Autocomplete
                             disablePortal
                             id="combo-box-demo"
@@ -937,15 +845,12 @@ const CreateSaleInvoice = () => {
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                // label={
-                                //   <CustomLabel
-                                //     text={t("text.SelectTax")}
-                                //     required={false}
-                                //   />
-                                // }
-
-
-                                placeholder={t("text.SelectTax")}
+                                label={
+                                  <CustomLabel
+                                    text={t("text.SelectTax")}
+                                    required={false}
+                                  />
+                                }
                               />
                             )}
                           />
