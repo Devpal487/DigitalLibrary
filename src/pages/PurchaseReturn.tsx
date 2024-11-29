@@ -178,22 +178,13 @@ export default function PurchaseReturn() {
                         headerClassName: "MuiDataGrid-colCell",
                     },
                     {
-                        field: "p_InvoiceNo",
+                        field: "pR_InvoiceNo",
                         headerName: t("text.p_InvoiceNos"),
                         flex: 1,
                         headerClassName: "MuiDataGrid-colCell",
                     },
                     {
-                        field: "doc_Date",
-                        headerName: t("text.doc_Dates"),
-                        flex: 1,
-                        headerClassName: "MuiDataGrid-colCell",
-                        renderCell(params) {
-                            return dayjs(params.row.doc_Date).format("DD-MMM-YYYY")
-                        },
-                    },
-                    {
-                        field: "p_InvoiceDate",
+                        field: "pR_InvoiceDate",
                         headerName: t("text.p_InvoiceDates"),
                         flex: 1,
                         headerClassName: "MuiDataGrid-colCell",
@@ -208,6 +199,14 @@ export default function PurchaseReturn() {
                         flex: 1,
                         headerClassName: "MuiDataGrid-colCell",
                     },
+                     
+                    {
+                        field: "remark",
+                        headerName: t("text.remark"),
+                        flex: 1,
+                        headerClassName: "MuiDataGrid-colCell",
+                    },
+                   
 
                 ];
                 setColumns(columns as any);

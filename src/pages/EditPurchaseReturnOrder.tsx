@@ -60,6 +60,7 @@ const EditPurchaseReturnOrder = () => {
   const [lang, setLang] = useState<Language>("en");
   const [toaster, setToaster] = useState(false);
   const location:any = useLocation();
+  const [purchaseInvoiceOption, setPurchaseInvoiceOption] = useState<any>([]);
   const [taxOption, setTaxOption] = useState([
     { value: "-1", label: t("text.tax") },
   ]);
@@ -84,7 +85,87 @@ const EditPurchaseReturnOrder = () => {
     getTaxData();
     GetUnitData();
     getSupliar();
+    getPurchaseInvoice();
+    getPurchaseInvoicebyId((location.state.p_InvoiceNo));
   }, []);
+
+  const getPurchaseInvoice = async () => {
+    const collectData = {
+      id: -1,
+    };
+    const res = await api.post(
+      `api/PurchaseInvoice/GetPurchaseInvoice`,
+      collectData
+    );
+    const arr =
+      res?.data?.data?.map((item: any) => ({
+        label: item.document_No +' ( '+ item.supplierName + "--" + item.orderNo +' )',
+        value: item.id,
+        orderNo: item.orderNo,
+        supplierName: item.supplierName,
+        supplierId: item.supplierId,
+      })) || [];
+
+      setPurchaseInvoiceOption([{ value: "-1", label: t("text.PurchaseInvoiceOption") }, ...arr]);
+  };
+
+  const getPurchaseInvoicebyId = async (id:any) => {
+    const collectData = {
+      id: id,
+    };
+    const result = await api.post(
+      `api/PurchaseInvoice/GetPurchaseInvoice`,
+      collectData
+    );
+    const transData = Array.isArray(result?.data?.data[0]?.["purchaseinv"])
+        ? result.data.data[0]["purchaseinv"]
+        : [];
+      console.log("TransData:", transData);
+
+      if (transData.length === 0) {
+        // Set initialRows as default if transData is empty
+        setItems([{ ...initialRows }]);
+        return;
+      }
+  
+      let arr: any = [];
+      for (let i = 0; i < transData.length; i++) {
+        arr.push({
+          id: transData[i]["id"],
+          purchaseid: transData[i]["purchaseid"],
+          user_Id: transData[i]["user_Id"],
+          itemNameId: transData[i]["itemNameId"],
+          unit: transData[i]["unit"],
+          retqty: transData[i]["qty"],
+          qty: 0,
+          rate: transData[i]["rate"],
+          // amount: transData[i]["amount"],
+          // tax1: transData[i]["tax1"],
+          // taxId1: transData[i]["taxId1"],
+          // tax2: transData[i]["tax2"] || 'P',
+          // discount: transData[i]["discount"] || 0,
+          // discountAmount: transData[i]["discountAmount"] ||0,
+          // netAmount: transData[i]["netamount"],
+          documentNo: transData[i]["documentNo"],
+          documentDate: transData[i]["documentDate"],
+          invoiceNo: transData[i]["invoiceNo"],
+          supplier: transData[i]["supplierId"],
+          orderNo: transData[i]["orderNo"],
+          mrnNo: transData[i]["mrnNo"],
+          mrnDate: transData[i]["mrnDate"],
+          // taxId3: transData[i]["taxId3"],
+          // tax3: transData[i]["tax3"],
+        });
+      }
+      setItems(arr);
+    // const arr =
+    //   res?.data?.data?.map((item: any) => ({
+    //     label: item.p_InvoiceNo,
+    //     value: item.id,
+    //   })) || [];
+
+      //setPurchaseInvoiceOption([{ value: "-1", label: t("text.PurchaseInvoiceOption") }, ...arr]);
+  };
 
   const getSupliar = async () => {
     const collectData = {
@@ -163,6 +244,7 @@ const EditPurchaseReturnOrder = () => {
   const formik = useFormik({
     initialValues: {
       id: location.state.id,
+      p_InvoiceNo:location.state.p_InvoiceNo || null,
       document_No: location.state.document_No || '',
       pR_InvoiceNo: location.state.pR_InvoiceNo || '',
       doc_Date: dayjs(location.state.doc_Date).format("YYYY-MM-DD"),
@@ -249,61 +331,83 @@ const EditPurchaseReturnOrder = () => {
       );
     };
   
-  const handleItemChange = (index: number, field: string, value: any) => {
-    const updatedItems = [...items];
-    let item = { ...updatedItems[index] };
+    const handleItemChange = (index: number, field: string, value: any) => {
+      const updatedItems = [...items];
+      let item = { ...updatedItems[index] };
+    
+      if (field === 'itemNameId') {
+        const itemNameDetails = value;
+        if (itemNameDetails) {
+          item = {
+            ...item,
+            itemNameId: itemNameDetails.value || "",
+            rate: itemNameDetails.rate || "",
+            unit: String(itemNameDetails.unitId) || "",
+            tax1: String(itemNameDetails.taxId) || "",
+            taxId1: String(itemNameDetails.taxName) || "",
+          };
+        }
+      }else if (field === 'qty') {
+        const qtyValue = value === "" ? 0 : parseFloat(value);
   
-    if (field === 'itemNameId') {
-      const itemNameDetails = value;
-      if (itemNameDetails) {
-        item = {
-          ...item,
-          itemNameId: itemNameDetails.value || "",
-          rate: itemNameDetails.rate || "",
-          unit: String(itemNameDetails.unitId) || "",
-          tax1: String(itemNameDetails.taxId) || "",
-          taxId1: String(itemNameDetails.taxName) || "",
-        };
+        // Validation to ensure qty does not exceed retqty
+        if (qtyValue > item.retqty) {
+            alert(`Quantity cannot exceed the purchase quantity.`);
+            return; 
+        }
+  
+        item[field] = qtyValue;
+        item.amount = calculateAmount(item.qty, item.rate);
+        item.taxId1 = String(calculateTax(item.amount, 0));
+    } else if (field === 'rate') {
+        item[field] = value === "" ? 0 : parseFloat(value);
+        item.amount = calculateAmount(item.qty, item.rate);
+        item.taxId1 = String(calculateTax(item.amount, 0));
+    } 
+      else if (field === 'tax1') {
+        const selectedTax = taxOption.find((tax: any) => tax.value === value?.value);
+          if (selectedTax) {
+              item.tax1 = String(selectedTax.value);
+              item.taxId1 = String(calculateTax(item.amount, Number(selectedTax.label)));
+          } 
+          // else {
+          //     item.tax1 = value || '';
+          //     item.taxId1 = '0';
+          // }
+  
+          const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
+          item.discountAmount = discountAmount;
+          item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
+  
+      } else if (field === 'tax2') {
+        item.tax2 = value || '';
+      }else if (field === 'unit') {
+        item[field] = value ;
+      } else if (field === 'discount') {
+        item.discount = value === '' ? 0 : parseFloat(value);
+        const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
+        item.discountAmount = discountAmount;
+        item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
       }
-    } else if (field === 'qty' || field === 'rate') {
-      item[field] = value === "" ? 0 : parseFloat(value);
-      item.amount = calculateAmount(item.qty, item.rate);
-      item.taxId1 = String(calculateTax(item.amount, Number(item.taxId1)));
-    } else if (field === 'tax1') {
-      const selectedTax = taxOption.find((tax: any) => tax.value === value?.value);
-      if (selectedTax) {
-        item.tax1 = String(selectedTax.value);
-        item.taxId1 = String(calculateTax(item.amount, Number(selectedTax.label)));
+    
+      // Recalculate dependent fields
+      if (field !== 'discount' && field !== 'tax2') {
+        const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
+        item.discountAmount = discountAmount;
+        item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
+        // console.log("calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);",calculateNetAmount(item.amount, Number(item.taxId1), discountAmount))
       }
-    } else if (field === 'tax2') {
-      item.tax2 = value || '';
-    }else if (field === 'unit') {
-      item[field] = value ;
-    } else if (field === 'discount') {
-      item.discount = value === '' ? 0 : parseFloat(value);
-      const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
-      item.discountAmount = discountAmount;
-      item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
-    }
-  
-    // Recalculate dependent fields
-    if (field !== 'discount' && field !== 'tax2') {
-      const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
-      item.discountAmount = discountAmount;
-      item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
-    }
-  
-    updatedItems[index] = item;
-    setItems(updatedItems);
-  
-    if (validateItem(item) && index === updatedItems.length - 1) {
-      handleAddItem();
-    }
-  
-  
-    console.log("🚀 ~ Updated items:", updatedItems);
-  };
-  
+    
+      updatedItems[index] = item;
+      
+      if (validateItem(item) && index === updatedItems.length - 1) {
+        handleAddItem();
+      }
+      
+      
+      console.log("🚀 ~ Updated items:", updatedItems);
+      setItems(updatedItems);
+    };
   const calculateAmount = (qty: number, rate: number) => qty * rate;
   
   const calculateTax = (amount: number, taxRate: number) => {
@@ -366,7 +470,7 @@ const EditPurchaseReturnOrder = () => {
     };
   
     const totalAmount = items.reduce(
-      (acc: any, item: any) => acc + item.netAmount,
+      (acc: number, item: any) => acc + (Number(item.netAmount) || 0),
       0
     );
 
@@ -487,6 +591,37 @@ const EditPurchaseReturnOrder = () => {
           <form onSubmit={formik.handleSubmit}>
             {toaster && <ToastApp />}
             <Grid item xs={12} container spacing={2}>
+            <Grid item lg={4} xs={12}>
+                  <Autocomplete
+                    disablePortal
+                    id="combo-box-demo"
+                    options={purchaseInvoiceOption}
+                    fullWidth
+                    size="small"
+                    value={purchaseInvoiceOption.find((opt:any)=>opt.value == formik.values.p_InvoiceNo)}
+                    onChange={(event, newValue: any) => {
+                      console.log(newValue?.value);
+                      if(newValue){
+                        getPurchaseInvoicebyId(newValue?.value);
+                        formik.setFieldValue("p_InvoiceNo", newValue?.label);
+                        formik.setFieldValue("supplierId", newValue?.supplierId);
+                        formik.setFieldValue("supplierName", newValue?.supplierName);
+                        formik.setFieldValue("orderNo", newValue?.orderNo);
+                      }
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label={
+                          <CustomLabel
+                            text={t("text.PurchaseInvoiceOption")}
+                            required={false}
+                          />
+                        }
+                      />
+                    )}
+                  />
+                </Grid>
               <Grid item lg={4} xs={12}>
                 <TextField
                   id="document_No"
@@ -500,8 +635,6 @@ const EditPurchaseReturnOrder = () => {
                   fullWidth
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  // error={formik.touched.document_No && Boolean(formik.errors.document_No)}
-                  // helperText={formik.touched.document_No && formik.errors.document_No}
                 />
               </Grid>
 
@@ -607,7 +740,8 @@ const EditPurchaseReturnOrder = () => {
                       label={
                         <CustomLabel
                           text={t("text.SelectSupplierName")}
-                          required={false}
+                          required={true}
+                          value={formik.values.supplierName}
                         />
                       }
                     />
@@ -651,8 +785,6 @@ const EditPurchaseReturnOrder = () => {
                   fullWidth
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  //error={formik.touched.remark && Boolean(formik.errors.remark)}
-                  //helperText={formik.touched.remark && formik.errors.remark}
                 />
               </Grid>
 
@@ -686,7 +818,7 @@ const EditPurchaseReturnOrder = () => {
                           padding: "5px",
                         }}
                       >
-                        {t("text.Unit")}
+                        {t("text.Quantity")}
                       </th>
                       <th
                         style={{
@@ -695,7 +827,7 @@ const EditPurchaseReturnOrder = () => {
                           padding: "5px",
                         }}
                       >
-                        {t("text.Quantity")}
+                        {t("text.retqty")}
                       </th>
                       <th
                         style={{
@@ -785,11 +917,7 @@ const EditPurchaseReturnOrder = () => {
                       <tr key={item.id} style={{ border: "1px solid black" }}>
                         {/* <TableCell>{index + 1}</TableCell> */}
                         <td style={{ width: "180px", padding:"5px" }}>
-                          {/* <TextField
-                                                        value={item.itemName}
-                                                        onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
-                                                        size="small"
-                                                    /> */}
+                          
                           <Autocomplete
                             disablePortal
                             id="combo-box-demo"
@@ -815,7 +943,7 @@ const EditPurchaseReturnOrder = () => {
                           />
                         </td>
                         <td>
-                          <Autocomplete
+                          {/* <Autocomplete
                             disablePortal
                             id="combo-box-demo"
                             options={unitOptions}
@@ -843,6 +971,19 @@ const EditPurchaseReturnOrder = () => {
                                 }
                               />
                             )}
+                          /> */}
+                          <TextField
+                            type="text"
+                            value={item.retqty}
+                            // onChange={(e) =>
+                            //   handleItemChange(
+                            //     index,
+                            //     "qty",
+                            //     (e.target.value)
+                            //   )
+                            // }
+                            // onFocus={(e) => e.target.select()}
+                            size="small"
                           />
                         </td>
                         <td>
