@@ -560,6 +560,7 @@ const resources = {
         EnterCounselForPetitioner: "Enter Counsel for Petitioner",
         EnterEmail: "Enter Email",
         item: "Item",
+        retqty:"Return Qty.",
         unit: "Unit",
         inQty: "InQty",
         voucherType: "Voucher Type",
@@ -1178,8 +1179,12 @@ const resources = {
         s_InvoiceNo:"Sale Invoice Number",
         s_InvoiceDate:"Select Sale Invoice Date",
         document_NoPR:"Purchase Return Number",
+
         SelectSaleInvoice:"Select Sale Invoice",
         ReturnQuantity:"Return Quantity",
+
+        PurchaseInvoiceOption:"Select Purchase Number",
+
 
 
 
@@ -2178,6 +2183,8 @@ const resources = {
         editPurchaseorder:"क्रय आदेश संपादित करें",
         SelectSaleInvoice:"बिक्री चालान चुनें",
         ReturnQuantity:"वापसी मात्रा",
+        retqty:"वापसी मात्रा",
+        PurchaseInvoiceOption:"खरीद संख्या का चयन करें",
 
 
     },

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import ReactDOMServer from 'react-dom/server';
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import api from "../utils/Url";
 import Card from "@mui/material/Card";
@@ -43,10 +44,13 @@ import DataGrids from "../utils/Datagrids";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import RestoreIcon from "@mui/icons-material/Restore";
 import PrintIcon from "@mui/icons-material/Print";
-import jsPDF from "jspdf";
+import jsPDF from "jspdf"; 
 import html2canvas from "html2canvas";
 import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
+import PrintReportFormat from "./PrintReportFormat";
+import dayjs from "dayjs";
+import StockLedgerTable from "./StockLedgerTable";
 
 interface MenuPermission {
   isAdd: boolean;
@@ -56,7 +60,8 @@ interface MenuPermission {
 }
 
 export default function StockLedgerReport() {
-  const [zones, setZones] = useState([]);
+  const [zones, setZones] = useState<any>([]);
+  const {defaultValuestime} = getISTDate();
   const [columns, setColumns] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
@@ -71,6 +76,7 @@ export default function StockLedgerReport() {
   const [isTitle, setTitle] = useState<any>('');
 
   const [isItemId, setItemId] = useState();
+  const [itemName, setItemName] = useState<any>("");
 
   const [open, setOpen] = useState(false);
   const [Row, setRow] = useState<any>(null);
@@ -105,31 +111,54 @@ export default function StockLedgerReport() {
     });
   };
 
-  const exportToPDF = async () => {
-    const input: any = document.getElementById("data-grid"); // The id of the Grid container
-    const canvas = await html2canvas(input);
-    const imgData = canvas.toDataURL("image/png");
+  // const exportToPDF = async () => {
+  //   const input: any = document.getElementById("data-grid"); // The id of the Grid container
+  //   const canvas = await html2canvas(input);
+  //   const imgData = canvas.toDataURL("image/png");
+  //   const pdf = new jsPDF();
+  //   const imgWidth = 190; // Adjust according to your needs
+  //   const pageHeight = pdf.internal.pageSize.height;
+  //   const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  //   let heightLeft = imgHeight;
+
+  //   let position = 0;
+
+  //   // Add the image to PDF
+  //   pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+  //   heightLeft -= pageHeight;
+
+  //   while (heightLeft >= 0) {
+  //     position = heightLeft - imgHeight;
+  //     pdf.addPage();
+  //     pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+  //     heightLeft -= pageHeight;
+  //   }
+
+  //   pdf.save("Stock-Ledger-report.pdf");
+  // };
+
+
+  const exportToPDF = () => {
+    
+    const fileName = `${defaultValuestime}_${itemName}.pdf`; 
     const pdf = new jsPDF();
-    const imgWidth = 190; // Adjust according to your needs
-    const pageHeight = pdf.internal.pageSize.height;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    let heightLeft = imgHeight;
 
-    let position = 0;
+    const htmlContent = ReactDOMServer.renderToStaticMarkup(
+      <PrintReportFormat zones={zones} itemName={itemName} />
+    );
 
-    // Add the image to PDF
-    pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
+    pdf.html(htmlContent, {
+      callback: function (doc) {
+        doc.save(fileName);
+      },
+      x: 10, 
+      y: 10,
+      width: 180,
+      windowWidth: 800  
+    });
 
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-    }
-
-    pdf.save("Stock-Ledger-report.pdf");
   };
+
 
   const fetchZonesData = async () => {
     try {
@@ -150,6 +179,8 @@ export default function StockLedgerReport() {
         id: zone.itemId,
         balQty: parseInt(zone.inQty) - parseInt(zone.outQty),
       }));
+
+      console.log("zonesWithIds",zonesWithIds);
       setZones(zonesWithIds);
       //setIsLoading(false);
       setIsVisible(true);
@@ -270,70 +301,57 @@ export default function StockLedgerReport() {
       setZones1(zonesWithIds);
       setOpen(true);
 
-      if (data.length > 0) {
-        const Mcolumns: GridColDef[] = [
-          {
-            field: "serialNo",
-            headerName: t("text.SrNo"),
-            flex: 0.5,
-            // headerClassName: "MuiDataGrid-colCell",
-          },
+      // if (data.length > 0) {
+      //   const Mcolumns: GridColDef[] = [
+      //     {
+      //       field: "serialNo",
+      //       headerName: t("text.SrNo"),
+      //       flex: 0.2,
+      //     },
+      //     {
+      //       field: "voucherType",
+      //       headerName: t("text.VoucherType"),
+      //       flex: 0.5,
+      //     },
 
-          {
-            field: "voucherId",
-            headerName: t("text.VoucherId"),
-            flex: 0.5,
-            // headerClassName: "MuiDataGrid-colCell",
-          },
+      //     {
+      //       field: "voucherDate",
+      //       headerName: t("text.VoucherDate"),
+      //       flex: 1,
+      //       renderCell(params) {
+      //         return dayjs(params.row.voucherDate).format("DD-MMM-YYYY");
+      //       },
+      //     },
 
-          {
-            field: "voucherType",
-            headerName: t("text.VoucherType"),
-            flex: 1,
-          },
+      //     {
+      //       field: "rate",
+      //       headerName: t("text.Rate"),
+      //       flex: 1,
+      //       // headerClassName: "MuiDataGrid-colCell",
+      //     },
 
-          {
-            field: "voucherDate",
-            headerName: t("text.VoucherDate"),
-            flex: 1,
-            valueFormatter: (params) => {
-              const date = new Date(params.value);
-              const day = ("0" + date.getDate()).slice(-2);
-              const month = ("0" + (date.getMonth() + 1)).slice(-2); // Months are zero-indexed
-              const year = date.getFullYear();
-              return `${day}-${month}-${year}`;
-            },
-          },
+      //     {
+      //       field: "inQty",
+      //       headerName: t("text.InQuantity"),
+      //       flex: 1,
+      //       // headerClassName: "MuiDataGrid-colCell",
+      //     },
 
-          {
-            field: "rate",
-            headerName: t("text.Rate"),
-            flex: 1,
-            // headerClassName: "MuiDataGrid-colCell",
-          },
-
-          {
-            field: "inQty",
-            headerName: t("text.InQuantity"),
-            flex: 1,
-            // headerClassName: "MuiDataGrid-colCell",
-          },
-
-          {
-            field: "outQty",
-            headerName: t("text.OutQuantity"),
-            flex: 1,
-            // headerClassName: "MuiDataGrid-colCell",
-          },
-          // {
-          //   field: "balQty",
-          //   headerName: t("text.balQuantity"),
-          //   flex: 1,
-          //   // headerClassName: "MuiDataGrid-colCell",
-          // },
-        ];
-        setMColumns(Mcolumns as any);
-      }
+      //     {
+      //       field: "outQty",
+      //       headerName: t("text.OutQuantity"),
+      //       flex: 1,
+      //       // headerClassName: "MuiDataGrid-colCell",
+      //     },
+      //     // {
+      //     //   field: "balQty",
+      //     //   headerName: t("text.balQuantity"),
+      //     //   flex: 1,
+      //     //   // headerClassName: "MuiDataGrid-colCell",
+      //     // },
+      //   ];
+      //   setMColumns(Mcolumns as any);
+      // }
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -355,21 +373,6 @@ export default function StockLedgerReport() {
     onSubmit: async (values) => {},
   });
 
-  const handleReturn = (event: any) => {
-    if (event.target.checked) {
-      formik.setFieldValue("status", "Y");
-    } else {
-      formik.setFieldValue("status", "N");
-    }
-  };
-
-  const handleAsOn = (event: any) => {
-    if (event.target.checked) {
-      formik.setFieldValue("canRequest", "Y");
-    } else {
-      formik.setFieldValue("canRequest", "N");
-    }
-  };
 
   return (
     <>
@@ -421,8 +424,8 @@ export default function StockLedgerReport() {
                   size="small"
                   onChange={(event: any, newValue: any) => {
                     //console.log(newValue?.value);
-
                     setItemId(newValue?.value);
+                    setItemName(newValue?.label);
                   }}
                   renderInput={(params: any) => (
                     <TextField
@@ -533,7 +536,7 @@ export default function StockLedgerReport() {
                     </IconButton>
                   </DialogTitle>
                   <DialogContent>
-                    <Grid
+                     <Grid
                       item
                       xs={12}
                       container
@@ -541,7 +544,7 @@ export default function StockLedgerReport() {
                       sx={{ marginTop: "2%" }}
                     >
                       <Grid item sm={12} lg={12} xs={12}>
-                        <DataGrid
+                        {/*<DataGrid
                           rows={zones1}
                           columns={adjustedMColumns}
                           rowSpacingType="border"
@@ -558,8 +561,9 @@ export default function StockLedgerReport() {
                               color: "white",
                             },
                           }}
-                        />
-                      </Grid>
+                        />*/}
+                      <StockLedgerTable data={zones1}/>
+                      </Grid> 
                     </Grid>
                   </DialogContent>
                 </Dialog>
