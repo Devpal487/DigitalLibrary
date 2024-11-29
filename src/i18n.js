@@ -1178,6 +1178,8 @@ const resources = {
         s_InvoiceNo:"Sale Invoice Number",
         s_InvoiceDate:"Select Sale Invoice Date",
         document_NoPR:"Purchase Return Number",
+        SelectSaleInvoice:"Select Sale Invoice",
+        ReturnQuantity:"Return Quantity",
 
 
 
@@ -2174,6 +2176,9 @@ const resources = {
         s_InvoiceDate:"बिक्री चालान दिनांक चुनें",
         document_NoPR:"खरीद वापसी संख्या",
         editPurchaseorder:"क्रय आदेश संपादित करें",
+        SelectSaleInvoice:"बिक्री चालान चुनें",
+        ReturnQuantity:"वापसी मात्रा",
+
 
     },
       content: {},

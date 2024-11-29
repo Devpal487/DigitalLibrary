@@ -423,7 +423,7 @@ const MemberPetronAdd = (props: Props) => {
   ]);
 
   const { menuId, menuName } = getMenuData();
-  const instId:any = getinstId();
+  const instId: any = getinstId();
 
   //var addRelation = menuName?.toLowerCase();
 
@@ -606,7 +606,7 @@ const MemberPetronAdd = (props: Props) => {
 
     validationSchema: validationSchema,
 
-    onSubmit: async (values) => {
+    onSubmit: async (values: any) => {
       console.log("Before submission formik values", values);
       values.address.addid = usercode;
       // Handle form submission
@@ -616,7 +616,7 @@ const MemberPetronAdd = (props: Props) => {
           values
         );
         if (response.data.isSuccess) {
-         // setToaster(false);
+          // setToaster(false);
           toast.success(response.data.mesg);
 
           setTimeout(() => {
@@ -797,7 +797,7 @@ const MemberPetronAdd = (props: Props) => {
           <Divider />
           <br />
           <form onSubmit={formik.handleSubmit}>
-             <ToastApp />
+            <ToastApp />
             <Grid item xs={12} container spacing={2}>
               <Grid item lg={6} xs={12}>
                 <TextField
@@ -1419,7 +1419,6 @@ const MemberPetronAdd = (props: Props) => {
                 />
               </Grid>
 
-
               <Grid item lg={4} xs={12}>
                 <Autocomplete
                   disablePortal
@@ -1433,27 +1432,15 @@ const MemberPetronAdd = (props: Props) => {
                   //   ) || null
                   // }
                   onChange={(event, newValue: any) => {
-                    formik.setFieldValue(
-                      "circUser.status",
-                      newValue?.label
-                    );
-                    formik.setFieldTouched(
-                      "circUser.status",
-                      true
-                    );
-                    formik.setFieldTouched(
-                      "circUser.status",
-                      false
-                    );
+                    formik.setFieldValue("circUser.status", newValue?.label);
+                    formik.setFieldTouched("circUser.status", true);
+                    formik.setFieldTouched("circUser.status", false);
                   }}
                   renderInput={(params) => (
                     <TextField
                       {...params}
                       label={
-                        <CustomLabel
-                          text={t("text.Status")}
-                          required={false}
-                        />
+                        <CustomLabel text={t("text.Status")} required={false} />
                       }
                     />
                   )}

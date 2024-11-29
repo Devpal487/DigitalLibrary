@@ -81,13 +81,14 @@ const CreateSaleInvoice = () => {
     getTaxData();
     GetUnitData();
     getSupliar();
-    getDocNo();
+  //  getDocNo();
+    gets_InvoiceNo()
   }, []);
 
-  const getDocNo = async () => {
-    const res = await api.post(`api/SaleInvoice/GetMaxInvoiceNo`);
-    formik.setFieldValue("s_InvoiceNo", res?.data?.data[0]?.s_InvoiceNo);
-  };
+  // const getDocNo = async () => {
+  //   const res = await api.post(`api/SaleInvoice/GetMaxInvoiceNo`);
+  //   formik.setFieldValue("s_InvoiceNo", res?.data?.data[0]?.s_InvoiceNo);
+  // };
 
   const getSupliar = async () => {
     const collectData = {
@@ -115,6 +116,14 @@ const CreateSaleInvoice = () => {
       })) || [];
 
     setTaxOption(arr);
+  };
+
+
+  const gets_InvoiceNo = async () => {
+    const res = await api.post(`api/SaleInvoice/GetMaxSaleInvoiceNo`);
+    formik.setFieldValue('s_InvoiceNo',res?.data?.data[0]['s_InvoiceNo'])
+
+    
   };
 
   const GetUnitData = async () => {
@@ -474,7 +483,10 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
                   // type="date"
                   value={formik.values.s_InvoiceNo}
                   placeholder={t("text.s_InvoiceNo")}
-                  onChange={formik.handleChange}
+                 onChange={formik.handleChange}
+                  // InputProps={{
+                  //   readOnly: true
+                  // }}
                 />
               </Grid>
 
