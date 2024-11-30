@@ -171,9 +171,9 @@ const CreateSaleReturnInvoice = () => {
 
   const getSaleInvoicedById = async (id: any) => {
     const collectData = {
-      id: id,
-      isRequst: false,
-      s_InvoiceNo: "",
+      id: id?.value,
+      isRequst: true,
+      s_InvoiceNo:id?.label,
     };
     const result = await api.post(
       `api/SaleInvoice/GetSaleInvoice`,
@@ -190,7 +190,7 @@ const CreateSaleReturnInvoice = () => {
         itemNameId: transData[i]["itemNameId"],
         unit: transData[i]["unit"],
         taxId3: String(transData[i]["qty"]),
-        qty: 0,
+        qty:transData[i]["returnQty"],
         rate: transData[i]["rate"],
         amount: transData[i]["amount"],
         // tax1: transData[i]["tax1"],
@@ -578,7 +578,7 @@ const CreateSaleReturnInvoice = () => {
                       newValue?.supplierName
                     );
 
-                    getSaleInvoicedById(newValue?.value);
+                    getSaleInvoicedById(newValue);
                   }}
                   renderInput={(params) => (
                     <TextField
@@ -1031,15 +1031,21 @@ const CreateSaleReturnInvoice = () => {
                           />
                         </td> */}
                         <td>
-                          <TextField
+                        <TextField
                             type="text"
-                            value={item.taxId3}
+                            value={Number(item.taxId3) - item.qty}
                             size="small"
+                            onChange={(e) => {
+                              const newValue = Number(item.taxId3) - item.qty;
 
-                            onChange={(e) =>
-                              handleItemChange(index, "taxId3", String(e.target.value))
-                            }
-                            
+                              if (newValue) {
+                                handleItemChange(
+                                  index,
+                                  "taxId3",
+                                  String(newValue)
+                                );
+                              }
+                            }}
                           />
                         </td>
 
