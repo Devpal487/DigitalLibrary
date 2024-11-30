@@ -479,43 +479,9 @@ const MemberPetronAdd = (props: Props) => {
         }
       ),
     }),
-
-    address: Yup.object({
-      peraddress: Yup.string().test(
-        "required",
-        t("text.HouseNoRequired"),
-        function (value: any) {
-          return value && value.trim() !== "";
-        }
-      ),
-
-      percity: Yup.string().test(
-        "required",
-        t("text.CityRequired"),
-        function (value: any) {
-          return value && value.trim() !== "";
-        }
-      ),
-
-      perstate: Yup.string().test(
-        "required",
-        t("text.StateRequired"),
-        function (value: any) {
-          return value && value.trim() !== "";
-        }
-      ),
-
-      percountry: Yup.string().test(
-        "required",
-        t("text.CountryRequired"),
-        function (value: any) {
-          return value && value.trim() !== "";
-        }
-      ),
-    }),
   });
 
-  const formik = useFormik({
+  const formik: any = useFormik({
     initialValues: {
       appId: menuId,
       appName: menuName,
@@ -643,10 +609,6 @@ const MemberPetronAdd = (props: Props) => {
     "circUser.departmentcode",
     "circUser.dob",
     "circUser.classname",
-    "address.peraddress",
-    "address.perstate",
-    "address.percountry",
-    "address.percity",
   ];
 
   const ConvertBase64 = (file: File): Promise<string> => {
@@ -829,6 +791,13 @@ const MemberPetronAdd = (props: Props) => {
                   required={true}
                   lang={lang}
                 />
+
+                {formik.touched.circUser?.firstname &&
+                formik.errors.circUser?.firstname ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser.firstname)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -898,6 +867,11 @@ const MemberPetronAdd = (props: Props) => {
                   onBlur={formik.handleBlur}
                   InputLabelProps={{ shrink: true }}
                 />
+                {formik.touched.circUser?.dob && formik.errors.circUser?.dob ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser?.dob)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -963,6 +937,13 @@ const MemberPetronAdd = (props: Props) => {
                     />
                   )}
                 />
+
+                {formik.touched.circUser?.cat_id &&
+                formik.errors.circUser?.cat_id ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser?.cat_id)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -1189,6 +1170,13 @@ const MemberPetronAdd = (props: Props) => {
                     />
                   )}
                 />
+
+                {formik.touched.circUser?.classname &&
+                formik.errors.circUser?.classname ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser.classname)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -1225,6 +1213,13 @@ const MemberPetronAdd = (props: Props) => {
                     />
                   )}
                 />
+
+                {formik.touched.circUser?.departmentcode &&
+                formik.errors.circUser?.departmentcode ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser.departmentcode)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -1355,6 +1350,12 @@ const MemberPetronAdd = (props: Props) => {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                 />
+
+                {formik.touched.circUser?.doj && formik.errors.circUser?.doj ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser.doj)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -2038,10 +2039,13 @@ const MemberPetronAdd = (props: Props) => {
                   renderInput={(params) => (
                     <TextField
                       {...params}
+
+                      
                       label={
                         <CustomLabel
                           text={t("text.EnterCity")}
                           required={false}
+
                         />
                       }
                       variant="outlined"

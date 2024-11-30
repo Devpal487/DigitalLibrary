@@ -87,69 +87,77 @@ const EditSaleReturnInvoice = () => {
     getTaxData();
     GetUnitData();
     getSupliar();
-    GetSaleInvoice();
+    // GetSaleInvoice();
   }, []);
 
-  const GetSaleInvoice = async () => {
-    const collectData = {
-      id: -1,
-    };
-    const response = await api.post(
-      `api/SaleInvoice/GetSaleInvoice`,
-      collectData
-    );
-    const data = response.data.data;
-    console.log("data", data);
+  // const GetSaleInvoice = async () => {
+  //   const collectData = {
+  //     id: -1,
+  //     isRequst: false,
+  //     s_InvoiceNo: "",
+  //   };
+  //   const response = await api.post(
+  //     `api/SaleInvoice/GetSaleInvoice`,
+  //     collectData
+  //   );
+  //   const data = response.data.data;
+  //   console.log("data", data);
 
-    const arr = [];
-    for (let index = 0; index < data.length; index++) {
-      arr.push({
-        label: data[index]["s_InvoiceNo"],
-        value: data[index]["id"],
-        orderNo: data[index]["orderNo"],
-        remark: data[index]["remark"],
-        supplierId: data[index]["supplierId"],
-        supplierName: data[index]["supplierName"],
-      });
-    }
-    setSaleOption(arr);
-  };
+  //   const arr = [];
+  //   for (let index = 0; index < data.length; index++) {
+  //     arr.push({
+  //       label: data[index]["s_InvoiceNo"],
+  //       value: data[index]["id"],
+  //       orderNo: data[index]["orderNo"],
+  //       remark: data[index]["remark"],
+  //       supplierId: data[index]["supplierId"],
+  //       supplierName: data[index]["supplierName"],
+  //     });
+  //   }
+  //   setSaleOption(arr);
+  // };
 
-  const getSaleInvoicedById = async (id: any) => {
-    const result = await api.post(`api/SaleInvoice/GetSaleInvoice`, { id: id });
-    const transData = result?.data?.data[0]["saleinv"];
+  // const getSaleInvoicedById = async (id: any) => {
+  //   const collectData = {
+  //     id: id,
+  //     isRequst: false,
+  //     s_InvoiceNo: "",
+  //   };
+  //   const result = await api.post(`api/SaleInvoice/GetSaleInvoice`, collectData);
+  //   const transData = result?.data?.data[0]["saleinv"];
 
-    let arr: any = [];
-    for (let i = 0; i < transData.length; i++) {
-      arr.push({
-        id: transData[i]["id"],
-        saleid: transData[i]["saleid"],
-        user_Id: transData[i]["user_Id"],
-        itemNameId: transData[i]["itemNameId"],
-        unit: transData[i]["unit"],
-        SaleQty: transData[i]["qty"],
-        rate: transData[i]["rate"],
-        amount: transData[i]["amount"],
-        tax1: transData[i]["tax1"],
-        taxId1: transData[i]["taxId1"],
-        tax2: transData[i]["tax2"],
-        discount: transData[i]["discount"],
-        discountAmount: transData[i]["discountAmount"],
-        netAmount: transData[i]["netamount"],
-        documentNo: transData[i]["documentNo"],
-        documentDate: transData[i]["documentDate"],
-        invoiceNo: transData[i]["invoiceNo"],
-        supplier: transData[i]["supplierId"],
-        orderNo: transData[i]["orderNo"],
-        mrnNo: transData[i]["mrnNo"],
-        mrnDate: transData[i]["mrnDate"],
-        taxId3: transData[i]["taxId3"],
-        tax3: transData[i]["tax3"],
-      });
-    }
-    arr.push({ ...initialRows });
-    setItems(arr);
-  };
+  //   let arr: any = [];
+  //   for (let i = 0; i < transData.length; i++) {
+  //     arr.push({
+  //       id: transData[i]["id"],
+  //       saleid: transData[i]["saleid"],
+  //       user_Id: transData[i]["user_Id"],
+  //       itemNameId: transData[i]["itemNameId"],
+  //       unit: transData[i]["unit"],
+  //       taxId3: String(transData[i]["qty"]),
+  //       qty: 0,
+  //       rate: transData[i]["rate"],
+  //       amount: transData[i]["amount"],
+  //       // tax1: transData[i]["tax1"],
+  //       // taxId1: transData[i]["taxId1"],
+  //       // tax2: transData[i]["tax2"],
+  //       // discount: transData[i]["discount"],
+  //       // discountAmount: transData[i]["discountAmount"],
+  //       // netAmount: transData[i]["netamount"],
+  //       documentNo: transData[i]["documentNo"],
+  //       documentDate: transData[i]["documentDate"],
+  //       invoiceNo: transData[i]["invoiceNo"],
+  //       supplier: transData[i]["supplierId"],
+  //       orderNo: transData[i]["orderNo"],
+  //       mrnNo: transData[i]["mrnNo"],
+  //       mrnDate: transData[i]["mrnDate"],
+  //       // taxId3: transData[i]["taxId3"],
+  //       // tax3: transData[i]["tax3"],
+  //     });
+  //   }
+  //   arr.push({ ...initialRows });
+  //   setItems(arr);
+  // };
 
   const getSupliar = async () => {
     const collectData = {
@@ -232,6 +240,7 @@ const EditSaleReturnInvoice = () => {
       id: location.state.id,
       document_No: location.state.document_No,
       sR_InvoiceNo: location.state.sR_InvoiceNo,
+      s_InvoiceNo: location.state.s_InvoiceNo,
       doc_Date: dayjs(location.state.doc_Date).format("YYYY-MM-DD"),
       sR_InvoiceDate:
         dayjs(location.state.sR_InvoiceDate).format("YYYY-MM-DD") || "",
@@ -269,7 +278,7 @@ const EditSaleReturnInvoice = () => {
           orderNo: values.orderNo,
           mrnNo: "",
           mrnDate: defaultValuestime,
-          taxId3: "",
+          //taxId3: "",
           tax3: "",
         };
 
@@ -477,7 +486,10 @@ const EditSaleReturnInvoice = () => {
   );
 
   const getPurchaseOrderById = async (id: any) => {
-    const result = await api.post(`api/SaleReturn/GetSaleReturn`, { id: id });
+    const collectData = {
+      id: id,
+    };
+    const result = await api.post(`api/SaleReturn/GetSaleReturn`, collectData);
     const transData = result?.data?.data[0]["saleretnchild"];
 
     let arr: any = [];
@@ -576,11 +588,12 @@ const EditSaleReturnInvoice = () => {
           <form onSubmit={formik.handleSubmit}>
             {toaster && <ToastApp />}
             <Grid item xs={12} container spacing={2}>
-              <Grid item lg={4} xs={12}>
+              {/* <Grid item lg={4} xs={12}>
                 <Autocomplete
                   disablePortal
                   id="combo-box-demo"
                   options={SaleOption}
+                  value={SaleOption.find((Opt:any) => Opt.label === formik.values.s_InvoiceNo) || null}
                   fullWidth
                   size="small"
                   onChange={(event, newValue: any) => {
@@ -588,6 +601,7 @@ const EditSaleReturnInvoice = () => {
                     formik.setFieldValue("orderNo", newValue?.orderNo);
                     formik.setFieldValue("remark", newValue?.remark);
                     formik.setFieldValue("supplierId", newValue?.supplierId);
+                    formik.setFieldValue("s_InvoiceNo", newValue?.label);
                     formik.setFieldValue(
                       "supplierName",
                       newValue?.supplierName
@@ -606,7 +620,7 @@ const EditSaleReturnInvoice = () => {
                     />
                   )}
                 />
-              </Grid>
+              </Grid> */}
 
               <Grid item xs={12} sm={4} lg={4}>
                 <TextField
@@ -1005,8 +1019,19 @@ const EditSaleReturnInvoice = () => {
                         <td>
                           <TextField
                             type="text"
-                            value={item.SaleQty}
+                            value={item.taxId3}
                             size="small"
+                            onChange={(e) => {
+                              const newValue = Number(item.taxId3) - item.qty;
+
+                              if (newValue) {
+                                handleItemChange(
+                                  index,
+                                  "taxId3",
+                                  String(newValue)
+                                );
+                              }
+                            }}
                           />
                         </td>
 
@@ -1018,7 +1043,7 @@ const EditSaleReturnInvoice = () => {
                               const newQty = e.target.value;
 
                               if (
-                                parseInt(newQty) <= parseInt(item.SaleQty) ||
+                                parseInt(newQty) <= parseInt(item.taxId3) ||
                                 newQty === ""
                               ) {
                                 handleItemChange(index, "qty", newQty);

@@ -620,47 +620,12 @@ const MemberPetronEdit = (props: Props) => {
         }
       ),
     }),
-
-    address: Yup.object({
-      peraddress: Yup.string().test(
-        "required",
-        t("text.HouseNoRequired"),
-        function (value: any) {
-          return value && value.trim() !== "";
-        }
-      ),
-
-      percity: Yup.string().test(
-        "required",
-        t("text.CityRequired"),
-        function (value: any) {
-          return value && value.trim() !== "";
-        }
-      ),
-
-      perstate: Yup.string().test(
-        "required",
-        t("text.StateRequired"),
-        function (value: any) {
-          return value && value.trim() !== "";
-        }
-      ),
-
-      percountry: Yup.string().test(
-        "required",
-        t("text.CountryRequired"),
-        function (value: any) {
-          return value && value.trim() !== "";
-        }
-      ),
-    }),
   });
-
-  const formik = useFormik({
+  const formik: any = useFormik({
     initialValues: {
       appId: menuId,
       appName: menuName,
-      
+
       instId: location.state.instId,
 
       circUser: {
@@ -782,10 +747,6 @@ const MemberPetronEdit = (props: Props) => {
     "circUser.cat_id",
     "circUser.departmentcode",
     "circUser.classname",
-    "address.peraddress",
-    "address.perstate",
-    "address.percountry",
-    "address.percity",
   ];
 
   const back = useNavigate();
@@ -888,9 +849,16 @@ const MemberPetronEdit = (props: Props) => {
                   onChangeText={(text: string) =>
                     handleConversionChange("circUser.firstname", text)
                   }
-                  required={false}
+                  required={true}
                   lang={lang}
                 />
+
+                {formik.touched.circUser?.firstname &&
+                formik.errors.circUser?.firstname ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser?.firstname)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -900,7 +868,7 @@ const MemberPetronEdit = (props: Props) => {
                   onChangeText={(text: string) =>
                     handleConversionChange("circUser.middlename", text)
                   }
-                  required={true}
+                  required={false}
                   lang={lang}
                 />
               </Grid>
@@ -912,7 +880,7 @@ const MemberPetronEdit = (props: Props) => {
                   onChangeText={(text: string) =>
                     handleConversionChange("circUser.lastname", text)
                   }
-                  required={true}
+                  required={false}
                   lang={lang}
                 />
               </Grid>
@@ -924,7 +892,7 @@ const MemberPetronEdit = (props: Props) => {
                   onChangeText={(text: string) =>
                     handleConversionChange("circUser.fathername", text)
                   }
-                  required={true}
+                  required={false}
                   lang={lang}
                 />
               </Grid>
@@ -960,6 +928,12 @@ const MemberPetronEdit = (props: Props) => {
                   onBlur={formik.handleBlur}
                   InputLabelProps={{ shrink: true }}
                 />
+
+                {formik.touched.circUser?.dob && formik.errors.circUser?.dob ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser.dob)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -1027,6 +1001,13 @@ const MemberPetronEdit = (props: Props) => {
                     />
                   )}
                 />
+
+                {formik.touched.circUser?.cat_id &&
+                formik.errors.circUser?.cat_id ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser?.cat_id)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -1255,6 +1236,12 @@ const MemberPetronEdit = (props: Props) => {
                     />
                   )}
                 />
+                {formik.touched.circUser?.classname &&
+                formik.errors.circUser?.classname ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser.classname)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -1292,6 +1279,13 @@ const MemberPetronEdit = (props: Props) => {
                     />
                   )}
                 />
+
+                {formik.touched.circUser?.departmentcode &&
+                formik.errors.circUser?.departmentcode ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser.departmentcode)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -1421,6 +1415,11 @@ const MemberPetronEdit = (props: Props) => {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                 />
+                {formik.touched.circUser?.doj && formik.errors.circUser?.doj ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser.doj)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -1522,8 +1521,6 @@ const MemberPetronEdit = (props: Props) => {
                 />
               </Grid>
 
-
-
               <Grid item lg={4} xs={12}>
                 <Autocomplete
                   disablePortal
@@ -1533,33 +1530,19 @@ const MemberPetronEdit = (props: Props) => {
                   size="small"
                   value={
                     IssueSt.find(
-                      (option) =>
-                        option.label ==
-                        formik.values.circUser.status
+                      (option) => option.label == formik.values.circUser.status
                     ) || null
                   }
                   onChange={(event, newValue: any) => {
-                    formik.setFieldValue(
-                      "circUser.status",
-                      newValue?.label
-                    );
-                    formik.setFieldTouched(
-                      "circUser.status",
-                      true
-                    );
-                    formik.setFieldTouched(
-                      "circUser.status",
-                      false
-                    );
+                    formik.setFieldValue("circUser.status", newValue?.label);
+                    formik.setFieldTouched("circUser.status", true);
+                    formik.setFieldTouched("circUser.status", false);
                   }}
                   renderInput={(params) => (
                     <TextField
                       {...params}
                       label={
-                        <CustomLabel
-                          text={t("text.Status")}
-                          required={false}
-                        />
+                        <CustomLabel text={t("text.Status")} required={false} />
                       }
                     />
                   )}
