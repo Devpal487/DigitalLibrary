@@ -121,7 +121,9 @@ export default function SaleInvoiceMaster() {
     const fetchZonesData = async () => {
         try {
             const collectData = {
-                "id": -1
+                "id": -1,
+                "isRequst": false,
+                "s_InvoiceNo": ""
             };
             const response = await api.post(
                 `api/SaleInvoice/GetSaleInvoice`,

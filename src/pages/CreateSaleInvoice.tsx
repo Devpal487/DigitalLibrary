@@ -81,13 +81,14 @@ const CreateSaleInvoice = () => {
     getTaxData();
     GetUnitData();
     getSupliar();
-    getDocNo();
+  //  getDocNo();
+    gets_InvoiceNo()
   }, []);
 
-  const getDocNo = async () => {
-    const res = await api.post(`api/SaleInvoice/GetMaxInvoiceNo`);
-    formik.setFieldValue("s_InvoiceNo", res?.data?.data[0]?.s_InvoiceNo);
-  };
+  // const getDocNo = async () => {
+  //   const res = await api.post(`api/SaleInvoice/GetMaxInvoiceNo`);
+  //   formik.setFieldValue("s_InvoiceNo", res?.data?.data[0]?.s_InvoiceNo);
+  // };
 
   const getSupliar = async () => {
     const collectData = {
@@ -115,6 +116,14 @@ const CreateSaleInvoice = () => {
       })) || [];
 
     setTaxOption(arr);
+  };
+
+
+  const gets_InvoiceNo = async () => {
+    const res = await api.post(`api/SaleInvoice/GetMaxSaleInvoiceNo`);
+    formik.setFieldValue('s_InvoiceNo',res?.data?.data[0]['s_InvoiceNo'])
+
+    
   };
 
   const GetUnitData = async () => {
@@ -252,7 +261,11 @@ const calculateDiscount = (amount: number, discount: number, type: string) => {
 };
 
 const calculateNetAmount = (amount: number, tax: number, discount: number) => {
-  const netAmount = amount + tax - discount;
+
+  console.log('ammounts',{amount,tax,discount})
+  const netAmount = Number(amount) + Number(tax) - Number(discount);
+
+  console.log('netAmount',netAmount)
   return (netAmount.toFixed(2));
 };
 
@@ -474,7 +487,10 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
                   // type="date"
                   value={formik.values.s_InvoiceNo}
                   placeholder={t("text.s_InvoiceNo")}
-                  onChange={formik.handleChange}
+                 onChange={formik.handleChange}
+                  // InputProps={{
+                  //   readOnly: true
+                  // }}
                 />
               </Grid>
 
@@ -774,7 +790,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
                               handleItemChange(
                                 index,
                                 "qty",
-                                (e.target.value)
+                                e.target.value
                               )
                             }
                             // onFocus={(e) => e.target.select()}

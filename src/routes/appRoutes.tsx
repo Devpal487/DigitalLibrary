@@ -755,7 +755,10 @@ const appRoutes: RouteType[] = [
     sidebarProps: {
       displayText: "Assign User Type To Member",
     },
-  }, 
+
+  },
+
+
   {
     path: "/UserType",
     element: <UserType/>,
@@ -764,6 +767,7 @@ const appRoutes: RouteType[] = [
       displayText: "User Type",
     },
   },
+
 {
     path: "/PurchaseReturn",
     element: <PurchaseReturn/>,
