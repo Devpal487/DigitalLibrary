@@ -379,7 +379,7 @@ const EditPurchaseReturnOrder = () => {
         // = String(taxval);
         // Validation to ensure qty does not exceed retqty
         if (qtyValue > item.retqty) {
-            alert(`Quantity cannot exceed the purchase quantity.`);
+            alert(`Quantity cannot exceed the purchase quantity ${item.retqty}.`);
             return; 
         }
   
@@ -826,7 +826,7 @@ const EditPurchaseReturnOrder = () => {
                       >
                         {t("text.ItemName")}
                       </th>
-                      <th
+                      {/* <th
                         style={{
                           border: "1px solid black",
                           textAlign: "center",
@@ -834,7 +834,7 @@ const EditPurchaseReturnOrder = () => {
                         }}
                       >
                         {t("text.Quantity")}
-                      </th>
+                      </th> */}
                       <th
                         style={{
                           border: "1px solid black",
@@ -950,20 +950,18 @@ const EditPurchaseReturnOrder = () => {
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label={
-                                  <CustomLabel text={t("text.enteritem")} />
-                                }
+                                placeholder={t("text.enteritem")}
                               />
                             )}
                           />
                         </td>
-                        <td>
+                        {/*<td>
                           <TextField
                             type="text"
                             value={item.retqty}
                             size="small"
                           />
-                        </td>
+                        </td>*/}
                         <td>
                           <TextField
                             type="text"
@@ -1014,12 +1012,7 @@ const EditPurchaseReturnOrder = () => {
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label={
-                                  <CustomLabel
-                                    text={t("text.SelectTax")}
-                                    required={false}
-                                  />
-                                }
+                                placeholder={t("text.SelectTax")}
                               />
                             )}
                           />
