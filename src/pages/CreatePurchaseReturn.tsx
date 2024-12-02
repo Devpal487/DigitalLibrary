@@ -98,8 +98,9 @@ import {
       );
       const arr =
         res?.data?.data?.map((item: any) => ({
-          label: item.document_No +' ( '+ item.supplierName + "--" + item.orderNo +' )',
+          label: item.document_No,
           value: item.id,
+          document_No: item.document_No,
           orderNo: item.orderNo,
           supplierName: item.supplierName,
           supplierId: item.supplierId,
@@ -108,9 +109,11 @@ import {
         setPurchaseInvoiceOption([{ value: "-1", label: t("text.PurchaseInvoiceOption") }, ...arr]);
     };
 
-    const getPurchaseInvoicebyId = async (id:any) => {
+    const getPurchaseInvoicebyId = async (id:any, docNo:any) => {
       const collectData = {
         id: id,
+        "isRequst": true,
+        "document_No": docNo
       };
       const result = await api.post(
         `api/PurchaseInvoice/GetPurchaseInvoice`,
@@ -134,17 +137,18 @@ import {
             purchaseid: transData[i]["purchaseid"],
             user_Id: transData[i]["user_Id"],
             itemNameId: transData[i]["itemNameId"],
-            unit: transData[i]["unit"],
-            retqty: transData[i]["qty"],
+            unit: transData[i]["unit"]  ?? "1",
+            // retqty: transData[i]["qty"] - transData[i]['returnQty'] != null ? transData[i]['returnQty'] : 0,
+            retqty: transData[i]['qty'] - (transData[i]['returnQty'] ?? 0),
             qty: 0,
             rate: transData[i]["rate"],
-            // amount: transData[i]["amount"],
-            // tax1: transData[i]["tax1"],
-            // taxId1: transData[i]["taxId1"],
-            // tax2: transData[i]["tax2"] || 'P',
-            // discount: transData[i]["discount"] || 0,
-            // discountAmount: transData[i]["discountAmount"] ||0,
-            // netAmount: transData[i]["netamount"],
+            amount: 0,
+            tax1: "",
+            taxId1:"0",
+            tax2: 'P',
+            discount: 0,
+            discountAmount: 0,
+            netAmount: 0,
             documentNo: transData[i]["documentNo"],
             documentDate: transData[i]["documentDate"],
             invoiceNo: transData[i]["invoiceNo"],
@@ -152,8 +156,8 @@ import {
             orderNo: transData[i]["orderNo"],
             mrnNo: transData[i]["mrnNo"],
             mrnDate: transData[i]["mrnDate"],
-            // taxId3: transData[i]["taxId3"],
-            // tax3: transData[i]["tax3"],
+            taxId3: String(transData[i]["qty"]),
+            tax3: "",
           });
         }
         setItems(arr);
@@ -432,7 +436,7 @@ import {
         console.log("Form Submitted with values:", values);
         values.amount = totalAmount
   
-        const validItems = items.filter((item: any) => validateItem(item));
+        // const validItems = items.filter((item: any) => validateItem(item));
         //console.log("🚀 ~ onSubmit: ~ validateItem(item):", validateItem(item))
   
         // Check if there are valid items
@@ -443,7 +447,7 @@ import {
         // }
   
         // Map the valid items, setting values at the first index
-        const updatedItems = validItems.map((item: any, index: any) => {
+        const updatedItems = items.map((item: any, index: any) => {
           const documentDate = values.doc_Date;
   
           const baseItem = {
@@ -455,7 +459,7 @@ import {
             orderNo: values.orderNo,
             mrnNo: "",
             mrnDate: defaultValuestime,
-            taxId3: "",
+            // taxId3: "",
             tax3: "",
           };
   
@@ -568,8 +572,8 @@ import {
                     onChange={(event, newValue: any) => {
                       console.log(newValue?.value);
                       if(newValue){
-                        getPurchaseInvoicebyId(newValue?.value);
-                        formik.setFieldValue("p_InvoiceNo", newValue?.value);
+                        getPurchaseInvoicebyId(newValue?.value, newValue?.document_No);
+                        formik.setFieldValue("p_InvoiceNo", newValue?.document_No);
                         formik.setFieldValue("supplierId", newValue?.supplierId);
                         formik.setFieldValue("supplierName", newValue?.supplierName);
                         formik.setFieldValue("orderNo", newValue?.orderNo);
@@ -888,54 +892,15 @@ import {
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label={
-                                  <CustomLabel text={t("text.enteritem")} />
-                                }
+                                placeholder={t("text.enteritem")}
                               />
                             )}
                           />
                         </td>
                         <td>
-                          {/* <Autocomplete
-                            disablePortal
-                            id="combo-box-demo"
-                            options={unitOptions}
-                            size="small"
-                            value={
-                              unitOptions.find(
-                                (opt: any) => opt.value == item.unit
-                              ) || null
-                            }
-                            onChange={(event, newValue) =>
-                              handleItemChange(
-                                index,
-                                "unit",
-                                newValue?.value?.toString()
-                              )
-                            }
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                label={
-                                  <CustomLabel
-                                    text={t("text.unit")}
-                                    required={false}
-                                  />
-                                }
-                              />
-                            )}
-                          /> */}
                           <TextField
                             type="text"
                             value={item.retqty}
-                            // onChange={(e) =>
-                            //   handleItemChange(
-                            //     index,
-                            //     "qty",
-                            //     (e.target.value)
-                            //   )
-                            // }
-                            // onFocus={(e) => e.target.select()}
                             size="small"
                           />
                         </td>
@@ -950,7 +915,6 @@ import {
                                 (e.target.value)
                               )
                             }
-                            // onFocus={(e) => e.target.select()}
                             size="small"
                           />
                         </td>
@@ -991,14 +955,7 @@ import {
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label={
-                                  <CustomLabel
-                                    text={t("text.SelectTax")}
-                                    required={false}
-                                  />
-                                }
-
-                                // placeholder={t("text.SelectTax")}
+                                placeholder={t("text.SelectTax")}
                               />
                             )}
                           />
@@ -1058,7 +1015,6 @@ import {
                     </tr>
                   </tbody>
                   </Table>
-                  {/* </TableContainer> */}
                 </Grid>
   
                 <Grid item xs={12}>

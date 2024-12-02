@@ -1092,189 +1092,249 @@ export default function MiniDrawer({ items }: any) {
               </ListItem>
             ))}
           </List>
-
           <List sx={{ padding: 0 }}>
-      {items.map((parent: any, parentIndex: number) => (
-        <React.Fragment key={parentIndex}>
-          <Divider />
-          {/* Parent Item */}
-          <ListItem
-            onClick={() => collapseHandle(parentIndex)}
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: "10px 16px",
-              backgroundColor:
-      selectedMenu?.parentIndex === parentIndex &&
-      selectedMenu?.childIndex === null &&
-      selectedMenu?.subchildIndex === null
-        ? "#FF9933" // Saffron color for active parent menu
-        : "#f5f5f5",
-    fontWeight: 
-      selectedMenu?.parentIndex === parentIndex ? 600 : "normal", // Bold active menu
-    color: 
-      selectedMenu?.parentIndex === parentIndex ? "#2B4593" : "inherit", // Contrast text
-    borderRadius: "6px", // Optional rounded corners
-    margin: "5px", // Maintain consistent spacing
-    cursor: "pointer",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <span style={{ fontSize: "1.2rem" }}>📁</span>
-              <ListItemText
-                primary={parent.name}
-                primaryTypographyProps={{ fontWeight: "500", fontSize: "1rem" }}
-              />
-            </div>
-            <ListItemIcon>
-              {parent.items && parent.items.length > 0 ? (
-                collapseIndexs === parentIndex ? (
-                  <ExpandLessIcon />
-                ) : (
-                  <ExpandMoreIcon />
-                )
-              ) : null}
-            </ListItemIcon>
-          </ListItem>
+  {items.map((parent: any, parentIndex: number) => (
+    <React.Fragment key={parentIndex}>
+      <Divider />
+      {/* Parent Item */}
+      <ListItem
+        onClick={() => collapseHandle(parentIndex)}
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "10px 16px",
+          backgroundColor:
+            selectedMenu?.parentIndex === parentIndex &&
+            selectedMenu?.childIndex === null &&
+            selectedMenu?.subchildIndex === null
+              ? "#FF9933" // Saffron color for active parent menu
+              : "#f5f5f5",
+          fontWeight:
+            selectedMenu?.parentIndex === parentIndex ? 600 : "normal", // Bold active menu
+          color:
+            selectedMenu?.parentIndex === parentIndex ? "#2B4593" : "inherit", // Contrast text
+          borderRadius: "6px", // Optional rounded corners
+          margin: "5px", // Maintain consistent spacing
+          cursor: "pointer",
+          paddingRight: open ? "16px" : "32px", // Add more padding on the right when open is false
+        }}
+        title={parent.name} 
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {/* Conditionally show folder icon */}
+          {open && (
+            <span
+              style={{
+                fontSize: "1.2rem",
+                backgroundColor: "#f0f0f0", // Background color when closed
+                padding: "6px",
+                borderRadius: "10px", // Round corners when closed
+              }}
+            >
+              📁
+            </span>
+          )}
+          <ListItemText
+            primary={
+              open
+                ? parent.name // Show full name if open is true
+                : parent.name
+                    .split(" ") // Split name by space
+                    .map((word:any) => word.charAt(0).toUpperCase()) // Take the first char of each word
+                    .join("") // Join them into a single string
+            }
+            primaryTypographyProps={{ fontWeight: "500", fontSize: "1rem" }}
+          />
+        </div>
+        <ListItemIcon>
+          {parent.items && parent.items.length > 0 ? (
+            collapseIndexs === parentIndex ? (
+              <ExpandLessIcon />
+            ) : (
+              <ExpandMoreIcon />
+            )
+          ) : null}
+        </ListItemIcon>
+      </ListItem>
 
-          <Divider />
+      <Divider />
 
-          {/* Child Items */}
-          <Collapse
-            in={collapseIndexs === parentIndex}
-            timeout="auto"
-            unmountOnExit
-            sx={{ paddingLeft: "16px" }}
-          >
-            <List>
-              {parent.items.map((child: any, childIndex: number) => (
-                <React.Fragment key={childIndex}>
-                  <ListItem
-                    onClick={() => {
-                      collapseHandle2(childIndex);
-                      handleMenuClick({
-                        child,
-                        parentIndex,
-                        childIndex,
-                      });
-                    }}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      padding: "8px 16px",
-                      borderRadius: "6px",
-                      backgroundColor:
-      selectedMenu?.parentIndex === parentIndex &&
-      selectedMenu?.childIndex === childIndex &&
-      selectedMenu?.subchildIndex === null
-    ? "" // Saffron color for active child menu
-    : child.items && child.items.length > 0
-    ? "#e9f7ff" // Light blue for menus with sub-items
-    : "#fff3e0",    //fff3e0 #E9F7FF
-    fontWeight: 
-      selectedMenu?.parentIndex === parentIndex &&
-      selectedMenu?.childIndex === childIndex
-        ? 600
-        : "normal", // Bold active child menu
-    color: 
-      selectedMenu?.parentIndex === parentIndex &&
-      selectedMenu?.childIndex === childIndex
-        ? "#2B4593"
-        : "inherit",
-    margin: "5px",
-    cursor: "pointer",
-                    }}
-                  >
-                    <div
+      {/* Child Items */}
+      <Collapse
+        in={collapseIndexs === parentIndex}
+        timeout="auto"
+        unmountOnExit
+        sx={{ paddingLeft: "16px" }}
+      >
+        <List>
+          {parent.items.map((child: any, childIndex: number) => (
+            <React.Fragment key={childIndex}>
+              <ListItem
+                onClick={() => {
+                  // If child has subitems, toggle collapse; if not, prevent it
+                  if (child.items && child.items.length > 0) {
+                    collapseHandle2(childIndex);
+                  }
+                  handleMenuClick({
+                    child,
+                    parentIndex,
+                    childIndex,
+                  });
+                }}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  backgroundColor:
+                    selectedMenu?.parentIndex === parentIndex &&
+                    selectedMenu?.childIndex === childIndex &&
+                    selectedMenu?.subchildIndex === null
+                      ? ""
+                      : child.items && child.items.length > 0
+                      ? "#e9f7ff" // Light blue for menus with sub-items
+                      : "#fff3e0", // Light orange for regular items
+                  fontWeight:
+                    selectedMenu?.parentIndex === parentIndex &&
+                    selectedMenu?.childIndex === childIndex
+                      ? 600
+                      : "normal", // Bold active child menu
+                  color:
+                    selectedMenu?.parentIndex === parentIndex &&
+                    selectedMenu?.childIndex === childIndex
+                      ? "#2B4593"
+                      : "inherit",
+                  margin: "5px",
+                  cursor: "pointer",
+                  paddingRight: open ? "16px" : "32px", // Add more padding on the right when open is false
+                }}
+                title={child.name} 
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  {/* Conditionally show folder icon for child */}
+                  {open && (
+                    <span
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px",
+                        fontSize: "1.2rem",
+                        backgroundColor: "#f0f0f0", // Background color when closed
+                        padding: "6px",
+                        borderRadius: "10px", // Round corners when closed
                       }}
                     >
-                      <span style={{ fontSize: "1.2rem" }}>
-                    {child.items && child.items.length > 0 ? "📂" : "📄"}
-                  </span>
+                      {child.items && child.items.length > 0 ? "📂" : "📄"}
+                    </span>
+                  )}
                   <ListItemText
-                    primary={child.name}
+                    primary={
+                      open
+                        ? child.name // Show full name if open is true
+                        : child.name
+                            .split(" ") // Split name by space
+                            .map((word:any) => word.charAt(0).toUpperCase()) // Take the first char of each word
+                            .join("") // Join them into a single string
+                    }
                     primaryTypographyProps={{ fontSize: "0.95rem" }}
                   />
-                    </div>
-                    {child.items && child.items.length > 0 && (
-                      <ListItemIcon>
-                        {collapseIndexs2 === childIndex ? (
-                          <ExpandLessIcon />
-                        ) : (
-                          <ExpandMoreIcon />
-                        )}
-                      </ListItemIcon>
+                </div>
+                {child.items && child.items.length > 0 && (
+                  <ListItemIcon>
+                    {collapseIndexs2 === childIndex ? (
+                      <ExpandLessIcon />
+                    ) : (
+                      <ExpandMoreIcon />
                     )}
-                  </ListItem>
-                  <Collapse
-                    in={collapseIndexs2 === childIndex}
-                    timeout="auto"
-                    unmountOnExit
-                    sx={{ paddingLeft: "16px" }}
-                  >
-                    <List>
-                      {child.items.map(
-                        (subchild: any, subchildIndex: number) => (
-                          <ListItem
-                            key={subchildIndex}
-                            onClick={() =>
-                              handleMenuClick({
-                                subchild,
-                                parentIndex,
-                                childIndex,
-                                subchildIndex,
-                              })
-                            }
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              padding: "6px 16px",
-                              borderRadius: "6px",
-                              backgroundColor:
-                              selectedMenu?.parentIndex === parentIndex &&
-                              selectedMenu?.childIndex === childIndex &&
-                              selectedMenu?.subchildIndex === subchildIndex
-                                ? "#FF9933" // Saffron color for active subchild menu
-                                : "#fff3e0",
-                            fontWeight: 
-                              selectedMenu?.parentIndex === parentIndex &&
-                              selectedMenu?.childIndex === childIndex &&
-                              selectedMenu?.subchildIndex === subchildIndex
-                                ? 600
-                                : "normal", // Bold active subchild menu
-                            color: 
-                              selectedMenu?.parentIndex === parentIndex &&
-                              selectedMenu?.childIndex === childIndex &&
-                              selectedMenu?.subchildIndex === subchildIndex
-                                ? "#2B4593"
-                                : "inherit", 
-                            margin: "5px",
-                            cursor: "pointer",
-                            }}
-                          >
-                            <span style={{ fontSize: "1.2rem" }}>📄</span>
-                            <ListItemText
-                              primary={subchild.name}
-                              primaryTypographyProps={{ fontSize: "0.9rem" }}
-                            />
-                          </ListItem>
-                        )
-                      )}
-                    </List>
-                  </Collapse>
-                </React.Fragment>
-              ))}
-            </List>
-          </Collapse>
-        </React.Fragment>
-      ))}
-    </List>
+                  </ListItemIcon>
+                )}
+              </ListItem>
+
+              <Collapse
+                in={collapseIndexs2 === childIndex}
+                timeout="auto"
+                unmountOnExit
+                sx={{ paddingLeft: "16px" }}
+              >
+                <List>
+                  {child.items.map((subchild: any, subchildIndex: number) => (
+                    <ListItem
+                      key={subchildIndex}
+                      onClick={() =>
+                        handleMenuClick({
+                          subchild,
+                          parentIndex,
+                          childIndex,
+                          subchildIndex,
+                        })
+                      }
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        padding: "6px 16px",
+                        borderRadius: "6px",
+                        backgroundColor:
+                          selectedMenu?.parentIndex === parentIndex &&
+                          selectedMenu?.childIndex === childIndex &&
+                          selectedMenu?.subchildIndex === subchildIndex
+                            ? "#FF9933" 
+                            : "#fff3e0",
+                        fontWeight:
+                          selectedMenu?.parentIndex === parentIndex &&
+                          selectedMenu?.childIndex === childIndex &&
+                          selectedMenu?.subchildIndex === subchildIndex
+                            ? 600
+                            : "normal", 
+                        color:
+                          selectedMenu?.parentIndex === parentIndex &&
+                          selectedMenu?.childIndex === childIndex &&
+                          selectedMenu?.subchildIndex === subchildIndex
+                            ? "#2B4593"
+                            : "inherit",
+                        margin: "5px",
+                        cursor: "pointer",
+                      }}
+                      title={subchild.name} 
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  {open && (
+                    <span
+                      style={{
+                        fontSize: "1.2rem",
+                        backgroundColor: "#f0f0f0", 
+                        padding: "6px",
+                        borderRadius: "10px",
+                      }}
+                    >
+                      📄
+                    </span>
+                  )}
+                      <ListItemText
+                        primary={
+                          open
+                            ? subchild.name
+                            : subchild.name
+                                .split(" ") 
+                                .map((word:any) => word.charAt(0).toUpperCase()) 
+                                .join("")
+                        }
+                        primaryTypographyProps={{ fontSize: "0.9rem" }}
+                      />
+                      </div>
+                    </ListItem>
+                    
+                  ))}
+                </List>
+              </Collapse>
+            </React.Fragment>
+          ))}
+        </List>
+      </Collapse>
+    </React.Fragment>
+  ))}
+</List>
+
+
+
 
         </React.Fragment>
       </Drawer>

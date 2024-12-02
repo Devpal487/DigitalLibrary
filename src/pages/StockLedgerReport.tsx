@@ -143,6 +143,10 @@ export default function StockLedgerReport() {
     const fileName = `${defaultValuestime}_${itemName}.pdf`; 
     const pdf = new jsPDF();
 
+     // Adding custom font that supports Hindi (Noto Sans Devanagari)
+     pdf.addFont('path_to_your_font/NotoSansDevanagari-Regular.ttf', 'NotoSansDevanagari', 'normal');
+     pdf.setFont('NotoSansDevanagari', 'normal');
+
     const htmlContent = ReactDOMServer.renderToStaticMarkup(
       <PrintReportFormat zones={zones} itemName={itemName} />
     );
@@ -300,66 +304,11 @@ export default function StockLedgerReport() {
       }));
       setZones1(zonesWithIds);
       setOpen(true);
-
-      // if (data.length > 0) {
-      //   const Mcolumns: GridColDef[] = [
-      //     {
-      //       field: "serialNo",
-      //       headerName: t("text.SrNo"),
-      //       flex: 0.2,
-      //     },
-      //     {
-      //       field: "voucherType",
-      //       headerName: t("text.VoucherType"),
-      //       flex: 0.5,
-      //     },
-
-      //     {
-      //       field: "voucherDate",
-      //       headerName: t("text.VoucherDate"),
-      //       flex: 1,
-      //       renderCell(params) {
-      //         return dayjs(params.row.voucherDate).format("DD-MMM-YYYY");
-      //       },
-      //     },
-
-      //     {
-      //       field: "rate",
-      //       headerName: t("text.Rate"),
-      //       flex: 1,
-      //       // headerClassName: "MuiDataGrid-colCell",
-      //     },
-
-      //     {
-      //       field: "inQty",
-      //       headerName: t("text.InQuantity"),
-      //       flex: 1,
-      //       // headerClassName: "MuiDataGrid-colCell",
-      //     },
-
-      //     {
-      //       field: "outQty",
-      //       headerName: t("text.OutQuantity"),
-      //       flex: 1,
-      //       // headerClassName: "MuiDataGrid-colCell",
-      //     },
-      //     // {
-      //     //   field: "balQty",
-      //     //   headerName: t("text.balQuantity"),
-      //     //   flex: 1,
-      //     //   // headerClassName: "MuiDataGrid-colCell",
-      //     // },
-      //   ];
-      //   setMColumns(Mcolumns as any);
-      // }
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
 
-  const adjustedMColumns = Mcolumns.map((column: any) => ({
-    ...column,
-  }));
 
   const formik = useFormik({
     initialValues: {
@@ -479,8 +428,6 @@ export default function StockLedgerReport() {
                         value: size,
                         label: `${size}`,
                       }))}
-                      // onRowSelectionModelChange={handleRowSelection}
-                      // rowSelectionModel={selectedRows} // Default selected rows
                       initialState={{
                         pagination: { paginationModel: { pageSize: 5 } },
                       }}
@@ -544,25 +491,7 @@ export default function StockLedgerReport() {
                       sx={{ marginTop: "2%" }}
                     >
                       <Grid item sm={12} lg={12} xs={12}>
-                        {/*<DataGrid
-                          rows={zones1}
-                          columns={adjustedMColumns}
-                          rowSpacingType="border"
-                          autoHeight
-                          // checkboxSelection
-                          
-                          sx={{
-                            border: 0,
-                            "& .MuiDataGrid-columnHeaders": {
-                              backgroundColor: `var(--grid-headerBackground)`,
-                              color: `var(--grid-headerColor)`,
-                            },
-                            "& .MuiDataGrid-columnHeaderTitle": {
-                              color: "white",
-                            },
-                          }}
-                        />*/}
-                      <StockLedgerTable data={zones1}/>
+                      <StockLedgerTable data={zones1} title={isTitle}/>
                       </Grid> 
                     </Grid>
                   </DialogContent>
