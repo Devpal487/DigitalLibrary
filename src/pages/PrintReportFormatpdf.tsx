@@ -8,6 +8,7 @@ import {
   TableBody,
   Paper,
   TableFooter,
+  Button,
   Divider,
   IconButton,
   Dialog,
@@ -15,6 +16,7 @@ import {
   DialogTitle,
   DialogContent,
 } from "@mui/material";
+import jsPDF from "jspdf";
 import api from "../utils/Url";
 import CloseIcon from "@mui/icons-material/Close";
 import StockLedgerTable from "./StockLedgerTable";
@@ -25,7 +27,7 @@ interface HTMLTemplateProps {
   showHide:boolean;
 }
 
-const PrintReportFormat: React.FC<HTMLTemplateProps> = ({ zones, itemName,showHide }) => {
+const PrintReportFormatpdf: React.FC<HTMLTemplateProps> = ({ zones, itemName,showHide }) => {
   console.log("showhide", showHide);
   
   const pdfRef = useRef<HTMLDivElement>(null);
@@ -33,6 +35,7 @@ const PrintReportFormat: React.FC<HTMLTemplateProps> = ({ zones, itemName,showHi
   const [isTitle, setTitle] = useState<any>('');
   const [open, setOpen] = useState(false);
 
+  // Calculate totals
   const totalInQty = zones.reduce((sum, zone) => sum + (zone.inQty || 0), 0);
   const totalOutQty = zones.reduce((sum, zone) => sum + (zone.outQty || 0), 0);
   const totalInAmount = zones.reduce((sum, zone) => sum + (zone.totalInAmount || 0), 0);
@@ -43,8 +46,10 @@ const PrintReportFormat: React.FC<HTMLTemplateProps> = ({ zones, itemName,showHi
     setOpen(false);
   };
 
+
   const ModalData = async (Row: any) => {
     setTitle(Row.titleName)
+
     try {
       const collectData = {
         voucherId: -1,
@@ -52,6 +57,7 @@ const PrintReportFormat: React.FC<HTMLTemplateProps> = ({ zones, itemName,showHi
         itemId: Row.itemId,
         
       };
+
       const response = await api.post(
         `/api/StockLedger/GetStockLedgerReportDetails`,
         collectData
@@ -65,17 +71,19 @@ const PrintReportFormat: React.FC<HTMLTemplateProps> = ({ zones, itemName,showHi
       }));
       setZones1(zonesWithIds);
       setOpen(true);
+      // setShowHeaderforPrint(true);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
 
+
+
   return (
-    <div>
+    <div style={{marginTop:"5px", marginBottom:"5px"}}>
       <div ref={pdfRef}>
         {/* Header */}
-        {showHide  &&
-        <>
+      
         <div style={{ backgroundColor: "#2a3d66", color: "white", textAlign: "center", padding: "15px", width: "full", borderTopLeftRadius:"10px", borderTopRightRadius:"10px" }}>
           <h1 style={{ margin: 0, fontSize: "18px" }}>Stock Summary Report</h1>
         </div>
@@ -87,8 +95,7 @@ const PrintReportFormat: React.FC<HTMLTemplateProps> = ({ zones, itemName,showHi
           <h2 style={{ color: "#333", fontSize: "13px", fontStyle: "italic" }}>{itemName}</h2>
         </div>
         <Divider color="#ccc" style={{marginBottom:"5px"}}/>
-        </>
-}
+        
         {/* Table */}
         <TableContainer component={Paper}>
           <Table style={{width: "full"}}>
@@ -127,19 +134,7 @@ const PrintReportFormat: React.FC<HTMLTemplateProps> = ({ zones, itemName,showHi
                   borderBottom: "1px solid #000",
                 }}>
                   <TableCell align="right">{index + 1}</TableCell>
-                  <TableCell 
-                    onMouseEnter={(e: any) => {
-                      e.target.style.textDecoration = "underline";
-                      e.target.style.color = "blue";
-                    }}
-                    onMouseLeave={(e: any) => {
-                      e.target.style.textDecoration = "none";
-                      e.target.style.color = "inherit";
-                    }}><a style={{
-                      cursor: "pointer",
-                      textDecoration: "underline",
-                      color: "blue",
-                    }} onClick={() => {ModalData(zone)}}> {zone.titleName}</a></TableCell>
+                  <TableCell align="left"  onClick={() => {ModalData(zone)}}>{zone.titleName}</TableCell>
                   <TableCell align="right">&#8377; {zone.rate.toFixed(2)}</TableCell>
                   <TableCell align="right">&#8377; {zone.totalInAmount.toFixed(2)}</TableCell>
                   <TableCell align="right">{zone.inQty}</TableCell>
@@ -159,7 +154,6 @@ const PrintReportFormat: React.FC<HTMLTemplateProps> = ({ zones, itemName,showHi
               <TableCell style={{ color: "black", fontWeight: 600, fontSize: "14px" }} align="right">{totalBalQty.toFixed(2)}</TableCell>
               <TableCell align="right" style={{ color: "black", fontWeight: 600, fontSize: "14px" }}>{totalOutAmount.toFixed(2)}</TableCell>
             </TableRow>
-
             </TableFooter>
           </Table>
         </TableContainer>
@@ -222,4 +216,4 @@ const PrintReportFormat: React.FC<HTMLTemplateProps> = ({ zones, itemName,showHi
   );
 };
 
-export default PrintReportFormat;
+export default PrintReportFormatpdf;

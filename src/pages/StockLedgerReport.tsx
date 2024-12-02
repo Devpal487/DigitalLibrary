@@ -1,95 +1,46 @@
 import React, { useEffect, useState } from "react";
-import ReactDOMServer from 'react-dom/server';
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import api from "../utils/Url";
 import Card from "@mui/material/Card";
 import {
   Box,
   Divider,
-  Stack,
   Grid,
   Typography,
-  Input,
   TextField,
   Autocomplete,
   Button,
-  FormControlLabel,
-  Checkbox,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  IconButton,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import Switch from "@mui/material/Switch";
-import { useNavigate, useLocation } from "react-router-dom";
-import Chip from "@mui/material/Chip";
 import { useTranslation } from "react-i18next";
 import Paper from "@mui/material/Paper";
-import { toast } from "react-toastify";
 import ToastApp from "../ToastApp";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
-import CircularProgress from "@mui/material/CircularProgress";
+import { ConfirmDialog } from "primereact/confirmdialog";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { getId, getISTDate, getMenuData } from "../utils/Constant";
-import ButtonWithLoader from "../utils/ButtonWithLoader";
+import { getISTDate } from "../utils/Constant";
 import CustomLabel from "../utils/CustomLabel";
-import Languages from "../utils/Languages";
-import { Language } from "react-transliterate";
 import "react-transliterate/dist/index.css";
-import TranslateTextField from "../utils/TranslateTextField";
-import DataGrids from "../utils/Datagrids";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import RestoreIcon from "@mui/icons-material/Restore";
 import PrintIcon from "@mui/icons-material/Print";
 import jsPDF from "jspdf"; 
 import html2canvas from "html2canvas";
 import SearchIcon from "@mui/icons-material/Search";
-import CloseIcon from "@mui/icons-material/Close";
+import PrintReportFormatpdf from "./PrintReportFormatpdf";
 import PrintReportFormat from "./PrintReportFormat";
-import dayjs from "dayjs";
-import StockLedgerTable from "./StockLedgerTable";
-
-interface MenuPermission {
-  isAdd: boolean;
-  isEdit: boolean;
-  isPrint: boolean;
-  isDel: boolean;
-}
+import * as ReactDOM from 'react-dom/client';
 
 export default function StockLedgerReport() {
   const [zones, setZones] = useState<any>([]);
   const {defaultValuestime} = getISTDate();
-  const [columns, setColumns] = useState<any>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
   const [isMember, setMember] = useState<any>([]);
-  const [timerCheck, setTimerCheck] = useState<NodeJS.Timeout | null>(null);
   const [isHovered, setIsHovered] = useState(false);
-
-  const [Mcolumns, setMColumns] = useState<any>([]);
-  const [zones1, setZones1] = useState([]);
-  //console.log({ zones1, Mcolumns });
-
-  const [isTitle, setTitle] = useState<any>('');
-
   const [isItemId, setItemId] = useState();
   const [itemName, setItemName] = useState<any>("");
-
-  const [open, setOpen] = useState(false);
-  const [Row, setRow] = useState<any>(null);
-
+  const [showHide, setShowHide] = useState(false);
   const { t } = useTranslation();
-
   const [Program, setProgram] = useState<any>([
     { value: "-1", label: t("text.SelectItem") },
   ]);
 
-  const closeStatus = () => {
-    setOpen(false);
-  };
 
   useEffect(() => {
     getProgram();
@@ -97,8 +48,6 @@ export default function StockLedgerReport() {
 
   const getProgram = () => {
     api.get(`api/Basic/GetDigitalContent`).then((res) => {
-      // console.log("checkMemb", res?.data);
-
       const arr: any = [];
 
       for (let index = 0; index < res?.data?.data?.length; index++) {
@@ -111,57 +60,48 @@ export default function StockLedgerReport() {
     });
   };
 
-  // const exportToPDF = async () => {
-  //   const input: any = document.getElementById("data-grid"); // The id of the Grid container
-  //   const canvas = await html2canvas(input);
-  //   const imgData = canvas.toDataURL("image/png");
-  //   const pdf = new jsPDF();
-  //   const imgWidth = 190; // Adjust according to your needs
-  //   const pageHeight = pdf.internal.pageSize.height;
-  //   const imgHeight = (canvas.height * imgWidth) / canvas.width;
-  //   let heightLeft = imgHeight;
 
-  //   let position = 0;
+  const exportToPDF = async () => {
+    // Dynamically create a div to render the PrintReportFormatpdf component
+    const container = document.createElement("div");
+    container.style.position = "absolute";
+    container.style.top = "-9999px";
+    document.body.appendChild(container);
 
-  //   // Add the image to PDF
-  //   pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
-  //   heightLeft -= pageHeight;
-
-  //   while (heightLeft >= 0) {
-  //     position = heightLeft - imgHeight;
-  //     pdf.addPage();
-  //     pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
-  //     heightLeft -= pageHeight;
-  //   }
-
-  //   pdf.save("Stock-Ledger-report.pdf");
-  // };
-
-
-  const exportToPDF = () => {
-    
-    const fileName = `${defaultValuestime}_${itemName}.pdf`; 
-    const pdf = new jsPDF();
-
-     // Adding custom font that supports Hindi (Noto Sans Devanagari)
-     pdf.addFont('path_to_your_font/NotoSansDevanagari-Regular.ttf', 'NotoSansDevanagari', 'normal');
-     pdf.setFont('NotoSansDevanagari', 'normal');
-
-    const htmlContent = ReactDOMServer.renderToStaticMarkup(
-      <PrintReportFormat zones={zones} itemName={itemName} />
+    const element = (
+      <PrintReportFormatpdf itemName={itemName} zones={zones} showHide={false} />
     );
 
-    pdf.html(htmlContent, {
-      callback: function (doc) {
-        doc.save(fileName);
-      },
-      x: 10, 
-      y: 10,
-      width: 180,
-      windowWidth: 800  
-    });
+    // Render the component in the hidden div
+    const root = ReactDOM.createRoot(container);
+    root.render(element);
 
+    // Wait for the component to render before capturing it
+    setTimeout(async () => {
+      const canvas = await html2canvas(container);
+      const imgData = canvas.toDataURL("image/png");
+      const fileName = `${defaultValuestime}_${itemName}.pdf`;
+      const pdf = new jsPDF();
+      const imgWidth = 190;
+      const pageHeight = pdf.internal.pageSize.height;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      pdf.save(fileName);
+
+      // Cleanup the temporary container
+      document.body.removeChild(container);
+    }, 0);
   };
+
 
 
   const fetchZonesData = async () => {
@@ -186,128 +126,13 @@ export default function StockLedgerReport() {
 
       console.log("zonesWithIds",zonesWithIds);
       setZones(zonesWithIds);
-      //setIsLoading(false);
       setIsVisible(true);
       setMember(data);
-
-      if (data.length > 0) {
-        const columns: GridColDef[] = [
-          {
-            field: "serialNo",
-            headerName: t("text.SrNo"),
-            flex: 0.5,
-            // headerClassName: "MuiDataGrid-colCell",
-          },
-
-          {
-            field: "titleName",
-            headerName: t("text.ItemName"),
-            flex: 1,
-            renderCell: (params) => (
-              <span
-                onClick={() => {
-                  ModalData(params?.row);
-                }}
-                style={{
-                  color: "blue",
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                }}
-              >
-                {params.value}
-              </span>
-            ),
-          },
-
-          {
-            field: "rate",
-            headerName: t("text.Rate"),
-            flex: 1,
-            // headerClassName: "MuiDataGrid-colCell",
-          },
-
-          {
-            field: "inQty",
-            headerName: t("text.InQuantity"),
-            flex: 1,
-            // headerClassName: "MuiDataGrid-colCell",
-          },
-
-          {
-            field: "outQty",
-            headerName: t("text.OutQuantity"),
-            flex: 1,
-            // headerClassName: "MuiDataGrid-colCell",
-          },
-          {
-            field: "balQty",
-            headerName: t("text.balQuantity"),
-            flex: 1,
-            // headerClassName: "MuiDataGrid-colCell",
-          },
-          {
-            field: "totalInAmount",
-            headerName: t("text.TotalInAmmount"),
-            flex: 1,
-            // headerClassName: "MuiDataGrid-colCell",
-          },
-
-          // {
-          //   field: "totalOutAmount",
-          //   headerName: t("text.TotalOutAmmount"),
-          //   flex: 1,
-          //   // headerClassName: "MuiDataGrid-colCell",
-          // },
-
-          // {
-          //   field: "openning",
-          //   headerName: t("text.Opening"),
-          //   flex: 1,
-          //   // headerClassName: "MuiDataGrid-colCell",
-          // },
-        ];
-        setColumns(columns as any);
-      }
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
 
-  const adjustedColumns = columns.map((column: any) => ({
-    ...column,
-  }));
-
-  const ModalData = async (Row: any) => {
-    setTitle(Row.titleName)
-
-
-
-    //console.log("Row", Row);
-    try {
-      const collectData = {
-        voucherId: -1,
-        stockBinId: -1,
-        itemId: Row.itemId,
-        
-      };
-
-      const response = await api.post(
-        `/api/StockLedger/GetStockLedgerReportDetails`,
-        collectData
-      );
-      const data = response.data.data;
-      const zonesWithIds = data.map((zone: any, index: any) => ({
-        ...zone,
-        serialNo: index + 1,
-        id: index + 1,
-        balQty: parseInt(zone.inQty) - parseInt(zone.outQty),
-      }));
-      setZones1(zonesWithIds);
-      setOpen(true);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
 
 
   const formik = useFormik({
@@ -372,7 +197,6 @@ export default function StockLedgerReport() {
                   fullWidth
                   size="small"
                   onChange={(event: any, newValue: any) => {
-                    //console.log(newValue?.value);
                     setItemId(newValue?.value);
                     setItemName(newValue?.label);
                   }}
@@ -417,86 +241,11 @@ export default function StockLedgerReport() {
               </Grid>
               {isVisible && (
                 <>
-                  <Grid item sm={12} lg={12} xs={12} id="data-grid">
-                    <DataGrid
-                      rows={zones}
-                      columns={adjustedColumns}
-                      rowSpacingType="border"
-                      autoHeight
-                      // checkboxSelection
-                      pageSizeOptions={[5, 10, 25, 50, 100].map((size) => ({
-                        value: size,
-                        label: `${size}`,
-                      }))}
-                      initialState={{
-                        pagination: { paginationModel: { pageSize: 5 } },
-                      }}
-                      sx={{
-                        border: 0,
-                        "& .MuiDataGrid-columnHeaders": {
-                          backgroundColor: `var(--grid-headerBackground)`,
-                          color:`var(--grid-headerColor)`,
-                        },
-                        "& .MuiDataGrid-columnHeaderTitle": {
-                          color: "white",
-                        },
-                      }}
-                    />
+                  <Grid item sm={12} lg={12} xs={12} >
+                    <PrintReportFormat itemName={itemName} zones={zones} showHide={showHide}/>
                   </Grid>
                 </>
               )}
-            </Grid>
-
-            <Grid item xs={12} container spacing={2}>
-              <Grid item sm={12} lg={12} xs={12}>
-                <Dialog
-                  open={open}
-                  onClose={closeStatus}
-                  fullWidth
-                  maxWidth="lg"
-                  sx={{
-                    "& .MuiDialogContent-root": {
-                      padding: "20px",
-                      height: "400px",
-                    },
-                  }}
-                >
-                  <DialogTitle
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between", 
-                      padding: "10px",
-                      backgroundColor: `var(--grid-headerBackground)`,
-                      color: `var(--grid-headerColor)`,
-                    }}
-                  >
-                     {isTitle} {""} Details
-                    <IconButton
-                      edge="end"
-                      color="inherit"
-                      onClick={closeStatus} 
-                      sx={{
-                        color: `var(--grid-headerColor)`, 
-                      }}
-                    >
-                      <CloseIcon />
-                    </IconButton>
-                  </DialogTitle>
-                  <DialogContent>
-                     <Grid
-                      item
-                      xs={12}
-                      container
-                      spacing={2}
-                      sx={{ marginTop: "2%" }}
-                    >
-                      <Grid item sm={12} lg={12} xs={12}>
-                      <StockLedgerTable data={zones1} title={isTitle}/>
-                      </Grid> 
-                    </Grid>
-                  </DialogContent>
-                </Dialog>
-              </Grid>
             </Grid>
           </form>
         </Paper>

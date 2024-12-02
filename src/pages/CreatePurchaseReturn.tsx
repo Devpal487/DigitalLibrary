@@ -109,66 +109,7 @@ import {
         setPurchaseInvoiceOption([{ value: "-1", label: t("text.PurchaseInvoiceOption") }, ...arr]);
     };
 
-    const getPurchaseInvoicebyId = async (id:any, docNo:any) => {
-      const collectData = {
-        id: id,
-        "isRequst": true,
-        "document_No": docNo
-      };
-      const result = await api.post(
-        `api/PurchaseInvoice/GetPurchaseInvoice`,
-        collectData
-      );
-      const transData = Array.isArray(result?.data?.data[0]?.["purchaseinv"])
-          ? result.data.data[0]["purchaseinv"]
-          : [];
-        console.log("TransData:", transData);
-
-        if (transData.length === 0) {
-          // Set initialRows as default if transData is empty
-          setItems([{ ...initialRows }]);
-          return;
-        }
-    
-        let arr: any = [];
-        for (let i = 0; i < transData.length; i++) {
-          arr.push({
-            id: transData[i]["id"],
-            purchaseid: transData[i]["purchaseid"],
-            user_Id: transData[i]["user_Id"],
-            itemNameId: transData[i]["itemNameId"],
-            unit: transData[i]["unit"]  ?? "1",
-            // retqty: transData[i]["qty"] - transData[i]['returnQty'] != null ? transData[i]['returnQty'] : 0,
-            retqty: transData[i]['qty'] - (transData[i]['returnQty'] ?? 0),
-            qty: 0,
-            rate: transData[i]["rate"],
-            amount: 0,
-            tax1: "",
-            taxId1:"0",
-            tax2: 'P',
-            discount: 0,
-            discountAmount: 0,
-            netAmount: 0,
-            documentNo: transData[i]["documentNo"],
-            documentDate: transData[i]["documentDate"],
-            invoiceNo: transData[i]["invoiceNo"],
-            supplier: transData[i]["supplierId"],
-            orderNo: transData[i]["orderNo"],
-            mrnNo: transData[i]["mrnNo"],
-            mrnDate: transData[i]["mrnDate"],
-            taxId3: String(transData[i]["qty"]),
-            tax3: "",
-          });
-        }
-        setItems(arr);
-      // const arr =
-      //   res?.data?.data?.map((item: any) => ({
-      //     label: item.p_InvoiceNo,
-      //     value: item.id,
-      //   })) || [];
-  
-        //setPurchaseInvoiceOption([{ value: "-1", label: t("text.PurchaseInvoiceOption") }, ...arr]);
-    };
+ 
     
     const getSupliar = async () => {
       const collectData = {
@@ -498,6 +439,67 @@ import {
 
     console.log("items",items);
   
+    const getPurchaseInvoicebyId = async (id:any, docNo:any) => {
+      const collectData = {
+        id: id,
+        "isRequst": true,
+        "document_No": docNo
+      };
+      const result = await api.post(
+        `api/PurchaseInvoice/GetPurchaseInvoice`,
+        collectData
+      );
+      const transData = Array.isArray(result?.data?.data[0]?.["purchaseinv"])
+          ? result.data.data[0]["purchaseinv"]
+          : [];
+        console.log("TransData:", transData);
+
+        if (transData.length === 0) {
+          // Set initialRows as default if transData is empty
+          setItems([{ ...initialRows }]);
+          return;
+        }
+    
+        let arr: any = [];
+        for (let i = 0; i < transData.length; i++) {
+          arr.push({
+            id: transData[i]["id"],
+            purchaseid: transData[i]["purchaseid"],
+            user_Id: transData[i]["user_Id"],
+            itemNameId: transData[i]["itemNameId"],
+            unit: transData[i]["unit"]  ?? "1",
+            // retqty: transData[i]["qty"] - transData[i]['returnQty'] != null ? transData[i]['returnQty'] : 0,
+            retqty: transData[i]['qty'] - (transData[i]['returnQty'] ?? 0),
+            qty: 0,
+            rate: transData[i]["rate"],
+            amount: 0,
+            tax1: "",
+            taxId1:"0",
+            tax2: 'P',
+            discount: 0,
+            discountAmount: 0,
+            netAmount: 0,
+            documentNo: formik.values.document_No,
+            documentDate: transData[i]["documentDate"],
+            invoiceNo: transData[i]["invoiceNo"],
+            supplier: transData[i]["supplierId"],
+            orderNo: transData[i]["orderNo"],
+            mrnNo: transData[i]["mrnNo"],
+            mrnDate: transData[i]["mrnDate"],
+            taxId3: String(transData[i]["qty"]),
+            tax3: "",
+          });
+        }
+        setItems(arr);
+      // const arr =
+      //   res?.data?.data?.map((item: any) => ({
+      //     label: item.p_InvoiceNo,
+      //     value: item.id,
+      //   })) || [];
+  
+        //setPurchaseInvoiceOption([{ value: "-1", label: t("text.PurchaseInvoiceOption") }, ...arr]);
+    };
+
     return (
       <div>
         <div
