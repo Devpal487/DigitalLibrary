@@ -950,9 +950,7 @@ const EditPurchaseReturnOrder = () => {
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label={
-                                  <CustomLabel text={t("text.enteritem")} />
-                                }
+                                placeholder={t("text.enteritem")}
                               />
                             )}
                           />
@@ -1014,12 +1012,7 @@ const EditPurchaseReturnOrder = () => {
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label={
-                                  <CustomLabel
-                                    text={t("text.SelectTax")}
-                                    required={false}
-                                  />
-                                }
+                                placeholder={t("text.SelectTax")}
                               />
                             )}
                           />
