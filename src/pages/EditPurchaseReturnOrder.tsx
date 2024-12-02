@@ -80,15 +80,16 @@ const EditPurchaseReturnOrder = () => {
   const back = useNavigate();
 
   useEffect(() => {
+    getPurchaseInvoice();
     getPurchaseOrderById(location.state.id);
     GetDigitalContentData();
     getTaxData();
     GetUnitData();
     getSupliar();
-    getPurchaseInvoice();
-    getPurchaseInvoicebyId((location.state.p_InvoiceNo));
+    // getPurchaseInvoicebyId(location.state.id,(location.state.document_No));
+    // console.log("location.state.p_InvoiceNo", location.state);
   }, []);
-
+  
   const getPurchaseInvoice = async () => {
     const collectData = {
       id: -1,
@@ -99,19 +100,24 @@ const EditPurchaseReturnOrder = () => {
     );
     const arr =
       res?.data?.data?.map((item: any) => ({
-        label: item.document_No +' ( '+ item.supplierName + "--" + item.orderNo +' )',
+        label: item.document_No +'('+ item.supplierName + "--" + item.orderNo +')',
         value: item.id,
+        document_No: item.document_No,
         orderNo: item.orderNo,
         supplierName: item.supplierName,
         supplierId: item.supplierId,
       })) || [];
 
-      setPurchaseInvoiceOption([{ value: "-1", label: t("text.PurchaseInvoiceOption") }, ...arr]);
+      setPurchaseInvoiceOption([{ value: "-1", label: t("text.PurchaseInvoiceOption"), document_No:"" }, ...arr]);
   };
+      console.log("purchaseInvoiceOption",purchaseInvoiceOption);
+      console.log(purchaseInvoiceOption.find((opt:any)=> opt.document_No == location.state.document_No))
 
-  const getPurchaseInvoicebyId = async (id:any) => {
+  const getPurchaseInvoicebyId = async (id:any,docNo:any) => {
     const collectData = {
       id: id,
+      "isRequst": true,
+  "document_No": docNo
     };
     const result = await api.post(
       `api/PurchaseInvoice/GetPurchaseInvoice`,
@@ -136,16 +142,17 @@ const EditPurchaseReturnOrder = () => {
           user_Id: transData[i]["user_Id"],
           itemNameId: transData[i]["itemNameId"],
           unit: transData[i]["unit"],
-          retqty: transData[i]["qty"],
+          // retqty:  Number(transData[i]["qty"]),
+          retqty: transData[i]["taxId3"],
           qty: 0,
           rate: transData[i]["rate"],
-          // amount: transData[i]["amount"],
-          // tax1: transData[i]["tax1"],
-          // taxId1: transData[i]["taxId1"],
-          // tax2: transData[i]["tax2"] || 'P',
-          // discount: transData[i]["discount"] || 0,
-          // discountAmount: transData[i]["discountAmount"] ||0,
-          // netAmount: transData[i]["netamount"],
+          amount: 0,
+          tax1: "",
+          taxId1:"0",
+          tax2: 'P',
+          discount: 0,
+          discountAmount: 0,
+          netAmount: 0,
           documentNo: transData[i]["documentNo"],
           documentDate: transData[i]["documentDate"],
           invoiceNo: transData[i]["invoiceNo"],
@@ -153,8 +160,8 @@ const EditPurchaseReturnOrder = () => {
           orderNo: transData[i]["orderNo"],
           mrnNo: transData[i]["mrnNo"],
           mrnDate: transData[i]["mrnDate"],
-          // taxId3: transData[i]["taxId3"],
-          // tax3: transData[i]["tax3"],
+          taxId3: Number(transData[i]["taxId3"]) - transData[i]['qty'],
+          tax3: "",
         });
       }
       setItems(arr);
@@ -166,6 +173,23 @@ const EditPurchaseReturnOrder = () => {
 
       //setPurchaseInvoiceOption([{ value: "-1", label: t("text.PurchaseInvoiceOption") }, ...arr]);
   };
+
+  const initializeItemValues = () => {
+    const updatedItems = items.map((item:any) => ({
+        ...item,
+        taxId3: parseFloat(item.qty || 0) * parseFloat(item.tax1 || 0), // Example calculation
+    }));
+
+    console.log("item value", updatedItems)
+    setItems(updatedItems);
+};
+
+// On load or when items change, initialize calculated values
+// useEffect(() => {
+//     if (items.length > 0) {
+//         initializeItemValues();
+//     }
+// }, [items]);
 
   const getSupliar = async () => {
     const collectData = {
@@ -245,7 +269,7 @@ const EditPurchaseReturnOrder = () => {
     initialValues: {
       id: location.state.id,
       p_InvoiceNo:location.state.p_InvoiceNo || null,
-      document_No: location.state.document_No || '',
+      document_No: location.state.document_No || null,
       pR_InvoiceNo: location.state.pR_InvoiceNo || '',
       doc_Date: dayjs(location.state.doc_Date).format("YYYY-MM-DD"),
       pR_InvoiceDate: dayjs(location.state.pR_InvoiceDate).format("YYYY-MM-DD"),
@@ -271,8 +295,8 @@ const EditPurchaseReturnOrder = () => {
       console.log("Form Submitted with values:", values);
       console.log("Formik errors", formik.errors)
 
-      const validItems = items.filter((item: any) => validateItem(item));
-      const updatedItems = validItems.map((item: any, index: any) => {
+      // const validItems = items.filter((item: any) => validateItem(item));
+      const updatedItems = items.map((item: any, index: any) => {
 
         const baseItem = {
           ...item,
@@ -283,7 +307,7 @@ const EditPurchaseReturnOrder = () => {
           orderNo: values.orderNo,
           mrnNo: "",
           mrnDate: defaultValuestime,
-          taxId3: "",
+          // taxId3: "",
           tax3: "",
         };
 
@@ -292,6 +316,7 @@ const EditPurchaseReturnOrder = () => {
         }
         return item;
       });
+      initializeItemValues();
       values.purReturnChild = updatedItems;
 
       console.log("Form Submitted with values:", values);
@@ -349,7 +374,9 @@ const EditPurchaseReturnOrder = () => {
         }
       }else if (field === 'qty') {
         const qtyValue = value === "" ? 0 : parseFloat(value);
-  
+        item.taxId3  = String(Number(item.retqty) - qtyValue);
+        // console.log("taxval", taxval);
+        // = String(taxval);
         // Validation to ensure qty does not exceed retqty
         if (qtyValue > item.retqty) {
             alert(`Quantity cannot exceed the purchase quantity.`);
@@ -357,8 +384,16 @@ const EditPurchaseReturnOrder = () => {
         }
   
         item[field] = qtyValue;
+        const selectedTax = taxOption.find((tax: any) => tax.value == item.tax1);
+          if (selectedTax) {
+              item.tax1 = String(selectedTax.value);
+              console.log("check Value", calculateTax(item.amount, Number(selectedTax.label)))
+              item.taxId1 = String(calculateTax(item.amount, Number(selectedTax.label)));
+          } 
+
+
         item.amount = calculateAmount(item.qty, item.rate);
-        item.taxId1 = String(calculateTax(item.amount, 0));
+        // item.taxId1 = String(calculateTax(item.amount, Number(item.taxId1)));
     } else if (field === 'rate') {
         item[field] = value === "" ? 0 : parseFloat(value);
         item.amount = calculateAmount(item.qty, item.rate);
@@ -370,10 +405,6 @@ const EditPurchaseReturnOrder = () => {
               item.tax1 = String(selectedTax.value);
               item.taxId1 = String(calculateTax(item.amount, Number(selectedTax.label)));
           } 
-          // else {
-          //     item.tax1 = value || '';
-          //     item.taxId1 = '0';
-          // }
   
           const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
           item.discountAmount = discountAmount;
@@ -390,7 +421,6 @@ const EditPurchaseReturnOrder = () => {
         item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
       }
     
-      // Recalculate dependent fields
       if (field !== 'discount' && field !== 'tax2') {
         const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
         item.discountAmount = discountAmount;
@@ -405,9 +435,10 @@ const EditPurchaseReturnOrder = () => {
       }
       
       
-      console.log("🚀 ~ Updated items:", updatedItems);
+      // console.log("🚀 ~ Updated items:", updatedItems);
       setItems(updatedItems);
     };
+
   const calculateAmount = (qty: number, rate: number) => qty * rate;
   
   const calculateTax = (amount: number, taxRate: number) => {
@@ -416,9 +447,9 @@ const EditPurchaseReturnOrder = () => {
   };
   
   const calculateDiscount = (amount: number, discount: number, type: string) => {
-    if (type === 'P') { // Percentage-based discount
+    if (type === 'P') { 
       return (amount * discount) / 100;
-    } else if (type === 'F') { // Fixed discount
+    } else if (type === 'F') { 
       return discount;
     }
     return 0; 
@@ -475,8 +506,12 @@ const EditPurchaseReturnOrder = () => {
     );
 
     const getPurchaseOrderById = async (id: any) => {
-      try {
-        const result = await api.post(`api/PurchaseReturn/GetPurchaseReturn`, { id });
+      const collectData = {
+        id: id
+      };
+
+      try {  
+        const result = await api.post(`api/PurchaseReturn/GetPurchaseReturn`, collectData);
         console.log("API Response:", result);
     
         const transData = Array.isArray(result?.data?.data[0]?.["purReturnChild"])
@@ -485,7 +520,6 @@ const EditPurchaseReturnOrder = () => {
         console.log("TransData:", transData);
 
         if (transData.length === 0) {
-          // Set initialRows as default if transData is empty
           setItems([{ ...initialRows }]);
           return;
         }
@@ -497,12 +531,11 @@ const EditPurchaseReturnOrder = () => {
             purchaseid: transData[i]["purchaseid"],
             user_Id: transData[i]["user_Id"],
             itemNameId: transData[i]["itemNameId"],
-            unit: transData[i]["unit"],
+            unit: transData[i]["unit"] ,
             qty: transData[i]["qty"],
+            retqty: String(Number(transData[i]["taxId3"]) - transData[i]['qty']),
             rate: transData[i]["rate"],
             amount: transData[i]["amount"],
-            tax1: transData[i]["tax1"],
-            taxId1: transData[i]["taxId1"],
             tax2: transData[i]["tax2"],
             discount: transData[i]["discount"],
             discountAmount: transData[i]["discountAmount"],
@@ -514,13 +547,12 @@ const EditPurchaseReturnOrder = () => {
             orderNo: transData[i]["orderNo"],
             mrnNo: transData[i]["mrnNo"],
             mrnDate: transData[i]["mrnDate"],
-            taxId3: transData[i]["taxId3"],
+          taxId3: String(Number(transData[i]["taxId3"]) - transData[i]['qty']),
             tax3: transData[i]["tax3"],
           });
         }
         setItems(arr);
       } catch (error) {
-        // setItems([{initialRows}])
         console.error("Error fetching purchase order:", error);
         setItems([{ ...initialRows }]);
       }
@@ -598,12 +630,12 @@ const EditPurchaseReturnOrder = () => {
                     options={purchaseInvoiceOption}
                     fullWidth
                     size="small"
-                    value={purchaseInvoiceOption.find((opt:any)=>opt.value == formik.values.p_InvoiceNo)}
+                    value={purchaseInvoiceOption.find((opt:any) => opt.document_No === formik.values.p_InvoiceNo) || null}
                     onChange={(event, newValue: any) => {
-                      console.log(newValue?.value);
+                      console.log(newValue);
                       if(newValue){
-                        getPurchaseInvoicebyId(newValue?.value);
-                        formik.setFieldValue("p_InvoiceNo", newValue?.label);
+                        getPurchaseInvoicebyId(newValue?.value, newValue?.document_No );
+                        formik.setFieldValue("p_InvoiceNo", newValue?.document_No);
                         formik.setFieldValue("supplierId", newValue?.supplierId);
                         formik.setFieldValue("supplierName", newValue?.supplierName);
                         formik.setFieldValue("orderNo", newValue?.orderNo);
@@ -657,24 +689,6 @@ const EditPurchaseReturnOrder = () => {
                   onChange={formik.handleChange}
               />
               </Grid>
-
-              {/* <Grid item xs={12} sm={4} lg={4}>
-                <TextField
-                  label={
-                    <CustomLabel text={t("text.doc_Date")} required={false} />
-                  }
-                  variant="outlined"
-                  fullWidth
-                  size="small"
-                  name="doc_Date"
-                  id="doc_Date"
-                  type="date"
-                  value={formik.values.doc_Date}
-                  placeholder={t("text.doc_Date")}
-                  onChange={formik.handleChange}
-                  InputLabelProps={{ shrink: true }}
-                />
-              </Grid> */}
 
               <Grid item lg={4} xs={12}>
                 <TextField
@@ -943,46 +957,9 @@ const EditPurchaseReturnOrder = () => {
                           />
                         </td>
                         <td>
-                          {/* <Autocomplete
-                            disablePortal
-                            id="combo-box-demo"
-                            options={unitOptions}
-                            size="small"
-                            value={
-                              unitOptions.find(
-                                (opt: any) => opt.value == item.unit
-                              ) || null
-                            }
-                            onChange={(event, newValue) =>
-                              handleItemChange(
-                                index,
-                                "unit",
-                                newValue?.value?.toString()
-                              )
-                            }
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                label={
-                                  <CustomLabel
-                                    text={t("text.unit")}
-                                    required={false}
-                                  />
-                                }
-                              />
-                            )}
-                          /> */}
                           <TextField
                             type="text"
                             value={item.retqty}
-                            // onChange={(e) =>
-                            //   handleItemChange(
-                            //     index,
-                            //     "qty",
-                            //     (e.target.value)
-                            //   )
-                            // }
-                            // onFocus={(e) => e.target.select()}
                             size="small"
                           />
                         </td>
@@ -1016,19 +993,6 @@ const EditPurchaseReturnOrder = () => {
                         </td>
                         <td>{item.amount ? item.amount.toFixed(2) : 0}</td>
                         <td>
-                          {/* <TextField
-                            type="number"
-                            value={item.tax1}
-                            onChange={(e) =>
-                              handleItemChange(
-                                index,
-                                "tax1",
-                                String(e.target.value)
-                              )
-                            }
-                            size="small"
-                          /> */}
-
                           <Autocomplete
                             disablePortal
                             id="combo-box-demo"
@@ -1113,7 +1077,6 @@ const EditPurchaseReturnOrder = () => {
                     </tr>
                   </tbody>
                 </Table>
-                {/* </TableContainer> */}
               </Grid>
 
               <Grid item xs={12}>

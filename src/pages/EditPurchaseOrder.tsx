@@ -77,7 +77,7 @@ const EditPurchaseOrder = () => {
   const back = useNavigate();
 
   useEffect(() => {
-    getPurchaseOrderById(location.state.id);
+    getPurchaseOrderById(location.state.id, location.state.document_No);
     GetDigitalContentData();
     getTaxData();
     GetUnitData();
@@ -100,6 +100,7 @@ const EditPurchaseOrder = () => {
 
     setOption(arr);
   };
+
   const getTaxData = async () => {
     const res = await api.post(`api/TaxMaster/GetTaxMaster`, { taxId: -1 });
     const arr =
@@ -110,6 +111,7 @@ const EditPurchaseOrder = () => {
 
     setTaxOption(arr);
   };
+
   const GetUnitData = async () => {
     const collectData = {
       unitId: -1,
@@ -291,10 +293,13 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
     (acc: any, item: any) => acc + item.netAmount,
     0
   );
-  const getPurchaseOrderById = async (id: any) => {
-    const result = await api.post(`api/PurchaseInvoice/GetPurchaseInvoice`, {
-      id: id,
-    });
+  const getPurchaseOrderById = async (id: any, docNo:any) => {
+
+    const collectData = {
+      id: id
+    };
+
+    const result = await api.post(`api/PurchaseInvoice/GetPurchaseInvoice`, collectData);
     const transData = result?.data?.data[0]["purchaseinv"];
 
     let arr: any = [];
@@ -305,7 +310,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
         user_Id: transData[i]["user_Id"],
         itemNameId: transData[i]["itemNameId"],
         unit: transData[i]["unit"],
-        qty: transData[i]["qty"],
+        qty: transData[i]["qty"] - transData[i]['returnQty'],
         rate: transData[i]["rate"],
         amount: transData[i]["amount"],
         tax1: transData[i]["tax1"],
@@ -862,11 +867,6 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                       <tr key={item.id} style={{ border: "1px solid black" }}>
                         {/* <TableCell>{index + 1}</TableCell> */}
                         <td style={{ width: "180px", padding:"5px" }}>
-                          {/* <TextField
-                                                        value={item.itemName}
-                                                        onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
-                                                        size="small"
-                                                    /> */}
                           <Autocomplete
                             disablePortal
                             id="combo-box-demo"
@@ -884,9 +884,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label={
-                                  <CustomLabel text={t("text.enteritem")} />
-                                }
+                                placeholder={t("text.enteritem")}
                               />
                             )}
                           />
@@ -912,12 +910,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label={
-                                  <CustomLabel
-                                    text={t("text.unit")}
-                                    required={false}
-                                  />
-                                }
+                                placeholder={t("text.unit")}
                               />
                             )}
                           />
@@ -952,19 +945,6 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                         </td>
                         <td>{item.amount ? item.amount.toFixed(2) : 0}</td>
                         <td>
-                          {/* <TextField
-                            type="number"
-                            value={item.tax1}
-                            onChange={(e) =>
-                              handleItemChange(
-                                index,
-                                "tax1",
-                                String(e.target.value)
-                              )
-                            }
-                            size="small"
-                          /> */}
-
                           <Autocomplete
                             disablePortal
                             id="combo-box-demo"
@@ -985,12 +965,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label={
-                                  <CustomLabel
-                                    text={t("text.SelectTax")}
-                                    required={false}
-                                  />
-                                }
+                                placeholder={t("text.SelectTax")}
                               />
                             )}
                           />

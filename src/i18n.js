@@ -685,10 +685,10 @@ const resources = {
         EnterStateShortName:"Enter State Short Name",
         EnterdisplayNo:"Enter Display Number",
         SelectDocType:"Select Doc Type",
-        Purchaseorder:" Create Purchase Order",
-        editPurchaseorder:" Edit Purchase Order",
-        PurchaseReturnorder:" Create Purchase Return Order",
-        EditPurchaseReturnorder:"Edit Purchase Return Order",
+        Purchaseorder:" Create Purchase ",
+        editPurchaseorder:" Edit Purchase ",
+        PurchaseReturnorder:" Create Purchase Return ",
+        EditPurchaseReturnorder:"Edit Purchase Return ",
         saleinvoice:" Create Sale Invoice",
         Editsaleinvoice:"Edit Sale Invoice",
         entryNo:"EntryNo",
@@ -2180,11 +2180,14 @@ const resources = {
         s_InvoiceNo:"बिक्री चालान संख्या",
         s_InvoiceDate:"बिक्री चालान दिनांक चुनें",
         document_NoPR:"खरीद वापसी संख्या",
+
         editPurchaseorder:"क्रय आदेश संपादित करें",
         SelectSaleInvoice:"बिक्री चालान चुनें",
         ReturnQuantity:"वापसी मात्रा",
         retqty:"वापसी मात्रा",
         PurchaseInvoiceOption:"खरीद संख्या का चयन करें",
+        Purchaseorder:"खरीदारी बनाएं",
+        
 
 
     },

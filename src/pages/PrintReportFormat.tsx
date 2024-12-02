@@ -1,198 +1,116 @@
-import React from "react";
+import React, { useRef } from "react";
+import {
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
+  TableFooter,
+  Button,
+  Divider,
+} from "@mui/material";
+import jsPDF from "jspdf";
 
 interface HTMLTemplateProps {
-  zones: any; // Array of data you want to display
-  itemName: string; // The value selected from the dropdown for naming
+  zones: any[]; 
+  itemName: string; 
 }
 
 const PrintReportFormat: React.FC<HTMLTemplateProps> = ({ zones, itemName }) => {
+  const pdfRef = useRef<HTMLDivElement>(null);
+
+  // Calculate totals
+  const totalInQty = zones.reduce((sum, zone) => sum + (zone.inQty || 0), 0);
+  const totalOutQty = zones.reduce((sum, zone) => sum + (zone.outQty || 0), 0);
+  const totalInAmount = zones.reduce((sum, zone) => sum + (zone.totalInAmount || 0), 0);
+  const totalOutAmount = zones.reduce((sum, zone) => sum + (zone.totalOutAmount || 0), 0);
+  const totalBalQty = zones.reduce((sum, zone) => sum + (zone.balQty || 0), 0);
+
+
+
   return (
-    <html>
-      <head>
-        <title>Stock Ledger Report</title>
-        <style>
-          {`
-            body {
-              font-family: 'Arial', sans-serif;
-              margin: 0;
-              padding: 0;
-              width: 210mm; /* A4 size width */
-              height: 297mm; /* A4 size height */
-              background-color: #f4f4f9;
-            }
-
-            /* Header Styling */
-            .header {
-              background-color: #2a3d66;
-              color: #ffffff;
-              text-align: center;
-              padding: 15px;
-            }
-
-            .header h1 {
-              margin: 0;
-              font-size: 30px;
-              font-weight: bold;
-            }
-
-            .header p {
-              margin: 0;
-              font-size: 14px;
-              font-weight: lighter;
-            }
-
-            /* Heading with Flexbox for itemName and title */
-            .heading {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-top: 20px;
-              margin-bottom: 20px;
-              padding: 0 25mm;
-              font-size: 16px;
-              font-weight: lighter;
-            }
-
-            .heading h2 {
-              font-size: 24px;
-              font-weight: bold;
-              color: #333;
-            }
-
-            /* Content Area Styling */
-            .content {
-              padding: 20mm;
-              background-color: #ffffff;
-              box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-              border-radius: 10px;
-            }
-
-            /* Table Styling */
-            table {
-              width: 100%;
-              border-collapse: collapse;
-              font-size: 12px;
-            }
-
-            th, td {
-              border: 1px solid #ccc;
-              padding: 12px;
-              text-align: left;
-            }
-
-            th {
-              background-color: #0056b3;
-              color: #ffffff;
-              font-weight: bold;
-              text-align: center;
-            }
-
-            td {
-              text-align: right;
-            }
-
-            td:first-child, th:first-child {
-              text-align: left;
-              width: 25%; /* Make text-based columns wider */
-            }
-
-            td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7), td:nth-child(8) {
-              text-align: right; /* Right-align number-based columns */
-              width: 12%; /* Smaller width for numeric columns */
-            }
-
-            /* Alternating row colors */
-            tr:nth-child(odd) {
-              background-color: #f9f9f9;
-            }
-
-            tr:nth-child(even) {
-              background-color: #f1f1f1;
-            }
-
-            /* Footer Styling */
-            .footer {
-              position: fixed;
-              bottom: 0;
-              left: 0;
-              right: 0;
-              background-color: #2a3d66;
-              color: white;
-              text-align: center;
-              padding: 8px 0;
-              font-size: 12px;
-            }
-
-            /* Print Styling */
-            @media print {
-              @page {
-                size: A4;
-                margin: 0;
-              }
-              body {
-                margin: 0;
-                padding: 0;
-              }
-              .content {
-                padding: 10mm;
-                box-shadow: none;
-                border-radius: 0;
-              }
-              .footer {
-                position: fixed;
-                bottom: 5mm;
-                font-size: 10px;
-              }
-            }
-          `}
-        </style>
-      </head>
-      <body>
-        <div className="header">
-          <h1>Stock Ledger Report</h1>
+    <div>
+      <div ref={pdfRef}>
+        {/* Header */}
+        <div style={{ backgroundColor: "#2a3d66", color: "white", textAlign: "center", padding: "15px", width: "full" }}>
+          <h1 style={{ margin: 0, fontSize: "18px" }}>Stock Ledger Report</h1>
         </div>
 
-        <div className="heading">
-          <h2>Stock Ledger Details</h2>
-          <h2>{itemName}</h2>
+        <Divider color="#f3f3f3" style={{marginTop:"5px"}}/>
+        {/* Heading */}
+        <div style={{ display: "flex", justifyContent: "space-between", padding: "5px", fontWeight: "bold" }}>
+          <h2 style={{ color: "#333", fontSize: "13px", fontStyle: "italic" }}>Stock Ledger Details</h2>
+          <h2 style={{ color: "#333", fontSize: "13px", fontStyle: "italic" }}>{itemName}</h2>
         </div>
+        <Divider color="#ccc" style={{marginBottom:"5px"}}/>
 
-        <div className="content">
-          <table>
-            <thead>
-              <tr>
-                <th>Serial No.</th>
-                <th>Title Name</th>
-                <th>In Quantity</th>
-                <th>Out Quantity</th>
-                <th>Rate</th>
-                <th>Total In Amount</th>
-                <th>Total Out Amount</th>
-                <th>Balance Quantity</th>
-              </tr>
-            </thead>
-            <tbody>
-              {zones.map((zone: any, index: number) => (
-                <tr key={zone.id}>
-                  <td>{index + 1}</td>
-                  <td>{zone.titleName}</td>
-                  <td>{zone.inQty}</td>
-                  <td>{zone.outQty}</td>
-                  <td>{zone.rate}</td>
-                  <td>{zone.totalInAmount}</td>
-                  <td>{zone.totalOutAmount}</td>
-                  <td>{zone.balQty}</td>
-                </tr>
+        {/* Table */}
+        <TableContainer component={Paper}>
+          <Table style={{width: "full"}}>
+            <TableHead>
+              <TableRow style={{ backgroundColor: "#0056b3" }}>
+                <TableCell style={{ color: "white", fontWeight: 600, padding: "5px" }} align="center">
+                  Serial No.
+                </TableCell>
+                <TableCell style={{ color: "white", fontWeight: 600, padding: "5px" }} align="center">
+                  Title Name
+                </TableCell>
+                <TableCell style={{ color: "white", fontWeight: 600, padding: "5px" }} align="center">
+                  Rate
+                </TableCell>
+                <TableCell style={{ color: "white", fontWeight: 600, padding: "5px" }} align="center">
+                  Total In Amount
+                </TableCell>
+                <TableCell style={{ color: "white", fontWeight: 600, padding: "5px" }} align="center">
+                  In Quantity
+                </TableCell>
+                <TableCell style={{ color: "white", fontWeight: 600, padding: "5px" }} align="center">
+                  Out Quantity
+                </TableCell>
+                <TableCell style={{ color: "white", fontWeight: 600, padding: "5px" }} align="center">
+                  Balance Quantity
+                </TableCell>
+                <TableCell style={{ color: "white", fontWeight: 600, padding: "5px" }} align="center">
+                  Total Out Amount
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {zones.map((zone, index) => (
+                <TableRow key={zone.id} style={{
+                  // borderTop: index === 0 ? "none" : "1px solid #000", 
+                  borderBottom: "1px solid #000",
+                }}>
+                  <TableCell align="right">{index + 1}</TableCell>
+                  <TableCell align="left">{zone.titleName}</TableCell>
+                  <TableCell align="right">&#8377; {zone.rate.toFixed(2)}</TableCell>
+                  <TableCell align="right">&#8377; {zone.totalInAmount.toFixed(2)}</TableCell>
+                  <TableCell align="right">{zone.inQty}</TableCell>
+                  <TableCell align="right">{zone.outQty}</TableCell>
+                  <TableCell align="right">{zone.balQty}</TableCell>
+                  <TableCell align="right">&#8377; {zone.totalOutAmount.toFixed(2)}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={4} align="center" style={{ fontWeight: 600 }}>
+                  Totals
+                </TableCell>
+                <TableCell align="right" style={{ fontWeight: 600 }}>{totalInQty}</TableCell>
+                <TableCell align="right" style={{ fontWeight: 600 }}>{totalOutQty}</TableCell>
+                <TableCell align="right" style={{ fontWeight: 600 }}>{totalBalQty}</TableCell>
+                <TableCell align="right" style={{ fontWeight: 600 }}>&#8377; {totalOutAmount.toFixed(2)}</TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </TableContainer>
+      </div>
 
-        <div className="footer">
-          <p>Generated on: {new Date().toLocaleDateString()}</p>
-        </div>
-      </body>
-    </html>
+
+    </div>
   );
 };
 

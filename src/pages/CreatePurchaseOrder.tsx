@@ -765,9 +765,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label={
-                                  <CustomLabel text={t("text.enteritem")} />
-                                }
+                                placeholder={t("text.enteritem")}
                               />
                             )}
                           />
@@ -793,12 +791,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label={
-                                  <CustomLabel
-                                    text={t("text.unit")}
-                                    required={false}
-                                  />
-                                }
+                                placeholder={t("text.unit")}
                               />
                             )}
                           />
@@ -814,7 +807,6 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                                 (e.target.value)
                               )
                             }
-                            // onFocus={(e) => e.target.select()}
                             size="small"
                           />
                         </td>
@@ -829,7 +821,6 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                                 (e.target.value)
                               )
                             }
-                            // onFocus={(e) => e.target.select()}
                             size="small"
                           />
                         </td>
@@ -855,14 +846,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label={
-                                  <CustomLabel
-                                    text={t("text.SelectTax")}
-                                    required={false}
-                                  />
-                                }
-
-                                // placeholder={t("text.SelectTax")}
+                                placeholder={t("text.SelectTax")}
                               />
                             )}
                           />
