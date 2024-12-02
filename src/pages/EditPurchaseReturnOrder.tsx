@@ -552,6 +552,7 @@ const EditPurchaseReturnOrder = () => {
           });
         }
         setItems(arr);
+        console.log("arr",arr)
       } catch (error) {
         console.error("Error fetching purchase order:", error);
         setItems([{ ...initialRows }]);
