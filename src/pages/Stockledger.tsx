@@ -511,7 +511,7 @@ export default function Stockledger() {
                                     onChange={(event, newValue:any) => { 
                                         console.log(newValue?.value);
                                         formik.setFieldValue("itemId", newValue?.value);
-                                        formik.setFieldValue("TitleName", newValue?.label);
+                                        formik.setFieldValue("itemName", newValue?.label);
                                         formik.setFieldValue("rate",newValue?.rate)
                                         formik.setFieldValue("unitID",newValue?.unitId)
                                     }}

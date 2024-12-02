@@ -34,10 +34,11 @@ const CreateSaleReturnInvoice = () => {
     saleid: -1,
     user_Id: 0,
     itemNameId: "",
+    s_InvoiceNo: "",
     unit: "",
     qty: "",
     rate: "",
-    amount: "",
+    amount: 0,
     tax1: "",
     taxId1: "",
     tax2: "P",
@@ -93,6 +94,7 @@ const CreateSaleReturnInvoice = () => {
   const getDocNo = async () => {
     const res = await api.post(`api/SaleReturn/GetMaxSaleRtnInvoiceNo`);
     formik.setFieldValue("sR_InvoiceNo", res?.data?.data[0]?.sR_InvoiceNo);
+    formik.setFieldValue("document_No", res?.data?.data[0]?.sR_InvoiceNo);
   };
 
   const getSupliar = async () => {
@@ -143,6 +145,8 @@ const CreateSaleReturnInvoice = () => {
   const GetSaleInvoice = async () => {
     const collectData = {
       id: -1,
+      isRequst: false,
+      s_InvoiceNo: "",
     };
     const response = await api.post(
       `api/SaleInvoice/GetSaleInvoice`,
@@ -166,7 +170,15 @@ const CreateSaleReturnInvoice = () => {
   };
 
   const getSaleInvoicedById = async (id: any) => {
-    const result = await api.post(`api/SaleInvoice/GetSaleInvoice`, { id: id });
+    const collectData = {
+      id: id,
+      isRequst: false,
+      s_InvoiceNo: "",
+    };
+    const result = await api.post(
+      `api/SaleInvoice/GetSaleInvoice`,
+      collectData
+    );
     const transData = result?.data?.data[0]["saleinv"];
 
     let arr: any = [];
@@ -177,15 +189,16 @@ const CreateSaleReturnInvoice = () => {
         user_Id: transData[i]["user_Id"],
         itemNameId: transData[i]["itemNameId"],
         unit: transData[i]["unit"],
-        SaleQty: transData[i]["qty"],
+        taxId3: String(transData[i]["qty"]),
+        qty: 0,
         rate: transData[i]["rate"],
         amount: transData[i]["amount"],
-        tax1: transData[i]["tax1"],
-        taxId1: transData[i]["taxId1"],
-        tax2: transData[i]["tax2"],
-        discount: transData[i]["discount"],
-        discountAmount: transData[i]["discountAmount"],
-        netAmount: transData[i]["netamount"],
+        // tax1: transData[i]["tax1"],
+        // taxId1: transData[i]["taxId1"],
+        // tax2: transData[i]["tax2"],
+        // discount: transData[i]["discount"],
+        // discountAmount: transData[i]["discountAmount"],
+        // netAmount: transData[i]["netamount"],
         documentNo: transData[i]["documentNo"],
         documentDate: transData[i]["documentDate"],
         invoiceNo: transData[i]["invoiceNo"],
@@ -193,8 +206,8 @@ const CreateSaleReturnInvoice = () => {
         orderNo: transData[i]["orderNo"],
         mrnNo: transData[i]["mrnNo"],
         mrnDate: transData[i]["mrnDate"],
-        taxId3: transData[i]["taxId3"],
-        tax3: transData[i]["tax3"],
+        // taxId3: transData[i]["taxId3"],
+        // tax3: transData[i]["tax3"],
       });
     }
     arr.push({ ...initialRows });
@@ -259,30 +272,31 @@ const CreateSaleReturnInvoice = () => {
     onSubmit: async (values) => {
       console.log("Form Submitted with values:", values);
 
-      values.amount = totalAmount.toFixed(2);
+      values.amount = Number(totalAmount.toFixed(2));
 
       const validItems = items.filter((item: any) => validateItem(item));
 
       const updatedItems = validItems.map((item: any, index: any) => {
         const documentDate = values.doc_Date;
+        
+          const baseItem = {
+            ...item,
+            documentNo: values.document_No,
+            documentDate: defaultValuestime,
+            invoiceNo: values.sR_InvoiceNo,
+            supplierId: values.supplierId,
+            orderNo: values.orderNo,
+            mrnNo: "",
+            mrnDate: defaultValuestime,
+            //taxId3: "",
+            tax3: "",
+          };
 
-        const baseItem = {
-          ...item,
-          documentNo: values.document_No,
-          documentDate: defaultValuestime,
-          invoiceNo: values.sR_InvoiceNo,
-          supplierId: values.supplierId,
-          orderNo: values.orderNo,
-          mrnNo: "",
-          mrnDate: defaultValuestime,
-          taxId3: "",
-          tax3: "",
-        };
-
-        if (index === 0) {
-          return baseItem;
-        }
-        return item;
+          if (index === 0) {
+            return baseItem;
+          }
+          return item;
+       
       });
       values.saleretnchild = updatedItems;
 
@@ -316,11 +330,11 @@ const CreateSaleReturnInvoice = () => {
     return (
       item.itemNameId &&
       item.unit &&
-      item.qty &&
+     // item.qty &&
       item.rate &&
-      item.amount &&
-      item.tax1 &&
-      item.taxId1
+      item.amount 
+     // item.tax1 &&
+     // item.taxId1
     );
   };
 
@@ -403,7 +417,9 @@ const CreateSaleReturnInvoice = () => {
   };
 
   const calculateTax = (amount: number, taxRate: number) => {
+    console.log(amount, taxRate);
     const tax = (amount * taxRate) / 100;
+    console.log("tax", tax);
     return tax.toFixed(2);
   };
 
@@ -426,7 +442,10 @@ const CreateSaleReturnInvoice = () => {
     tax: number,
     discount: number
   ) => {
-    const netAmount = amount + tax - discount;
+    console.log("ammounts", { amount, tax, discount });
+    const netAmount = Number(amount) + Number(tax) - Number(discount);
+
+    console.log("netAmount", netAmount);
     return netAmount.toFixed(2);
   };
 
@@ -451,7 +470,7 @@ const CreateSaleReturnInvoice = () => {
         unit: "",
         qty: "",
         rate: "",
-        amount: "",
+        amount:0,
         tax1: "",
         taxId1: "",
         tax2: "P",
@@ -552,7 +571,13 @@ const CreateSaleReturnInvoice = () => {
                     formik.setFieldValue("orderNo", newValue?.orderNo);
                     formik.setFieldValue("remark", newValue?.remark);
                     formik.setFieldValue("supplierId", newValue?.supplierId);
-                    formik.setFieldValue("supplierName", newValue?.supplierName);
+
+                    formik.setFieldValue("s_InvoiceNo", newValue?.label);
+                    formik.setFieldValue(
+                      "supplierName",
+                      newValue?.supplierName
+                    );
+
                     getSaleInvoicedById(newValue?.value);
                   }}
                   renderInput={(params) => (
@@ -1008,9 +1033,13 @@ const CreateSaleReturnInvoice = () => {
                         <td>
                           <TextField
                             type="text"
-                            value={item.SaleQty}
-                            
+                            value={item.taxId3}
                             size="small"
+
+                            onChange={(e) =>
+                              handleItemChange(index, "taxId3", String(e.target.value))
+                            }
+                            
                           />
                         </td>
 
@@ -1021,15 +1050,15 @@ const CreateSaleReturnInvoice = () => {
                             onChange={(e) => {
                               const newQty = e.target.value;
 
-                              
                               if (
-                                parseInt(newQty) <= parseInt(item.SaleQty) ||
+                                parseInt(newQty) <= parseInt(item.taxId3) ||
                                 newQty === ""
                               ) {
                                 handleItemChange(index, "qty", newQty);
                               } else {
-                                
-                                alert("Return quantity should not be greater than Sale quantity");
+                                alert(
+                                  "Return quantity should not be greater than Sale quantity"
+                                );
                               }
                             }}
                             // onFocus={(e) => e.target.select()}
@@ -1047,7 +1076,7 @@ const CreateSaleReturnInvoice = () => {
                             size="small"
                           />
                         </td>
-                        <td>{item.amount}</td>
+                        <td>{Number(item.amount)}</td>
                         <td>
                           <Autocomplete
                             disablePortal
@@ -1123,7 +1152,7 @@ const CreateSaleReturnInvoice = () => {
                         </strong>
                       </td>
                       <td colSpan={3}>
-                        <strong style={{ color: "#fff" }}>{totalAmount}</strong>
+                        <strong style={{ color: "#fff" }}>{Number(totalAmount)}</strong>
                       </td>
                     </tr>
                   </tbody>

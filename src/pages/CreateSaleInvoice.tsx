@@ -261,7 +261,11 @@ const calculateDiscount = (amount: number, discount: number, type: string) => {
 };
 
 const calculateNetAmount = (amount: number, tax: number, discount: number) => {
-  const netAmount = amount + tax - discount;
+
+  console.log('ammounts',{amount,tax,discount})
+  const netAmount = Number(amount) + Number(tax) - Number(discount);
+
+  console.log('netAmount',netAmount)
   return (netAmount.toFixed(2));
 };
 
@@ -786,7 +790,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
                               handleItemChange(
                                 index,
                                 "qty",
-                                (e.target.value)
+                                e.target.value
                               )
                             }
                             // onFocus={(e) => e.target.select()}
