@@ -1019,7 +1019,7 @@ const EditSaleReturnInvoice = () => {
                         <td>
                           <TextField
                             type="text"
-                            value={item.taxId3}
+                            value={Number(item.taxId3) - item.qty}
                             size="small"
                             onChange={(e) => {
                               const newValue = Number(item.taxId3) - item.qty;
