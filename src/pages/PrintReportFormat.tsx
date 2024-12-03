@@ -125,39 +125,37 @@ const PrintReportFormat: React.FC<HTMLTemplateProps> = ({ zones, itemName,showHi
                 <TableRow key={zone.id} style={{
                   // borderTop: index === 0 ? "none" : "1px solid #000", 
                   borderBottom: "1px solid #000",
+                  backgroundColor:"#fff"
                 }}>
                   <TableCell align="right">{index + 1}</TableCell>
                   <TableCell 
                     onMouseEnter={(e: any) => {
                       e.target.style.textDecoration = "underline";
                       e.target.style.color = "blue";
-                    }}
-                    onMouseLeave={(e: any) => {
-                      e.target.style.textDecoration = "none";
-                      e.target.style.color = "inherit";
                     }}><a style={{
                       cursor: "pointer",
                       textDecoration: "underline",
                       color: "blue",
                     }} onClick={() => {ModalData(zone)}}> {zone.titleName}</a></TableCell>
-                  <TableCell align="right">&#8377; {zone.rate.toFixed(2)}</TableCell>
-                  <TableCell align="right">&#8377; {zone.totalInAmount.toFixed(2)}</TableCell>
-                  <TableCell align="right">{zone.inQty}</TableCell>
-                  <TableCell align="right">{zone.outQty}</TableCell>
-                  <TableCell align="right">{zone.balQty}</TableCell>
+                  <TableCell align="right" style={{backgroundColor: "#fff"}}>&#8377; {zone.rate.toFixed(2)}</TableCell>
+                  <TableCell align="right" style={{backgroundColor: "#fff"}}>&#8377; {zone.totalInAmount.toFixed(2)}</TableCell>
+                  <TableCell align="right" style={{backgroundColor: "#fff"}}>{zone.inQty}</TableCell>
+                  <TableCell align="right" style={{backgroundColor: "#fff"}}>{zone.outQty}</TableCell>
+                  <TableCell align="right" style={{backgroundColor: "#fff"}}>{zone.balQty}</TableCell>
                   <TableCell align="right" style={{backgroundColor: "#fff"}}>&#8377; {zone.totalOutAmount.toFixed(2)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
             <TableFooter>
               <TableRow style={{ backgroundColor: "#f3f3f3", fontWeight: "bold" }}>
-              <TableCell style={{ color: "black", fontWeight: 600, fontSize: "14px" }} align="center" colSpan={4}>
+              <TableCell style={{ color: "black", fontWeight: 600, fontSize: "14px" }} align="center" colSpan={3}>
                 Total
               </TableCell>
+              <TableCell align="right" style={{ color: "black", fontWeight: 600, fontSize: "14px" }}>&#8377; {totalInAmount.toFixed(2)}</TableCell>
               <TableCell style={{ color: "black", fontWeight: 600, fontSize: "14px" }} align="right">{totalInQty.toFixed(2)}</TableCell>
               <TableCell style={{ color: "black", fontWeight: 600, fontSize: "14px" }} align="right">{totalOutQty.toFixed(2)}</TableCell>
               <TableCell style={{ color: "black", fontWeight: 600, fontSize: "14px" }} align="right">{totalBalQty.toFixed(2)}</TableCell>
-              <TableCell align="right" style={{ color: "black", fontWeight: 600, fontSize: "14px" }}>{totalOutAmount.toFixed(2)}</TableCell>
+              <TableCell align="right" style={{ color: "black", fontWeight: 600, fontSize: "14px" }}>&#8377; {totalOutAmount.toFixed(2)}</TableCell>
             </TableRow>
 
             </TableFooter>
