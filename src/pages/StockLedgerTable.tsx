@@ -61,6 +61,11 @@ const StockLedgerTable = ({ data, title }: { data: any[], title: any }) => {
           stockBinId: 5,
           itemId: id,
         };
+      } else if (name === "PurchaseReturn") {
+        collectData = {
+          id: -1,
+          documentNo:String(id)
+        };
       } else if (name === "Sale") {
         collectData = {
           id: id,
@@ -70,8 +75,6 @@ const StockLedgerTable = ({ data, title }: { data: any[], title: any }) => {
       } else {
         collectData = { id: id };
       }
-
-
 
       switch (name) {
         case "PurchaseInvoice":
@@ -163,17 +166,12 @@ const StockLedgerTable = ({ data, title }: { data: any[], title: any }) => {
                       e.target.style.textDecoration = "underline";
                       e.target.style.color = "blue";
                     }}
-                    onMouseLeave={(e: any) => {
-                      e.target.style.textDecoration = "none";
-                      e.target.style.color = "inherit";
-                    }}
-
                   ><a onClick={() => fetchApiData(row.voucherType, row.voucherType == "StockGeneral" ? row.itemId : row.voucherId)}
                     //   style={{cursor:"pointer",}}
                     style={{
                       cursor: "pointer",
-                      textDecoration: "none",
-                      color: "inherit",
+                      textDecoration: "underline",
+                      color: "blue",
                     }}
                   >{row.voucherType}</a></TableCell>
                   <TableCell>

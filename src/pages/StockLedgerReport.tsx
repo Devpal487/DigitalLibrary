@@ -26,6 +26,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import PrintReportFormatpdf from "./PrintReportFormatpdf";
 import PrintReportFormat from "./PrintReportFormat";
 import * as ReactDOM from 'react-dom/client';
+import DownloadIcon from '@mui/icons-material/Download';
 
 export default function StockLedgerReport() {
   const [zones, setZones] = useState<any>([]);
@@ -80,7 +81,7 @@ export default function StockLedgerReport() {
     setTimeout(async () => {
       const canvas = await html2canvas(container);
       const imgData = canvas.toDataURL("image/png");
-      const fileName = `${defaultValuestime}_${itemName}.pdf`;
+      const fileName = `${itemName}_${defaultValuestime}.pdf`;
       const pdf = new jsPDF();
       const imgWidth = 190;
       const pageHeight = pdf.internal.pageSize.height;
@@ -101,8 +102,6 @@ export default function StockLedgerReport() {
       document.body.removeChild(container);
     }, 0);
   };
-
-
 
   const fetchZonesData = async () => {
     try {
@@ -189,7 +188,7 @@ export default function StockLedgerReport() {
           <Box height={10} />
           <form onSubmit={formik.handleSubmit}>
             <Grid item xs={12} container spacing={2}>
-              <Grid item xs={12} sm={6} lg={6}>
+              <Grid item xs={4} md={6} lg={6}>
                 <Autocomplete
                   disablePortal
                   id="combo-box-demo"
@@ -214,7 +213,7 @@ export default function StockLedgerReport() {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={2} lg={2}>
+              <Grid item xs={2} md={2} lg={2}>
                 <Button
                   onClick={fetchZonesData}
                   variant="contained"
@@ -227,15 +226,14 @@ export default function StockLedgerReport() {
 
               <Grid
                 item
-                xs={12}
-                sm={1}
-                lg={1}
+                md={4}
+                lg={4}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 onClick={exportToPDF}
               >
-                <PrintIcon
-                  style={{ color: isHovered ? "black" : "blue" }}
+                <DownloadIcon
+                  style={{ color: isHovered ? "green" : "blue", cursor:"pointer" }}
                   fontSize="large"
                 />
               </Grid>

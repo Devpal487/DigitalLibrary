@@ -1,5 +1,5 @@
 import SwipeableDrawer from "@mui/material/SwipeableDrawer";
-import { Box, Button, Divider, Stack, Typography } from "@mui/material";
+import { Box, Divider, Stack, TableHead, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { IconButton } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -7,13 +7,24 @@ import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import dayjs from "dayjs";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Chip from "@mui/material/Chip";
+import DownloadIcon from '@mui/icons-material/Download';
+import html2canvas from "html2canvas";
+import * as ReactDOM from 'react-dom/client';
+import jsPDF from "jspdf"; 
+import { getISTDate } from "../utils/Constant";
+import SwipeablePrintReport from "./SwipeablePrintReport";
 
+interface Props {
+  open: boolean;
+  onClose: () => void;
+  userData: any;
+  title: any;
+}
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -30,7 +41,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: theme.palette.action.hover,
   },
-  // hide last border
   "&:last-child td, &:last-child th": {
     border: 0,
   },
@@ -45,16 +55,15 @@ const Root = styled("div")(({ theme }) => ({
   },
 }));
 
-interface Props {
-  open: boolean;
-  onClose: () => void;
-  userData: any;
-  title: any;
-}
 
 function SwipeableTemporaryDrawer({ open, onClose, title, userData }: Props) {
 
   console.log("userData", userData)
+  const {defaultValuestime} = getISTDate();
+
+
+  
+
   const handleClose = () => {
     onClose();
   };
@@ -118,8 +127,6 @@ function SwipeableTemporaryDrawer({ open, onClose, title, userData }: Props) {
 
   const renderSaleReturnDetails = () => (
     <>
-    {/* <Typography variant="h6"> #{userData?.s_InvoiceNo} Invoice Details</Typography> */}
-
     <Root style={{ padding: "10px" }}>
           <Divider>
             {" "}
@@ -132,7 +139,7 @@ function SwipeableTemporaryDrawer({ open, onClose, title, userData }: Props) {
         </Root>
 
     <TableContainer component={Paper}>
-      <Table sx={{ minWidth: "60vh", backgroundColor: "#fff", boxShadow: 1 }}>
+      <Table sx={{ minWidth: "70vh", backgroundColor: "#fff", boxShadow: 1 }}>
         <TableBody>
           {/* Displaying main invoice data */}
           <StyledTableRow>
@@ -168,7 +175,7 @@ function SwipeableTemporaryDrawer({ open, onClose, title, userData }: Props) {
           <Divider>
             {" "}
             <Chip
-              label="Sale Return Child Details"
+              label="Sale Return Goods Details"
               size="medium"
               sx={{ fontSize: "20px" }}
             />
@@ -176,66 +183,46 @@ function SwipeableTemporaryDrawer({ open, onClose, title, userData }: Props) {
         </Root>
     <TableContainer component={Paper}>
 
-      <Table sx={{ minWidth: "60vh", backgroundColor: "#fff", boxShadow: 1 }}>
-        <TableBody>
-          {userData.saleretnchild?.map((row: any) => (
-            <>
-            <React.Fragment key={row.id}>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Invoice No:</strong> {row.invoiceNo}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  {/* <strong>Item Name ID:</strong> {row.itemNameId} */}
-                  <strong>Document Date:</strong> {dayjs(userData.documentDate).format("DD-MM-YYYY")}
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Item Name:</strong> {row.itemNames}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <strong>Unit Name:</strong> {row.unitName}
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>In Qty:</strong> {row.qty}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <strong>Rate:</strong> {row.rate}
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Amount:</strong> {row.amount}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <strong>Discount:</strong> {row.tax2 === 'P' ? `${row.discount} %` : `${row.discount}` }
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Discount Amount:</strong> {row.discountAmount}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <strong>Tax Amount:</strong> {row.taxId1}
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Net Amount:</strong> {row.netamount}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  {/* <strong>Net Amount:</strong> {row.netamount} */}
-                </StyledTableCell>
-              </StyledTableRow>
-            </React.Fragment>
-            <br/>
-            </>
-          ))}
-        </TableBody>
-      </Table>
+      <Table sx={{ minWidth: "60vw", backgroundColor: "#fff", boxShadow: 1 }}>
+       <TableHead>
+       <TableRow>
+         <StyledTableCell align="center">Sr. No.</StyledTableCell>
+         <StyledTableCell align="center">Document Date</StyledTableCell>
+         <StyledTableCell align="center" >Item Name</StyledTableCell>
+         <StyledTableCell align="center" >Unit Name</StyledTableCell>
+         <StyledTableCell align="center" >In Qty</StyledTableCell>
+         <StyledTableCell align="center" >Rate</StyledTableCell>
+         <StyledTableCell align="center" >Amt</StyledTableCell>
+         {/* <StyledTableCell align="center" >Discount</StyledTableCell> */}
+         <StyledTableCell align="center" >Dis. Amt.</StyledTableCell>
+         <StyledTableCell align="center" >Tax Amt</StyledTableCell>
+         <StyledTableCell align="center" >Net Amt</StyledTableCell>
+       </TableRow>
+     </TableHead>
+      <TableBody>
+        {userData.saleretnchild?.map((row: any, index:any) => (
+          <React.Fragment key={row.id}>
+          <StyledTableRow>
+            <StyledTableCell
+              component="th"
+              scope="row"
+              align="center"
+            >{index+1}</StyledTableCell>
+            <StyledTableCell align="left">{dayjs(userData.documentDate).format("DD-MM-YYYY")}</StyledTableCell>
+            <StyledTableCell align="center">{row.itemNames}</StyledTableCell>
+            <StyledTableCell align="center">{row.unitName}</StyledTableCell>
+            <StyledTableCell align="center">{row.qty}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.rate}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.amount}</StyledTableCell>
+            {/* <StyledTableCell align="center">{row.tax2 === 'P' ? `${row.discount} %` : `${row.discount}` }</StyledTableCell> */}
+            <StyledTableCell align="center">&#8377; {row.discountAmount}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.taxId1}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.netamount}</StyledTableCell>
+          </StyledTableRow>
+        </React.Fragment>
+        ))}
+      </TableBody>
+    </Table>
     </TableContainer>
     </>
   );
@@ -249,7 +236,7 @@ function SwipeableTemporaryDrawer({ open, onClose, title, userData }: Props) {
           <Divider>
             {" "}
             <Chip
-              label="Sale Invoice Details"
+              label="Sale Item Details"
               size="medium"
               sx={{ fontSize: "20px" }}
             />
@@ -293,7 +280,7 @@ function SwipeableTemporaryDrawer({ open, onClose, title, userData }: Props) {
           <Divider>
             {" "}
             <Chip
-              label="Sale Invoice Child Details"
+              label="Sale Item Goods Details"
               size="medium"
               sx={{ fontSize: "20px" }}
             />
@@ -301,60 +288,46 @@ function SwipeableTemporaryDrawer({ open, onClose, title, userData }: Props) {
         </Root>
     <TableContainer component={Paper}>
 
-      <Table sx={{ minWidth: "60vh", backgroundColor: "#fff", boxShadow: 1 }}>
-        <TableBody>
-          {userData.saleinv?.map((row: any) => (
-            <React.Fragment key={row.id}>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Invoice No:</strong> {row.invoiceNo}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  {/* <strong>Item Name ID:</strong> {row.itemNameId} */}
-                  <strong>Document Date:</strong> {dayjs(userData.documentDate).format("DD-MM-YYYY")}
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Item Name:</strong> {row.itemNames}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <strong>Unit Name:</strong> {row.unitName}
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Out Qty:</strong> {row.qty}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <strong>Rate:</strong> {row.rate}
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Amount:</strong> {row.amount}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <strong>Discount:</strong> {row.tax2 === 'P' ? `${row.discount} %` : `${row.discount}` }
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Discount Amount:</strong> {row.discountAmount}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <strong>Tax Amount:</strong> {row.taxId1}
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Net Amount:</strong> {row.netamount}
-                </StyledTableCell>
-              </StyledTableRow>
-            </React.Fragment>
-          ))}
-        </TableBody>
-      </Table>
+      <Table sx={{ minWidth: "60vw", backgroundColor: "#fff", boxShadow: 1 }}>
+       <TableHead>
+       <TableRow>
+         <StyledTableCell align="center">Sr. No.</StyledTableCell>
+         <StyledTableCell align="center">Document Date</StyledTableCell>
+         <StyledTableCell align="center" >Item Name</StyledTableCell>
+         <StyledTableCell align="center" >Unit Name</StyledTableCell>
+         <StyledTableCell align="center" >Out Qty</StyledTableCell>
+         <StyledTableCell align="center" >Rate</StyledTableCell>
+         <StyledTableCell align="center" >Amt</StyledTableCell>
+         {/* <StyledTableCell align="center" >Discount</StyledTableCell> */}
+         <StyledTableCell align="center" >Dis. Amt.</StyledTableCell>
+         <StyledTableCell align="center" >Tax Amt</StyledTableCell>
+         <StyledTableCell align="center" >Net Amt</StyledTableCell>
+       </TableRow>
+     </TableHead>
+      <TableBody>
+        {userData.saleinv?.map((row: any, index:any) => (
+          <React.Fragment key={row.id}>
+          <StyledTableRow>
+            <StyledTableCell
+              component="th"
+              scope="row"
+              align="center"
+            >{index+1}</StyledTableCell>
+            <StyledTableCell align="left">{dayjs(userData.documentDate).format("DD-MM-YYYY")}</StyledTableCell>
+            <StyledTableCell align="center">{row.itemNames}</StyledTableCell>
+            <StyledTableCell align="center">{row.unitName}</StyledTableCell>
+            <StyledTableCell align="center">{row.qty}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.rate}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.amount}</StyledTableCell>
+            {/* <StyledTableCell align="center">{row.tax2 === 'P' ? `${row.discount} %` : `${row.discount}` }</StyledTableCell> */}
+            <StyledTableCell align="center">&#8377; {row.discountAmount}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.taxId1}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.netamount}</StyledTableCell>
+          </StyledTableRow>
+        </React.Fragment>
+        ))}
+      </TableBody>
+    </Table>
     </TableContainer>
     </>
   );
@@ -367,7 +340,7 @@ function SwipeableTemporaryDrawer({ open, onClose, title, userData }: Props) {
           <Divider>
             {" "}
             <Chip
-              label="Purchase Invoice Return Details"
+              label="Purchase Return Details"
               size="medium"
               sx={{ fontSize: "20px" }}
             />
@@ -411,68 +384,53 @@ function SwipeableTemporaryDrawer({ open, onClose, title, userData }: Props) {
           <Divider>
             {" "}
             <Chip
-              label="Purchase Invoice Return Child Details"
+              label="Purchase Return Goods Details"
               size="medium"
               sx={{ fontSize: "20px" }}
             />
           </Divider>
         </Root>
     <TableContainer component={Paper}>
-  
-      <Table sx={{ minWidth: "60vh", backgroundColor: "#fff", boxShadow: 1 }}>
-        <TableBody>
-          {userData.purReturnChild?.map((row: any) => (
-            <React.Fragment key={row.id}>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Invoice No:</strong> {row.invoiceNo}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  {/* <strong>Item Name ID:</strong> {row.itemNameId} */}
-                  <strong>Document Date:</strong> {dayjs(userData.documentDate).format("DD-MM-YYYY")}
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Item Name:</strong> {row.itemNames}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <strong>Unit Name:</strong> {row.unitName}
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Return Qty:</strong> {row.qty}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <strong>Rate:</strong> {row.rate}
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Amount:</strong> {row.amount}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <strong>Discount:</strong> {row.tax2 === 'P' ? `${row.discount} %` : `${row.discount}` }
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Discount Amount:</strong> {row.discountAmount}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <strong>Tax Amount:</strong> {row.taxId1}
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Net Amount:</strong> {row.netamount}
-                </StyledTableCell>
-              </StyledTableRow>
-            </React.Fragment>
-          ))}
-        </TableBody>
-      </Table>
+      <Table sx={{ minWidth: "60vw", backgroundColor: "#fff", boxShadow: 1 }}>
+       <TableHead>
+       <TableRow>
+         <StyledTableCell align="center">Sr. No.</StyledTableCell>
+         <StyledTableCell align="center">Document Date</StyledTableCell>
+         <StyledTableCell align="center" >Item Name</StyledTableCell>
+         <StyledTableCell align="center" >Unit Name</StyledTableCell>
+         <StyledTableCell align="center" >Return Qty</StyledTableCell>
+         <StyledTableCell align="center" >Rate</StyledTableCell>
+         <StyledTableCell align="center" >Amt</StyledTableCell>
+         {/* <StyledTableCell align="center" >Discount</StyledTableCell> */}
+         <StyledTableCell align="center" >Dis. Amt.</StyledTableCell>
+         <StyledTableCell align="center" >Tax Amt</StyledTableCell>
+         <StyledTableCell align="center" >Net Amt</StyledTableCell>
+       </TableRow>
+     </TableHead>
+      <TableBody>
+        {userData.purReturnChild?.map((row: any, index:any) => (
+          <React.Fragment key={row.id}>
+          <StyledTableRow>
+            <StyledTableCell
+              component="th"
+              scope="row"
+              align="center"
+            >{index+1}</StyledTableCell>
+            <StyledTableCell align="left">{dayjs(userData.documentDate).format("DD-MM-YYYY")}</StyledTableCell>
+            <StyledTableCell align="center">{row.itemNames}</StyledTableCell>
+            <StyledTableCell align="center">{row.unitName}</StyledTableCell>
+            <StyledTableCell align="center">{row.qty}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.rate}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.amount}</StyledTableCell>
+            {/* <StyledTableCell align="center">{row.tax2 === 'P' ? `${row.discount} %` : `${row.discount}` }</StyledTableCell> */}
+            <StyledTableCell align="center">&#8377; {row.discountAmount}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.taxId1}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.netamount}</StyledTableCell>
+          </StyledTableRow>
+        </React.Fragment>
+        ))}
+      </TableBody>
+    </Table>
     </TableContainer>
     </>
   );
@@ -485,7 +443,7 @@ const renderPurchaseDetails = () => (
         <Divider>
           {" "}
           <Chip
-            label="Purchase Invoice Details"
+            label="Purchase Item Details"
             size="medium"
             sx={{ fontSize: "20px" }}
           />
@@ -493,7 +451,7 @@ const renderPurchaseDetails = () => (
       </Root>
 
   <TableContainer component={Paper}>
-    <Table sx={{ minWidth: "60vh", backgroundColor: "#fff", boxShadow: 1 }}>
+    <Table sx={{ minWidth: "60vw", backgroundColor: "#fff", boxShadow: 1 }}>
       <TableBody>
         {/* Displaying main invoice data */}
         <StyledTableRow>
@@ -529,7 +487,7 @@ const renderPurchaseDetails = () => (
         <Divider>
           {" "}
           <Chip
-            label="Purchase Invoice Child Details"
+            label="Purchase Item Goods Details"
             size="medium"
             sx={{ fontSize: "20px" }}
           />
@@ -537,77 +495,107 @@ const renderPurchaseDetails = () => (
       </Root>
   <TableContainer component={Paper}>
 
-    <Table sx={{ minWidth: "60vh", backgroundColor: "#fff", boxShadow: 1 }}>
+   
+    <Table sx={{ minWidth: "60vw", backgroundColor: "#fff", boxShadow: 1 }}>
+       <TableHead>
+       <TableRow>
+         <StyledTableCell align="center">Sr. No.</StyledTableCell>
+         <StyledTableCell align="center">Document Date</StyledTableCell>
+         <StyledTableCell align="center" >Item Name</StyledTableCell>
+         <StyledTableCell align="center" >Unit Name</StyledTableCell>
+         <StyledTableCell align="center" >In Qty</StyledTableCell>
+         <StyledTableCell align="center" >Rate</StyledTableCell>
+         <StyledTableCell align="center" >Amt</StyledTableCell>
+         {/* <StyledTableCell align="center" >Discount</StyledTableCell> */}
+         <StyledTableCell align="center" >Dis. Amt.</StyledTableCell>
+         <StyledTableCell align="center" >Tax Amt</StyledTableCell>
+         <StyledTableCell align="center" >Net Amt</StyledTableCell>
+       </TableRow>
+     </TableHead>
       <TableBody>
-        {userData.purchaseinv?.map((row: any) => (
+        {userData.purchaseinv?.map((row: any, index:any) => (
           <React.Fragment key={row.id}>
-            <StyledTableRow>
-              <StyledTableCell align="left">
-                <strong>Invoice No:</strong> {row.invoiceNo}
-              </StyledTableCell>
-              <StyledTableCell align="left">
-                {/* <strong>Item Name ID:</strong> {row.itemNameId} */}
-                <strong>Document Date:</strong> {dayjs(userData.documentDate).format("DD-MM-YYYY")}
-              </StyledTableCell>
-            </StyledTableRow>
-            <StyledTableRow>
-              <StyledTableCell align="left">
-                <strong>Item Name:</strong> {row.itemNames}
-              </StyledTableCell>
-              <StyledTableCell align="left">
-                <strong>Unit Name:</strong> {row.unitName}
-              </StyledTableCell>
-            </StyledTableRow>
-            <StyledTableRow>
-              <StyledTableCell align="left">
-                <strong>In Qty:</strong> {row.qty}
-              </StyledTableCell>
-              <StyledTableCell align="left">
-                <strong>Rate:</strong> {row.rate}
-              </StyledTableCell>
-            </StyledTableRow>
-            <StyledTableRow>
-              <StyledTableCell align="left">
-                <strong>Amount:</strong> {row.amount}
-              </StyledTableCell>
-              <StyledTableCell align="left">
-                <strong>Discount:</strong> {row.tax2 === 'P' ? `${row.discount} %` : `${row.discount}` }
-              </StyledTableCell>
-            </StyledTableRow>
-            <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Discount Amount:</strong> {row.discountAmount}
-                </StyledTableCell>
-                <StyledTableCell align="left">
-                  <strong>Tax Amount:</strong> {row.taxId1}
-                </StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell align="left">
-                  <strong>Net Amount:</strong> {row.netamount}
-                </StyledTableCell>
-              </StyledTableRow>
-          </React.Fragment>
+          <StyledTableRow>
+            <StyledTableCell
+              component="th"
+              scope="row"
+              align="center"
+            >{index+1}</StyledTableCell>
+            <StyledTableCell align="left">{dayjs(userData.documentDate).format("DD-MM-YYYY")}</StyledTableCell>
+            <StyledTableCell align="center">{row.itemNames}</StyledTableCell>
+            <StyledTableCell align="center">{row.unitName}</StyledTableCell>
+            <StyledTableCell align="center">{row.qty}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.rate}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.amount}</StyledTableCell>
+            {/* <StyledTableCell align="center">{row.tax2 === 'P' ? `${row.discount} %` : `${row.discount}` }</StyledTableCell> */}
+            <StyledTableCell align="center">&#8377; {row.discountAmount}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.taxId1}</StyledTableCell>
+            <StyledTableCell align="center">&#8377; {row.netamount}</StyledTableCell>
+          </StyledTableRow>
+        </React.Fragment>
         ))}
       </TableBody>
     </Table>
+   
   </TableContainer>
   </>
   );
 
   const renderContent = () => {
-    if (userData?.saleretnchild) {
+    if (userData?.saleretnchild === null || userData?.saleretnchild === '' || 
+      Array.isArray(userData?.saleretnchild) && userData?.saleretnchild.length === 0) {
       return renderSaleReturnDetails();
-    } else if (userData?.saleinv) {
+    } else if (userData?.saleinv) { 
       return renderSaleInvoiceDetails();
-    } else if (userData?.purReturnChild) {
-      return renderPurchaseReturnDetails();
-    }else if (userData?.purchaseinv) {
+    } else if (userData?.purReturnChild === null || userData?.purReturnChild === '' || 
+      Array.isArray(userData?.purReturnChild) && userData?.purReturnChild.length === 0) {
+    return renderPurchaseReturnDetails();
+  }else if (userData?.purchaseinv) {
       return renderPurchaseDetails();
     } else {
       return renderStockGeneralDetails();
     }
   };
+
+  
+  const exportToPDF = async () => {
+    // Dynamically create a div to render the PrintReportFormatpdf component
+    const container = document.createElement("div");
+    container.style.position = "absolute";
+    container.style.top = "-9999px";
+    document.body.appendChild(container);
+
+    const element = (
+      <SwipeablePrintReport itemName={userData?.document_No} zones={userData} showHide={false} />
+    );
+
+    const root = ReactDOM.createRoot(container);
+    root.render(element);
+
+    setTimeout(async () => {
+      const canvas = await html2canvas(container);
+      const imgData = canvas.toDataURL("image/png");
+      const fileName = `${userData?.document_No}_${defaultValuestime}.pdf`;
+      const pdf = new jsPDF();
+      const imgWidth = 190;
+      const pageHeight = pdf.internal.pageSize.height;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      pdf.save(fileName);
+
+      document.body.removeChild(container);
+    }, 0);
+  };
+
 
   return (
     <div>
@@ -654,10 +642,21 @@ const renderPurchaseDetails = () => (
           >
             {title}
           </p>
+          <IconButton
+            aria-label="close"
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 7,
+              color: (theme) => theme.palette.grey[500],
+            }}
+            onClick={exportToPDF}
+          >
+            <DownloadIcon />
+          </IconButton>
           <Divider />
         </Box>
-
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 2,  backgroundColor: "#fff", boxShadow: 1 }}>
           {renderContent()}
         </Box>
       </SwipeableDrawer>
