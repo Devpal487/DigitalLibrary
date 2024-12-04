@@ -897,12 +897,7 @@ function SwipeableTemporaryDrawer({
   );
 
   const renderContent = () => {
-    if (
-      userData?.saleretnchild === null ||
-      userData?.saleretnchild === "" ||
-      (Array.isArray(userData?.saleretnchild) &&
-        userData?.saleretnchild.length === 0)
-    ) {
+    if ( userData?.saleretnchild ) {
       return renderSaleReturnDetails();
     } else if (userData?.saleinv) {
       return renderSaleInvoiceDetails();
