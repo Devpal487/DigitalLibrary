@@ -885,7 +885,7 @@ const EditSaleReturnInvoice = () => {
                       >
                         {t("text.ItemName")}
                       </th>
-                      <th
+                      {/* <th
                         style={{
                           border: "1px solid black",
                           textAlign: "center",
@@ -893,7 +893,7 @@ const EditSaleReturnInvoice = () => {
                         }}
                       >
                         {t("text.Quantity")}
-                      </th>
+                      </th> */}
 
                       <th
                         style={{
@@ -1016,7 +1016,7 @@ const EditSaleReturnInvoice = () => {
                           />
                         </td>
 
-                        <td>
+                        {/* <td>
                           <TextField
                             type="text"
                             value={Number(item.taxId3) - item.qty}
@@ -1033,7 +1033,7 @@ const EditSaleReturnInvoice = () => {
                               }
                             }}
                           />
-                        </td>
+                        </td> */}
 
                         <td>
                           <TextField

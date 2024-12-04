@@ -195,8 +195,8 @@ export default function SaleInvoiceMaster() {
                         headerClassName: "MuiDataGrid-colCell",
                     },
                     {
-                        field: "document_No",
-                        headerName: t("text.document_Nos"),
+                        field: "orderNo",
+                        headerName: t("text.OrderNo"),
                         flex: 1,
                         headerClassName: "MuiDataGrid-colCell",
                     },
