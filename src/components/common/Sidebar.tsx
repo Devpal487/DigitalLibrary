@@ -517,7 +517,7 @@ export default function MiniDrawer({ items }: any) {
 
   const handleMyProfileClick = () => {
 
-    setShowThemeMenu((prevState) => !prevState);
+    //setShowThemeMenu((prevState) => !prevState);
 
     setProfileDrawerOpen(!profileDrawerOpen);
   };
@@ -764,7 +764,7 @@ export default function MiniDrawer({ items }: any) {
               Translate -- {newLanguage}
             </MenuItem>
 
-            <MenuItem onClick={() => setShowThemeMenu(!showThemeMenu)}>
+            <MenuItem onClick={(e) => setShowThemeMenu(!showThemeMenu)}>
               <ListItemIcon>
                 <img src={ThemeIcon} width={30} height={30} />
               </ListItemIcon>

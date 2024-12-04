@@ -128,6 +128,8 @@ export default function AssignUserTypeToMember() {
       );
       if (response.data.isSuccess) {
         toast.success("Successfully Assigned");
+        setUserType([]);
+        setMemberCode("");
       } else {
         toast.error(response.data.mesg);
       }
@@ -147,6 +149,8 @@ export default function AssignUserTypeToMember() {
       );
       if (response.data.isSuccess) {
         toast.success("Successfully Revoked");
+        setUserType([]);
+        setMemberCode("");
       } else {
         toast.error(response.data.mesg);
       }
