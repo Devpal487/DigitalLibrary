@@ -72,7 +72,7 @@ export default function Stockledger() {
         { value: "-1", label: t("text.SelectContentId") },
     ]);
 
-   
+   console.log(location)
 
 
     useEffect(() => {
@@ -80,7 +80,9 @@ export default function Stockledger() {
         GetTaxData();
         GetUnitData()
         fetchStockData();
-        routeChangeEdit(location.state);
+        if(location?.state && location?.state != null ){
+       routeChangeEdit(location.state);
+        }
     }, []);
 
 
@@ -232,7 +234,7 @@ export default function Stockledger() {
                                     direction="row"
                                     sx={{ alignItems: "center", marginTop: "5px" }}
                                 >
-                                    {/* {permissionData?.isEdit ? ( */}
+                                    {/* {permissionData?.isEdit ? ( 
                                     <EditIcon
                                         style={{
                                             fontSize: "20px",
@@ -242,7 +244,7 @@ export default function Stockledger() {
                                         className="cursor-pointer"
                                         onClick={() => routeChangeEdit(params.row)}
                                     />
-                                    {/* ) : (
+                                     ) : (
                     ""
                   )}
                   {permissionData?.isDel ? ( */}
