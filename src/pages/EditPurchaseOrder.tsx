@@ -1,3 +1,4 @@
+
 import {
   Button,
   CardContent,
@@ -59,6 +60,9 @@ const EditPurchaseOrder = () => {
   const [lang, setLang] = useState<Language>("en");
   const [toaster, setToaster] = useState(false);
   const location = useLocation();
+
+
+  console.log('location',location );
   const [items, setItems] = useState<any>([{...initialRows}]);
   const [taxOption, setTaxOption] = useState([
     { value: "-1", label: t("text.tax") },

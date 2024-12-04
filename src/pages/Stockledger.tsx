@@ -53,6 +53,8 @@ export default function Stockledger() {
     const [columns, setColumns] = useState<any>([]);
     const [isLoading, setIsLoading] = useState(true);
     const location = useLocation();
+
+    console.log('location',location );
     const [lang, setLang] = useState<Language>("en");
     const [permissionData, setPermissionData] = useState<MenuPermission>({
         isAdd: false,
@@ -70,12 +72,15 @@ export default function Stockledger() {
         { value: "-1", label: t("text.SelectContentId") },
     ]);
 
+   
+
 
     useEffect(() => {
         GetDigitalContentData();
         GetTaxData();
         GetUnitData()
         fetchStockData();
+        routeChangeEdit(location.state);
     }, []);
 
 
