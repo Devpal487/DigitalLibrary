@@ -97,11 +97,12 @@ import PurchaseReturn from "../pages/PurchaseReturn";
 import SaleReturn from "../pages/SaleReturn";
 import EditSaleReturnInvoice from "../pages/EditSaleReturnInvoice";
 import CreateSaleReturnInvoice from "../pages/CreateSaleReturnInvoice";
+import Login_Page from "../loginPage/Login_Page";
 
 const appRoutes: RouteType[] = [
   {
     index: true,
-    element: <LoginPage />,
+    element: <Login_Page />,
     state: "home",
   },
   {
