@@ -194,7 +194,7 @@ export default function PurchaseOrderMaster() {
                     },
                     {
                         field: "document_No",
-                        headerName: t("text.document_Nos"),
+                        headerName: t("text.PurchaseNo"),
                         flex: 1,
                         headerClassName: "MuiDataGrid-colCell",
                     },

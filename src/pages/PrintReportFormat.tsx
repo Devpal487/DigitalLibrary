@@ -57,6 +57,8 @@ const PrintReportFormat: React.FC<HTMLTemplateProps> = ({ zones, itemName,showHi
         collectData
       );
       const data = response.data.data;
+
+      console.log('LedgerReport',data)
       const zonesWithIds = data.map((zone: any, index: any) => ({
         ...zone,
         serialNo: index + 1,

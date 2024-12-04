@@ -127,7 +127,7 @@ const PrintReportFormatpdf: React.FC<HTMLTemplateProps> = ({ zones, itemName,sho
                 </TableCell>
               </TableRow>
             </TableHead>
-            <TableBody>
+            <TableBody  style={{backgroundColor:"#fff"}}>
               {zones.map((zone, index) => (
                 <TableRow key={zone.id} style={{
                   // borderTop: index === 0 ? "none" : "1px solid #000", 
