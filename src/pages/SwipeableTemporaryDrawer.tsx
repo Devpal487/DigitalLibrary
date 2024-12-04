@@ -897,23 +897,20 @@ function SwipeableTemporaryDrawer({
   );
 
   const renderContent = () => {
-    if ( userData?.saleretnchild ) {
+    if (userData?.saleretnchild ) {
       return renderSaleReturnDetails();
-    } else if (userData?.saleinv) {
+    } else if (userData?.saleinv) { 
       return renderSaleInvoiceDetails();
-    } else if (
-      userData?.purReturnChild === null ||
-      userData?.purReturnChild === "" ||
-      (Array.isArray(userData?.purReturnChild) &&
-        userData?.purReturnChild.length === 0)
-    ) {
-      return renderPurchaseReturnDetails();
-    } else if (userData?.purchaseinv) {
+    } else if (userData?.purReturnChild ) {
+    return renderPurchaseReturnDetails();
+  }else if (userData?.purchaseinv) {
       return renderPurchaseDetails();
     } else {
       return renderStockGeneralDetails();
     }
   };
+
+  
 
   const exportToPDF = async () => {
     // Dynamically create a div to render the PrintReportFormatpdf component
