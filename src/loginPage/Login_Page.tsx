@@ -209,6 +209,7 @@ function LoginPage() {
                         id=""
                         label="Password"
                         placeholder="Password"
+                        type="password"
                         required
                         onChange={(event) => {
                            setPassword(event.target.value);
