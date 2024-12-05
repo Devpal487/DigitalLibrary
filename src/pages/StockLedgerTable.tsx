@@ -17,12 +17,18 @@ import SwipeableTemporaryDrawer from "./SwipeableTemporaryDrawer";
 import { toast } from "react-toastify";
 
 import ToastApp from "../ToastApp";
+import { useNavigate } from "react-router-dom";
 
-const StockLedgerTable = ({ data, title }: { data: any[], title: any }) => {
+const StockLedgerTable = ({ data, title }: { data: any[]; title: any }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState(data);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [drawerData, setDrawerData] = useState<any>(null);
+
+  const [IsResult, setResult] = useState("");
+  const [IsPath, setPath] = useState({});
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const lowerCaseQuery = searchQuery.toLowerCase();
@@ -31,7 +37,9 @@ const StockLedgerTable = ({ data, title }: { data: any[], title: any }) => {
       const calculatedBal = (row.inQty || 0) - (row.outQty || 0);
       return (
         (row.voucherType?.toLowerCase() || "").includes(lowerCaseQuery) ||
-        dayjs(row.voucherDate || "").format("DD-MMM-YYYY").includes(lowerCaseQuery) ||
+        dayjs(row.voucherDate || "")
+          .format("DD-MMM-YYYY")
+          .includes(lowerCaseQuery) ||
         (row.inQty?.toString() || "0").includes(lowerCaseQuery) ||
         (row.outQty?.toString() || "0").includes(lowerCaseQuery) ||
         (row.rate?.toString() || "0").includes(lowerCaseQuery) ||
@@ -40,21 +48,37 @@ const StockLedgerTable = ({ data, title }: { data: any[], title: any }) => {
         calculatedBal.toString().includes(lowerCaseQuery)
       );
     });
-    setFilteredData(filtered)
+    setFilteredData(filtered);
   }, [searchQuery, data]);
 
+  const totalInQty = filteredData.reduce(
+    (acc, row) => acc + (row.inQty || 0),
+    0
+  );
+  const totalOutQty = filteredData.reduce(
+    (acc, row) => acc + (row.outQty || 0),
+    0
+  );
+  const totalBalQty = filteredData.reduce(
+    (acc, row) => acc + (row.balQty || 0),
+    0
+  );
 
-  const totalInQty = filteredData.reduce((acc, row) => acc + (row.inQty || 0), 0);
-  const totalOutQty = filteredData.reduce((acc, row) => acc + (row.outQty || 0), 0);
-  const totalBalQty = filteredData.reduce((acc, row) => acc + (row.balQty || 0), 0);
+
+  const NavigateToEdit = () => {
+    let Path = IsPath;
+    navigate(Path, {
+      state: IsResult,
+    });
+  };
 
 
-  const fetchApiData = async (name: string, id: any) => {
-
-    console.log("naem, id", name, id)
+  const fetchApiData = async (name: string, id: any, transId:any) => {
+    console.log("naem, id", name, id, transId);
     try {
       let endpoint = "";
       let collectData;
+      let path = "";
       if (name === "StockGeneral") {
         collectData = {
           voucherId: -1,
@@ -63,14 +87,14 @@ const StockLedgerTable = ({ data, title }: { data: any[], title: any }) => {
         };
       } else if (name === "PurchaseReturn") {
         collectData = {
-          id: -1,
-          documentNo:String(id)
+          id: transId,
+          documentNo: String(id),
         };
       } else if (name === "Sale") {
         collectData = {
           id: id,
-          "isRequst": false,
-          "s_InvoiceNo": ""
+          isRequst: false,
+          s_InvoiceNo: "",
         };
       } else {
         collectData = { id: id };
@@ -79,18 +103,24 @@ const StockLedgerTable = ({ data, title }: { data: any[], title: any }) => {
       switch (name) {
         case "PurchaseInvoice":
           endpoint = "/api/PurchaseInvoice/GetPurchaseInvoice";
+          path = `/EditPurchaseOrder`;
+
           break;
         case "Sale":
           endpoint = "/api/SaleInvoice/GetSaleInvoice";
+          path = `/EditSaleInvoice`;
           break;
         case "SaleReturn":
           endpoint = "/api/SaleReturn/GetSaleReturn";
+          path = `/EditSaleReturnInvoice`;
           break;
         case "PurchaseReturn":
           endpoint = "/api/PurchaseReturn/GetPurchaseReturn";
+          path = `/EditPurchaseReturnOrder`;
           break;
         case "StockGeneral":
-          endpoint = "api/StockLedger/GetStockReport"
+          endpoint = "api/StockLedger/GetStockReport";
+          path = `/StockLedger`;
           break;
         default:
           toast.error("wait network problem");
@@ -100,6 +130,10 @@ const StockLedgerTable = ({ data, title }: { data: any[], title: any }) => {
       const response = await api.post(endpoint, collectData);
       const result = response?.data?.data;
 
+      setPath(path);
+      setResult(result[0])
+
+      
       console.log("response", result);
 
       if (result?.length > 0) {
@@ -113,9 +147,6 @@ const StockLedgerTable = ({ data, title }: { data: any[], title: any }) => {
     }
   };
 
-
-
-
   return (
     <div>
       <ToastApp />
@@ -125,13 +156,11 @@ const StockLedgerTable = ({ data, title }: { data: any[], title: any }) => {
           onClose={() => setOpenDrawer(false)}
           userData={drawerData}
           title={`${title} Details`}
+          NavigationPage= {NavigateToEdit}
+          
         />
       )}
-      <Grid
-        item
-        xs={12}
-        container
-      >
+      <Grid item xs={12} container>
         <Grid item sm={4} lg={4} xs={12}>
           <TextField
             label="Search Records"
@@ -143,17 +172,89 @@ const StockLedgerTable = ({ data, title }: { data: any[], title: any }) => {
           />
         </Grid>
       </Grid>
-      <TableContainer component={Paper} style={{ maxHeight: "400px", overflowY: "auto" }}>
+      <TableContainer
+        component={Paper}
+        style={{ maxHeight: "400px", overflowY: "auto" }}
+      >
         <Table stickyHeader>
-          <TableHead style={{ backgroundColor: "#2B4593", color: "white", fontWeight: 600 }}>
+          <TableHead
+            style={{
+              backgroundColor: "#2B4593",
+              color: "white",
+              fontWeight: 600,
+            }}
+          >
             <TableRow>
-              <TableCell style={{ backgroundColor: "#2B4593", color: "white", fontWeight: 600 }} align="center">Sr. No</TableCell>
-              <TableCell style={{ backgroundColor: "#2B4593", color: "white", fontWeight: 600 }} align="center">Voucher Type</TableCell>
-              <TableCell style={{ backgroundColor: "#2B4593", color: "white", fontWeight: 600 }} align="center">Voucher Date</TableCell>
-              <TableCell style={{ backgroundColor: "#2B4593", color: "white", fontWeight: 600 }} align="center">Rate</TableCell>
-              <TableCell style={{ backgroundColor: "#2B4593", color: "white", fontWeight: 600 }} align="center">In Quantity</TableCell>
-              <TableCell style={{ backgroundColor: "#2B4593", color: "white", fontWeight: 600 }} align="center">Out Quantity</TableCell>
-              <TableCell style={{ backgroundColor: "#2B4593", color: "white", fontWeight: 600 }} align="center">Balance Quantity</TableCell>
+              <TableCell
+                style={{
+                  backgroundColor: "#2B4593",
+                  color: "white",
+                  fontWeight: 600,
+                }}
+                align="center"
+              >
+                Sr. No
+              </TableCell>
+              <TableCell
+                style={{
+                  backgroundColor: "#2B4593",
+                  color: "white",
+                  fontWeight: 600,
+                }}
+                align="center"
+              >
+                Voucher Type
+              </TableCell>
+              <TableCell
+                style={{
+                  backgroundColor: "#2B4593",
+                  color: "white",
+                  fontWeight: 600,
+                }}
+                align="center"
+              >
+                Voucher Date
+              </TableCell>
+              <TableCell
+                style={{
+                  backgroundColor: "#2B4593",
+                  color: "white",
+                  fontWeight: 600,
+                }}
+                align="center"
+              >
+                Rate
+              </TableCell>
+              <TableCell
+                style={{
+                  backgroundColor: "#2B4593",
+                  color: "white",
+                  fontWeight: 600,
+                }}
+                align="center"
+              >
+                In Quantity
+              </TableCell>
+              <TableCell
+                style={{
+                  backgroundColor: "#2B4593",
+                  color: "white",
+                  fontWeight: 600,
+                }}
+                align="center"
+              >
+                Out Quantity
+              </TableCell>
+              <TableCell
+                style={{
+                  backgroundColor: "#2B4593",
+                  color: "white",
+                  fontWeight: 600,
+                }}
+                align="center"
+              >
+                Balance Quantity
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -166,14 +267,25 @@ const StockLedgerTable = ({ data, title }: { data: any[], title: any }) => {
                       e.target.style.textDecoration = "underline";
                       e.target.style.color = "blue";
                     }}
-                  ><a onClick={() => fetchApiData(row.voucherType, row.voucherType == "StockGeneral" ? row.itemId : row.voucherId)}
-                    //   style={{cursor:"pointer",}}
-                    style={{
-                      cursor: "pointer",
-                      textDecoration: "underline",
-                      color: "blue",
-                    }}
-                  >{row.voucherType}</a></TableCell>
+                  >
+                    <a
+                      onClick={() =>
+                        fetchApiData(
+                          row.voucherType,
+                          row.voucherType == "StockGeneral" ? row.itemId : row.voucherId, 
+                            row.voucherType == "StockGeneral" ? row.itemId : row.id
+                        )
+                      }
+                      //   style={{cursor:"pointer",}}
+                      style={{
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                        color: "blue",
+                      }}
+                    >
+                      {row.voucherType}
+                    </a>
+                  </TableCell>
                   <TableCell>
                     {dayjs(row.voucherDate).format("DD-MMM-YYYY")}
                   </TableCell>
@@ -192,13 +304,34 @@ const StockLedgerTable = ({ data, title }: { data: any[], title: any }) => {
             )}
           </TableBody>
           <TableFooter>
-            <TableRow style={{ backgroundColor: "#f3f3f3", fontWeight: "bold" }}>
-              <TableCell style={{ color: "black", fontWeight: 600, fontSize: "14px" }} align="center" colSpan={4}>
+            <TableRow
+              style={{ backgroundColor: "#f3f3f3", fontWeight: "bold" }}
+            >
+              <TableCell
+                style={{ color: "black", fontWeight: 600, fontSize: "14px" }}
+                align="center"
+                colSpan={4}
+              >
                 Total
               </TableCell>
-              <TableCell style={{ color: "black", fontWeight: 600, fontSize: "14px" }} align="right">{totalInQty.toFixed(2)}</TableCell>
-              <TableCell style={{ color: "black", fontWeight: 600, fontSize: "14px" }} align="right">{totalOutQty.toFixed(2)}</TableCell>
-              <TableCell style={{ color: "black", fontWeight: 600, fontSize: "14px" }} align="right">{totalBalQty.toFixed(2)}</TableCell>
+              <TableCell
+                style={{ color: "black", fontWeight: 600, fontSize: "14px" }}
+                align="right"
+              >
+                {totalInQty.toFixed(2)}
+              </TableCell>
+              <TableCell
+                style={{ color: "black", fontWeight: 600, fontSize: "14px" }}
+                align="right"
+              >
+                {totalOutQty.toFixed(2)}
+              </TableCell>
+              <TableCell
+                style={{ color: "black", fontWeight: 600, fontSize: "14px" }}
+                align="right"
+              >
+                {totalBalQty.toFixed(2)}
+              </TableCell>
             </TableRow>
           </TableFooter>
         </Table>

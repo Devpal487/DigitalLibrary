@@ -81,7 +81,7 @@ const EditPurchaseReturnOrder = () => {
 
   useEffect(() => {
     getPurchaseInvoice();
-    getPurchaseOrderById(location.state.id);
+    getPurchaseOrderById(location.state.id, location.state.document_No);
     GetDigitalContentData();
     getTaxData();
     GetUnitData();
@@ -505,9 +505,10 @@ const EditPurchaseReturnOrder = () => {
       0
     );
 
-    const getPurchaseOrderById = async (id: any) => {
+    const getPurchaseOrderById = async (id: any, docno:any) => {
       const collectData = {
-        id: id
+        id: id,
+        documentNo: docno
       };
 
       try {  

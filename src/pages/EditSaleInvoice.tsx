@@ -30,21 +30,21 @@ import dayjs from "dayjs";
 const EditSaleInvoice = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const initialRows :any = {
+  const initialRows: any = {
     id: -1,
     saleid: -1,
     user_Id: 0,
-    itemNameId:'',
+    itemNameId: "",
     unit: "",
-    qty: '',
-    rate: '',
-    amount: '',
+    qty: "",
+    rate: "",
+    amount: "",
     tax1: "",
     taxId1: "",
     tax2: "P",
-    discount: 0.00,
-    discountAmount: '',
-    netAmount: '',
+    discount: 0.0,
+    discountAmount: "",
+    netAmount: "",
     documentNo: "",
     documentDate: "",
     invoiceNo: "",
@@ -59,7 +59,8 @@ const EditSaleInvoice = () => {
   const [lang, setLang] = useState<Language>("en");
   const [toaster, setToaster] = useState(false);
   const location = useLocation();
-  const [items, setItems] = useState<any>([{...initialRows}]);
+  console.log("location", location);
+  const [items, setItems] = useState<any>([{ ...initialRows }]);
   const [taxOption, setTaxOption] = useState([
     { value: "-1", label: t("text.tax") },
   ]);
@@ -85,7 +86,6 @@ const EditSaleInvoice = () => {
     GetUnitData();
     getSupliar();
   }, []);
-
 
   const getSupliar = async () => {
     const collectData = {
@@ -163,7 +163,6 @@ const EditSaleInvoice = () => {
     setContentOptions(arr);
   };
 
-
   const formik = useFormik({
     initialValues: {
       id: location.state.id,
@@ -172,8 +171,8 @@ const EditSaleInvoice = () => {
       doc_Date: dayjs(location.state.doc_Date).format("YYYY-MM-DD"),
       s_InvoiceDate: dayjs(location.state.s_InvoiceDate).format("YYYY-MM-DD"),
       supplierName: location.state.supplierName,
-      supplierId:location.state.supplierId,
-      orderNo: location.state.orderNo || '',
+      supplierId: location.state.supplierId,
+      orderNo: location.state.orderNo || "",
       tax: location.state.tax,
       freight: location.state.freight,
       amount: location.state.amount,
@@ -250,98 +249,129 @@ const EditSaleInvoice = () => {
       item.rate &&
       item.amount &&
       item.tax1 &&
-      item.taxId1 
+      item.taxId1
     );
   };
 
-const handleItemChange = (index: number, field: string, value: any) => {
-  const updatedItems = [...items];
-  let item = { ...updatedItems[index] };
+  const handleItemChange = (index: number, field: string, value: any) => {
+    const updatedItems = [...items];
+    let item = { ...updatedItems[index] };
 
-  if (field === 'itemNameId') {
-    const itemNameDetails = value;
-    if (itemNameDetails) {
-      item = {
-        ...item,
-        itemNameId: itemNameDetails.value || "",
-        rate: itemNameDetails.rate || "",
-        unit: String(itemNameDetails.unitId) || "",
-        tax1: String(itemNameDetails.taxId) || "",
-        taxId1: String(itemNameDetails.taxName) || "",
-      };
+    if (field === "itemNameId") {
+      const itemNameDetails = value;
+      if (itemNameDetails) {
+        item = {
+          ...item,
+          itemNameId: itemNameDetails.value || "",
+          rate: itemNameDetails.rate || "",
+          unit: String(itemNameDetails.unitId) || "",
+          tax1: String(itemNameDetails.taxId) || "",
+          taxId1: String(itemNameDetails.taxName) || "",
+        };
+      }
+    } else if (field === "qty" || field === "rate") {
+      item[field] = value === "" ? 0 : parseFloat(value);
+      item.amount = calculateAmount(item.qty, item.rate);
+      item.taxId1 = String(calculateTax(item.amount, parseFloat(item.taxId1)));
+    } else if (field === "tax1") {
+      const selectedTax = taxOption.find(
+        (tax: any) => tax.value === value?.value
+      );
+      if (selectedTax) {
+        item.tax1 = String(selectedTax.value);
+        item.taxId1 = String(
+          calculateTax(item.amount, parseFloat(selectedTax.label))
+        );
+      }
+    } else if (field === "tax2") {
+      item.tax2 = value || "";
+    } else if (field === "unit") {
+      item[field] = value;
+    } else if (field === "discount") {
+      item.discount = value === "" ? 0 : parseFloat(value);
+      const discountAmount: any = calculateDiscount(
+        item.amount,
+        item.discount,
+        item.tax2
+      );
+      item.discountAmount = discountAmount;
+      item.netAmount = calculateNetAmount(
+        item.amount,
+        parseFloat(item.taxId1),
+        discountAmount
+      );
     }
-  } else if (field === 'qty' || field === 'rate') {
-    item[field] = value === "" ? 0 : parseFloat(value);
-    item.amount = calculateAmount(item.qty, item.rate);
-    item.taxId1 = String(calculateTax(item.amount, parseFloat(item.taxId1)));
-  } else if (field === 'tax1') {
-    const selectedTax = taxOption.find((tax: any) => tax.value === value?.value);
-    if (selectedTax) {
-      item.tax1 = String(selectedTax.value);
-      item.taxId1 = String(calculateTax(item.amount, parseFloat(selectedTax.label)));
+
+    // Recalculate dependent fields
+    if (field !== "discount" && field !== "tax2") {
+      const discountAmount: any = calculateDiscount(
+        item.amount,
+        item.discount,
+        item.tax2
+      );
+      item.discountAmount = discountAmount;
+      let result = calculateNetAmount(
+        item.amount,
+        Number(item.taxId1),
+        discountAmount
+      );
+      console.log("Result", result);
+      item.netAmount = calculateNetAmount(
+        item.amount,
+        Number(item.taxId1),
+        discountAmount
+      );
     }
-  } else if (field === 'tax2') {
-    item.tax2 = value || '';
-  }else if (field === 'unit') {
-    item[field] = value ;
-  } else if (field === 'discount') {
-    item.discount = value === '' ? 0 : parseFloat(value);
-    const discountAmount:any = calculateDiscount(item.amount, item.discount, (item.tax2));
-    item.discountAmount = discountAmount;
-    item.netAmount = calculateNetAmount(item.amount, parseFloat(item.taxId1), discountAmount);
-  }
 
-  // Recalculate dependent fields
-  if (field !== 'discount' && field !== 'tax2') {
-    const discountAmount:any = calculateDiscount(item.amount, item.discount, item.tax2);
-    item.discountAmount = discountAmount;
-    let result =  calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
-    console.log("Result", result);
-    item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
-  }
+    updatedItems[index] = item;
+    setItems(updatedItems);
 
-  updatedItems[index] = item;
-  setItems(updatedItems);
+    if (validateItem(item) && index === updatedItems.length - 1) {
+      handleAddItem();
+    }
 
-  if (validateItem(item) && index === updatedItems.length - 1) {
-    handleAddItem();
-  }
+    console.log("🚀 ~ Updated items:", updatedItems);
+  };
+  const calculateAmount = (qty: number, rate: number) => {
+    const amount = qty * rate;
+    return amount.toFixed(2);
+  };
 
+  const calculateTax = (amount: number, taxRate: number) => {
+    const tax = (amount * taxRate) / 100;
+    return tax.toFixed(2);
+  };
 
-  console.log("🚀 ~ Updated items:", updatedItems);
-};
-const calculateAmount = (qty: number, rate: number) => {
-  const amount = qty * rate;
-  return (amount.toFixed(2));
-};
+  const calculateDiscount = (
+    amount: number,
+    discount: number,
+    type: string
+  ) => {
+    let discountValue = 0;
+    if (type === "P") {
+      discountValue = (amount * discount) / 100;
+    } else if (type === "F") {
+      discountValue = discount;
+    }
+    return discountValue.toFixed(2);
+  };
 
-const calculateTax = (amount: number, taxRate: number) => {
-  const tax = (amount * taxRate) / 100;
-  return (tax.toFixed(2));
-};
-
-const calculateDiscount = (amount: number, discount: number, type: string) => {
-  let discountValue = 0;
-  if (type === 'P') {
-    discountValue = (amount * discount) / 100;
-  } else if (type === 'F') {
-    discountValue = discount;
-  }
-  return (discountValue.toFixed(2));
-};
-
-const calculateNetAmount = (amount: number, tax: number, discount: number) => {
-  console.log("amount tax discount", amount, tax, discount);
-  const netAmount = Number(amount) + Number(tax) - Number(discount);
-  console.log("netAmount", netAmount);
-  return (netAmount.toFixed(2));
-};
+  const calculateNetAmount = (
+    amount: number,
+    tax: number,
+    discount: number
+  ) => {
+    console.log("amount tax discount", amount, tax, discount);
+    const netAmount = Number(amount) + Number(tax) - Number(discount);
+    console.log("netAmount", netAmount);
+    return netAmount.toFixed(2);
+  };
 
   const handleRemoveItem = (index: number) => {
     if (items.length === 1) {
       setItems([{ ...initialRows }]);
     } else {
-      const newData = items.filter((_:any, i:any) => i !== index);
+      const newData = items.filter((_: any, i: any) => i !== index);
       setItems(newData);
     }
     // updateTotalAmounts(tableData);
@@ -356,15 +386,15 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
         user_Id: 0,
         itemNameId: "",
         unit: "",
-        qty: '',
-        rate: '',
-        amount: '',
+        qty: "",
+        rate: "",
+        amount: "",
         tax1: "",
         taxId1: "",
         tax2: "P",
-        discount: 0.00,
-        discountAmount: '',
-        netAmount: '',
+        discount: 0.0,
+        discountAmount: "",
+        netAmount: "",
         documentNo: formik.values.document_No,
         documentDate: formik.values.doc_Date,
         invoiceNo: formik.values.s_InvoiceNo,
@@ -383,44 +413,48 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
     0
   );
 
-
   const getPurchaseOrderById = async (id: any) => {
-    const result = await api.post(`api/SaleInvoice/GetSaleInvoice`, { id: id });
-    console.log("result", result?.data?.data)
+    const collectData = {
+      id: id,
+      isRequst: false,
+      s_InvoiceNo: "",
+    };
+    const result = await api.post(`api/SaleInvoice/GetSaleInvoice`, collectData);
+    console.log("result", result?.data?.data);
     const transData = result?.data?.data[0]["saleinv"];
 
-    if(result?.data?.data?.length>0){
-    let arr: any = [];
-    for (let i = 0; i < transData.length; i++) {
-      arr.push({
-        id: transData[i]["id"],
-        saleid: transData[i]["saleid"],
-        user_Id: transData[i]["user_Id"],
-        itemNameId: transData[i]["itemNameId"],
-        unit: transData[i]["unit"],
-        qty: transData[i]["qty"],
-        rate: transData[i]["rate"],
-        amount: transData[i]["amount"],
-        tax1: transData[i]["tax1"],
-        taxId1: transData[i]["taxId1"],
-        tax2: transData[i]["tax2"],
-        discount: transData[i]["discount"],
-        discountAmount: transData[i]["discountAmount"],
-        netAmount: transData[i]["netamount"],
-        documentNo: transData[i]["documentNo"],
-        documentDate: transData[i]["documentDate"],
-        invoiceNo: transData[i]["invoiceNo"],
-        supplier: transData[i]["supplierId"],
-        orderNo: transData[i]["orderNo"],
-        mrnNo: transData[i]["mrnNo"],
-        mrnDate: transData[i]["mrnDate"],
-        taxId3: transData[i]["taxId3"],
-        tax3: transData[i]["tax3"],
-      });
+    if (result?.data?.data?.length > 0) {
+      let arr: any = [];
+      for (let i = 0; i < transData.length; i++) {
+        arr.push({
+          id: transData[i]["id"],
+          saleid: transData[i]["saleid"],
+          user_Id: transData[i]["user_Id"],
+          itemNameId: transData[i]["itemNameId"],
+          unit: transData[i]["unit"],
+          qty: transData[i]["qty"],
+          rate: transData[i]["rate"],
+          amount: transData[i]["amount"],
+          tax1: transData[i]["tax1"],
+          taxId1: transData[i]["taxId1"],
+          tax2: transData[i]["tax2"],
+          discount: transData[i]["discount"],
+          discountAmount: transData[i]["discountAmount"],
+          netAmount: transData[i]["netamount"],
+          documentNo: transData[i]["documentNo"],
+          documentDate: transData[i]["documentDate"],
+          invoiceNo: transData[i]["invoiceNo"],
+          supplier: transData[i]["supplierId"],
+          orderNo: transData[i]["orderNo"],
+          mrnNo: transData[i]["mrnNo"],
+          mrnDate: transData[i]["mrnDate"],
+          taxId3: transData[i]["taxId3"],
+          tax3: transData[i]["tax3"],
+        });
+      }
+      arr.push({ ...initialRows });
+      setItems(arr);
     }
-    arr.push({ ...initialRows });
-    setItems(arr);
-  }
   };
 
   return (
@@ -578,11 +612,11 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
                   disablePortal
                   id="combo-box-demo"
                   options={Option}
-                    value={
-                      Option.find(
-                        (option: any) => option.value == formik.values.supplierId
-                      ) || null
-                    }
+                  value={
+                    Option.find(
+                      (option: any) => option.value == formik.values.supplierId
+                    ) || null
+                  }
                   fullWidth
                   size="small"
                   onChange={(event, newValue: any) => {
@@ -599,7 +633,8 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
                         Boolean(formik.errors.supplierName)
                       }
                       helperText={
-                        formik.touched.supplierName && String(formik.errors.supplierName)
+                        formik.touched.supplierName &&
+                        String(formik.errors.supplierName)
                       }
                       label={
                         <CustomLabel
@@ -618,9 +653,13 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
                   id="orderNo"
                   name="orderNo"
                   label={
-                    <CustomLabel text={t("text.orderNo")} required={true} value={formik.values.orderNo || ''}/>
+                    <CustomLabel
+                      text={t("text.orderNo")}
+                      required={true}
+                      value={formik.values.orderNo || ""}
+                    />
                   }
-                  value={formik.values.orderNo || ''}
+                  value={formik.values.orderNo || ""}
                   placeholder={t("text.orderNo")}
                   size="small"
                   fullWidth
@@ -631,8 +670,9 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
                   }
                   // helperText={formik.touched.orderNo && String(formik.errors.orderNo)}
                   helperText={
-                    formik.touched.orderNo && typeof formik.errors.orderNo === "string" 
-                      ? formik.errors.orderNo 
+                    formik.touched.orderNo &&
+                    typeof formik.errors.orderNo === "string"
+                      ? formik.errors.orderNo
                       : "" // Fallback to empty string
                   }
                 />
@@ -884,23 +924,19 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
                     {items.map((item: any, index: any) => (
                       <tr key={item.id} style={{ border: "1px solid black" }}>
                         {/* <TableCell>{index + 1}</TableCell> */}
-                        <td style={{ width: "180px",padding:"5px"  }}>
+                        <td style={{ width: "180px", padding: "5px" }}>
                           <Autocomplete
                             disablePortal
                             id="combo-box-demo"
                             options={contentOptions}
                             size="small"
-                            value={contentOptions.find(
-                              (opt: any) =>
-                                opt.value == (item?.itemNameId)
-                            ) || null}
+                            value={
+                              contentOptions.find(
+                                (opt: any) => opt.value == item?.itemNameId
+                              ) || null
+                            }
                             onChange={(event, newValue: any) => {
-                              handleItemChange(
-                                index,
-                                "itemNameId",
-                                newValue
-                              );
-                              
+                              handleItemChange(index, "itemNameId", newValue);
                             }}
                             renderInput={(params) => (
                               <TextField
@@ -948,11 +984,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
                             type="text"
                             value={item.qty}
                             onChange={(e) =>
-                              handleItemChange(
-                                index,
-                                "qty",
-                                (e.target.value)
-                              )
+                              handleItemChange(index, "qty", e.target.value)
                             }
                             size="small"
                           />
@@ -962,11 +994,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
                             type="text"
                             value={item.rate}
                             onChange={(e) =>
-                              handleItemChange(
-                                index,
-                                "rate",
-                                (e.target.value)
-                              )
+                              handleItemChange(index, "rate", e.target.value)
                             }
                             size="small"
                           />
@@ -993,15 +1021,12 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
                             size="small"
                             value={
                               taxOption.find(
-                                (opt: any) => opt.value == item.tax1 
+                                (opt: any) => opt.value == item.tax1
                               ) || null
                             }
                             onChange={(event, newValue: any) => {
-                              handleItemChange(
-                                index,
-                                "tax1",
-                                newValue
-                              );}}
+                              handleItemChange(index, "tax1", newValue);
+                            }}
                             renderInput={(params) => (
                               <TextField
                                 {...params}
@@ -1036,7 +1061,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
                               handleItemChange(
                                 index,
                                 "discount",
-                                (e.target.value)
+                                e.target.value
                               )
                             }
                             size="small"
@@ -1064,7 +1089,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) => {
                       <td colSpan={3}>
                         <strong style={{ color: "#fff" }}>
                           {/* {totalAmount.toFixed(2)} */}
-                        {isNaN(totalAmount) ? '0.00' : Number(totalAmount)}
+                          {isNaN(totalAmount) ? "0.00" : Number(totalAmount)}
                         </strong>
                       </td>
                     </tr>

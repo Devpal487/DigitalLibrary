@@ -61,6 +61,8 @@ const EditSaleReturnInvoice = () => {
   const [lang, setLang] = useState<Language>("en");
   const [toaster, setToaster] = useState(false);
   const location = useLocation();
+
+  console.log('location',location );
   const [taxOption, setTaxOption] = useState([
     { value: "-1", label: t("text.tax") },
   ]);

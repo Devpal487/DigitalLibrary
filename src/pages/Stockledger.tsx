@@ -53,6 +53,8 @@ export default function Stockledger() {
     const [columns, setColumns] = useState<any>([]);
     const [isLoading, setIsLoading] = useState(true);
     const location = useLocation();
+
+    console.log('location',location );
     const [lang, setLang] = useState<Language>("en");
     const [permissionData, setPermissionData] = useState<MenuPermission>({
         isAdd: false,
@@ -70,12 +72,17 @@ export default function Stockledger() {
         { value: "-1", label: t("text.SelectContentId") },
     ]);
 
+   console.log(location)
+
 
     useEffect(() => {
         GetDigitalContentData();
         GetTaxData();
         GetUnitData()
         fetchStockData();
+        if(location?.state && location?.state != null ){
+       routeChangeEdit(location.state);
+        }
     }, []);
 
 
@@ -227,7 +234,7 @@ export default function Stockledger() {
                                     direction="row"
                                     sx={{ alignItems: "center", marginTop: "5px" }}
                                 >
-                                    {/* {permissionData?.isEdit ? ( */}
+                                    {/* {permissionData?.isEdit ? ( 
                                     <EditIcon
                                         style={{
                                             fontSize: "20px",
@@ -237,7 +244,7 @@ export default function Stockledger() {
                                         className="cursor-pointer"
                                         onClick={() => routeChangeEdit(params.row)}
                                     />
-                                    {/* ) : (
+                                     ) : (
                     ""
                   )}
                   {permissionData?.isDel ? ( */}

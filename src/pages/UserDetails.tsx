@@ -523,11 +523,15 @@ export default function UserDetails() {
                   name="userid"
                   id="userid"
                   placeholder={t("text.LoginId")}
-                  value={formik.values.userid}
+                  // value={formik.values.userid}
                   size="small"
                   fullWidth
                   style={{ backgroundColor: "white" }}
-                  onChange={formik.handleChange}
+                  onChange={(event: any) => {
+                    const newValue = event.target.value;
+                    formik.setFieldValue("userid", newValue);
+                    //console.log("data appId", newValue);
+                  }}
                   onBlur={formik.handleBlur}
                 />
               </Grid>
@@ -556,7 +560,7 @@ export default function UserDetails() {
                   name="c_password"
                   id="c_password"
                   placeholder={t("text.ConfirmPassword")}
-                  value={formik.values.password}
+                 // value={formik.values.password}
                   onChange={formik.handleChange}
                   size="small"
                   fullWidth
