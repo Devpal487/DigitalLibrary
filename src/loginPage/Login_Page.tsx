@@ -173,7 +173,7 @@ function LoginPage() {
             {/* <Grid xs={12} sm={7} lg={7} sx={{ backgroundImage:`url(${LoginImg})`,backgroundSize: 'cover', margin:"1px"}}>
                
             </Grid> */}
-            <Grid xs={12} sm={5} lg={5} sx={{ margin: "auto" }}>
+            <Grid xs={12} sm={7} md={6} lg={5} sx={{ margin: "auto" }}>
                <div style={{ backgroundColor: "#fff",paddingTop:"2rem",paddingBottom:"2rem", borderRadius:"3rem"}}>
                   <form
                      action="#"
@@ -209,6 +209,7 @@ function LoginPage() {
                         id=""
                         label="Password"
                         placeholder="Password"
+                        type="password"
                         required
                         onChange={(event) => {
                            setPassword(event.target.value);
