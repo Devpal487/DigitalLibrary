@@ -46,6 +46,7 @@ interface MenuPermission {
 }
 
 export default function Stockledger() {
+
   const { t } = useTranslation();
   const Userid = getId();
   const [editId, setEditId] = useState(-1);
@@ -87,6 +88,149 @@ export default function Stockledger() {
   const GetTaxData = async () => {
     const collectData = {
       taxId: -1,
+
+    const { t } = useTranslation();
+    const Userid = getId();
+    const [editId, setEditId] = useState(-1);
+    const [zones, setZones] = useState([]);
+    const [columns, setColumns] = useState<any>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const location = useLocation();
+
+    console.log('location',location );
+    const [lang, setLang] = useState<Language>("en");
+    const [permissionData, setPermissionData] = useState<MenuPermission>({
+        isAdd: false,
+        isEdit: false,
+        isPrint: false,
+        isDel: false,
+    });
+    const [taxOptions, setTaxOptions] = useState<any>([
+        { value: "-1", label: t("text.SelectTaxId"), pcent:0 },
+    ]);
+    const [unitOptions, setUnitOptions] = useState([
+        { value: "-1", label: t("text.SelectUnitId") },
+    ]);
+    const [contentOptions, setContentOptions] = useState([
+        { value: "-1", label: t("text.SelectContentId") },
+    ]);
+
+   console.log(location)
+
+
+    useEffect(() => {
+        GetDigitalContentData();
+        GetTaxData();
+        GetUnitData()
+        fetchStockData();
+        if(location?.state && location?.state != null ){
+       routeChangeEdit(location.state);
+        }
+    }, []);
+
+
+    const GetTaxData = async () => {
+        const collectData = {
+            taxId: -1,
+        };
+        const response = await api.post(`api/TaxMaster/GetTaxMaster`, collectData);
+        const data = response.data.data;
+        const arr:any = [];
+        for (let index = 0; index < data.length; index++) {
+            arr.push({
+                label: data[index]["taxName"],
+                value: data[index]["taxId"],
+                pcent:data[index]['taxPercentage']
+            });
+        }
+        setTaxOptions(arr);
+    };
+
+    const GetUnitData = async () => {
+        const collectData = {
+            unitId: -1,
+        };
+        const response = await api.post(`api/UnitMaster/GetUnitMaster`, collectData);
+        const data = response.data.data;
+        const arr = [];
+        for (let index = 0; index < data.length; index++) {
+            arr.push({
+                label: data[index]["unitName"],
+                value: data[index]["unitId"],
+            });
+        }
+        setUnitOptions(arr);
+    };
+
+
+    const GetDigitalContentData = async () => {
+        const collectData = {
+            title: "",
+            description: "",
+            fileNames: "",
+            accnos: [""],
+            memberCodes: [""],
+            groupName: "",
+        };
+        const response = await api.post(`api/DigitalOperate/GetDigitalContent`, collectData);
+        const data = response.data.data;
+       // console.log('Item',data)
+        const arr = [];
+        for (let index = 0; index < data.length; index++) {
+            arr.push({
+                label: data[index]["title"],
+                value: data[index]["id"],
+                rate:data[index]["exRate"],
+                unitId:data[index]["unitId"]
+            });
+        }
+        setContentOptions(arr);
+    };
+
+
+
+    const routeChangeEdit = (row: any) => {
+        console.log("🚀 ~ routeChangeEdit ~ row:", row)
+        formik.setFieldValue("entryNo", row.entryNo);
+        formik.setFieldValue("batchNo", row.batchNo);
+        formik.setFieldValue("itemId", row.itemId);
+        formik.setFieldValue("unitId", row.unitId);
+        formik.setFieldValue("rate", row.rate);
+        formik.setFieldValue("inQty", row.inQty);
+        formik.setFieldValue("outQty", row.outQty);
+        formik.setFieldValue("voucherId", row.voucherId);
+        formik.setFieldValue("stockBinId", row.stockBinId);
+        formik.setFieldValue("voucherType", row.voucherType);
+        formik.setFieldValue("voucherDate", dayjs(row.voucherDate).format("YYYY-MM-DD"));
+        formik.setFieldValue("expiryDate", dayjs(row.expiryDate).format("YYYY-MM-DD"));
+        formik.setFieldValue("companyId", row.companyId);
+        formik.setFieldValue("gstRate", row.gstRate);
+        formik.setFieldValue("cgst", row.cgst);
+        formik.setFieldValue("sgst", row.sgst);
+        formik.setFieldValue("igst", row.igst);
+        formik.setFieldValue("gstid", row.gstid);
+        formik.setFieldValue("sgstid", row.sgstid);
+        formik.setFieldValue("igstid", row.igstid);
+        formik.setFieldValue("fyearId", row.fyearId);
+        formik.setFieldValue("isActive", row.isActive);
+        setEditId(row.id);
+    };
+   
+
+
+    let delete_id = "";
+
+    const accept = () => {
+        api.post(`api/StockLedger/DeleteStockLedger`, {}, { headers: { EntryNo: delete_id } })
+            .then((response) => {
+                if (response.data.status ===1) {
+                    toast.success(response.data.message);
+                } else {
+                    toast.error(response.data.message);
+                }
+                fetchStockData();
+            });
+
     };
     const response = await api.post(`api/TaxMaster/GetTaxMaster`, collectData);
     const data = response.data.data;
@@ -129,6 +273,7 @@ export default function Stockledger() {
       memberCodes: [""],
       groupName: "",
     };
+
     const response = await api.post(
       `api/DigitalOperate/GetDigitalContent`,
       collectData
@@ -251,6 +396,39 @@ export default function Stockledger() {
                   sx={{ alignItems: "center", marginTop: "5px" }}
                 >
                   {/* {permissionData?.isEdit ? ( 
+
+
+    const fetchStockData = async () => {
+        try {
+
+            const response = await api.post(`api/StockLedger/GetStockLedger`, {}, { headers: { EntryNo: -1 } });
+            const data = response.data.data;
+            console.log("🚀 ~ fetchZonesData ~ response.data.data:", response.data.data)
+            const zonesWithIds = data.map((zone: any, index: any) => ({
+                ...zone,
+                serialNo: index + 1,
+                id: zone.entryNo,
+            }));
+            setZones(zonesWithIds);
+            setIsLoading(false);
+
+            if (data.length > 0) {
+                const columns: GridColDef[] = [
+                    {
+                        field: "actions",
+                        // headerClassName: "MuiDataGrid-colCell",
+                        headerName: t("text.Action"),
+                        width: 100,
+
+                        renderCell: (params) => {
+                            return [
+                                <Stack
+                                    spacing={1}
+                                    direction="row"
+                                    sx={{ alignItems: "center", marginTop: "5px" }}
+                                >
+                                    {/* {permissionData?.isEdit ? ( 
+
                                     <EditIcon
                                         style={{
                                             fontSize: "20px",
@@ -912,6 +1090,7 @@ export default function Stockledger() {
                                 />
                             </Grid> */}
 
+
               <Grid item xs={12} sm={4} lg={4}></Grid>
 
               <Grid container item xs={4}>
@@ -960,3 +1139,56 @@ export default function Stockledger() {
     </>
   );
 }
+
+
+
+                            <Grid item xs={12} sm={4} lg={4}></Grid>
+
+                            <Grid container item xs={4}>
+                                {editId === -1 && (
+                                    // {editId === -1 && permissionData?.isAdd && (
+                                    <ButtonWithLoader
+                                        buttonText={t("text.save")}
+                                        onClickHandler={handleSubmitWrapper}
+                                        fullWidth={true}
+                                    />
+                                )}
+
+                                {editId !== -1 && (
+                                    <ButtonWithLoader
+                                        buttonText={t("text.update")}
+                                        onClickHandler={handleSubmitWrapper}
+                                        fullWidth={true}
+                                    />
+                                )}
+                            </Grid>
+
+                        </Grid>
+                    </form>
+
+                    {isLoading ? (
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}
+                        >
+                            <CircularProgress />
+                        </div>
+                    ) : (
+                        <CustomDataGrid
+                            isLoading={isLoading}
+                            rows={zones}
+                            columns={adjustedColumns}
+                            pageSizeOptions={[5, 10, 25, 50, 100]}
+                            initialPageSize={5}
+                        />
+                    )}
+                </Paper>
+            </Card>
+            <ToastApp />
+        </>
+    );
+};
+
