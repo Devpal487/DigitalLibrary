@@ -57,6 +57,8 @@ export default function OrderItemList() {
   const [orderId, setOrderId] = useState<any>();
   const [orderSt, setOrderSt] = useState<any>("");
 
+  const [isRemark, setRemark] = useState<any>("");
+
   const { t } = useTranslation();
 
   const [Program, setProgram] = useState<any>([
@@ -101,13 +103,14 @@ export default function OrderItemList() {
       paymentBy: Item[0]?.paymentBy || "",
       transactionDate: Item[0]?.transactionDate || "",
       paymentStatus: Item[0]?.paymentStatus || 0,
-      orderStatus: orderId, // Ensure `orderId` is defined
-      status: orderSt, // Ensure `orderSt` is defined
+      orderStatus: orderId,
+      status: orderSt,
       createdBy: "",
       updatedBy: "",
+      remark:isRemark,
       createdOn: new Date().toISOString(),
       updatedOn: new Date().toISOString(),
-      ordeItemDetails: Item[0]?.ordeItemDetails, // Ensure this is structured correctly
+      ordeItemDetails: Item[0]?.ordeItemDetails,
     };
 
     // Post the collected data
@@ -130,8 +133,8 @@ export default function OrderItemList() {
   const getProgram = () => {
     const collectData = {
       id: -1,
-      "userTypeId": -1,
-      "userId": userId
+      userTypeId: -1,
+      userId: userId,
     };
     api.post(`api/statusmaster/GetStatusMaster`, collectData).then((res) => {
       //console.log("checkMemb", res?.data);
@@ -346,18 +349,16 @@ export default function OrderItemList() {
                       <Autocomplete
                         disablePortal
                         id="combo-box-demo"
-                        options={Program} 
+                        options={Program}
                         fullWidth
                         size="small"
                         onChange={(event: any, newValue: any) => {
-                          
                           if (newValue) {
-                            setOrderId(newValue?.value); 
-                            setOrderSt(newValue?.label); 
+                            setOrderId(newValue?.value);
+                            setOrderSt(newValue?.label);
                           } else {
-                            
-                            setOrderId(null); 
-                            setOrderSt(""); 
+                            setOrderId(null);
+                            setOrderSt("");
                           }
                         }}
                         renderInput={(params) => (
@@ -368,6 +369,29 @@ export default function OrderItemList() {
                             }
                           />
                         )}
+                      />
+                    </Grid>
+
+                    <Grid item sm={12} lg={12} xs={12}>
+                      <TextField
+                        id="remark"
+                        name="remark"
+                        label={
+                          <CustomLabel
+                            text={t("text.Remark")}
+                            required={false}
+                          />
+                        }
+                        // value={formik.values.circUser.userid}
+                        placeholder={t("text.Remark")}
+                        size="small"
+                        type="text"
+                        fullWidth
+                        style={{ backgroundColor: "white" }}
+                        onChange={(e) => {
+                          setRemark(e.target.value);
+
+                        }}
                       />
                     </Grid>
                     <Grid item sm={4} lg={4} xs={12}>

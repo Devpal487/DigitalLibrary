@@ -68,6 +68,8 @@ export default function UserDetails() {
   );
   const [isVisible, setIsVisible] = useState(false);
 
+  const [isVisible1, setIsVisible1] = useState(false);
+
   const [memberData, setMemberData] = useState([
     {
       memberName: "",
@@ -145,6 +147,11 @@ export default function UserDetails() {
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setMemberID(event.target.value);
+
+    formik.setFieldValue("userid", event.target.value);
+  };
+
+  const handleChecked = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsVisible(event.target.checked);
 
     if (event.target.checked) {
@@ -199,6 +206,8 @@ export default function UserDetails() {
       });
       console.log("arr", arr);
       setMemberData(arr);
+
+      setIsVisible1(true);
     }
   };
   // console.log("data", memberData);
@@ -357,135 +366,132 @@ export default function UserDetails() {
                   {t("text.find")}
                 </Button>
               </Grid>
-              <Grid item xs={12} sm={6} lg={6}>
-                <Grid item xs={12} sm={6} lg={6}>
-                  <div style={{ display: "flex" }}>
+
+              {isVisible1 && (
+                <>
+                  <Grid item xs={12} sm={6} lg={6}>
                     <Typography sx={{ fontSize: "1.1rem", padding: ".3rem" }}>
-                      {t("text.Name")}:
+                      {t("text.Name")}: {""}{" "}
+                      <span
+                        style={{
+                          fontSize: "1.15rem",
+                          color: "blueviolet",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {memberData[0]?.memberName}
+                      </span>
                     </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: "1.15rem",
-                        padding: ".3rem",
-                        color: "blueviolet",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {memberData[0].memberName}
-                    </Typography>
-                  </div>
-                  <div style={{ display: "flex" }}>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} lg={6}>
                     <Typography sx={{ fontSize: "1.1rem", padding: ".3rem" }}>
-                      {t("text.MemberGroup")}:
+                      {t("text.Department")}: {""}{" "}
+                      <span
+                        style={{
+                          fontSize: "1.15rem",
+                          color: "blueviolet",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {memberData[0]?.memberDepartment}
+                      </span>
                     </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: "1.15rem",
-                        padding: ".3rem",
-                        color: "blueviolet",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {memberData[0].memberGroup}
-                    </Typography>
-                  </div>
-                  <div style={{ display: "flex" }}>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} lg={6}>
                     <Typography sx={{ fontSize: "1.1rem", padding: ".3rem" }}>
-                      {t("text.ValidUpto")}:
+                      {t("text.MemberGroup")}:{""}{" "}
+                      <span
+                        style={{
+                          fontSize: "1.15rem",
+                          color: "blueviolet",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {memberData[0]?.memberGroup}
+                      </span>
                     </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: "1.15rem",
-                        padding: ".3rem",
-                        color: "blueviolet",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {memberData[0].memberValidity}
-                    </Typography>
-                  </div>
-                  <div style={{ display: "flex" }}>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} lg={6}>
                     <Typography sx={{ fontSize: "1.1rem", padding: ".3rem" }}>
-                      {t("text.UserType")}:
+                      {t("text.ValidUpto")}:{""}{" "}
+                      <span
+                        style={{
+                          fontSize: "1.15rem",
+                          color: "blueviolet",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {" "}
+                        {memberData[0]?.memberValidity}
+                      </span>
                     </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: "1.15rem",
-                        padding: ".3rem",
-                        color: "blueviolet",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {memberData[0].memberType}
-                    </Typography>
-                  </div>
-                </Grid>
-              </Grid>
-              <Grid item xs={12} sm={6} lg={6}>
-                <Grid item xs={12} sm={6} lg={6}>
-                  <div style={{ display: "flex" }}>
+                  </Grid>
+
+                  {/* <Grid item xs={12} sm={6} lg={6}>
+                <Typography sx={{ fontSize: "1.1rem", padding: ".3rem" }}>
+                  {t("text.UserType")}:{""}{" "}
+                  <span
+                    style={{
+                      fontSize: "1.15rem",
+                      color: "blueviolet",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {" "}
+                    {memberData[0].memberType}
+                  </span>
+                </Typography>
+              </Grid> */}
+
+                  {/* <Grid item xs={12} sm={6} lg={6}>
+                <Typography sx={{ fontSize: "1.1rem", padding: ".3rem" }}>
+                  {t("text.ProgramCourse")}:{""}{" "}
+                  <span
+                    style={{
+                      fontSize: "1.15rem",
+                      color: "blueviolet",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {memberData[0].memberProgram}
+                  </span>
+                </Typography>
+              </Grid> */}
+
+                  <Grid item xs={12} sm={6} lg={6}>
                     <Typography sx={{ fontSize: "1.1rem", padding: ".3rem" }}>
-                      {t("text.Department")}:
+                      {t("text.LoginId")}:{""}{" "}
+                      <span
+                        style={{
+                          fontSize: "1.15rem",
+                          color: "blueviolet",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {memberData[0]?.memberID}
+                      </span>
                     </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: "1.15rem",
-                        padding: ".3rem",
-                        color: "blueviolet",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {memberData[0].memberDepartment}
-                    </Typography>
-                  </div>
-                  <div style={{ display: "flex" }}>
-                    <Typography sx={{ fontSize: "1.1rem", padding: ".3rem" }}>
-                      {t("text.ProgramCourse")}:
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: "1.15rem",
-                        padding: ".3rem",
-                        color: "blueviolet",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {memberData[0].memberProgram}
-                    </Typography>
-                  </div>
-                  <div style={{ display: "flex" }}>
-                    <Typography sx={{ fontSize: "1.1rem", padding: ".3rem" }}>
-                      {t("text.LoginId")}:
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: "1.15rem",
-                        padding: ".3rem",
-                        color: "blueviolet",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {memberData[0].memberID}
-                    </Typography>
-                  </div>
-                  <div style={{ display: "flex" }}>
-                    <Typography sx={{ fontSize: "1.1rem", padding: ".3rem" }}>
-                      {t("text.Status")}:
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: "1.15rem",
-                        padding: ".3rem",
-                        color: "blueviolet",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {memberData[0].memberStatus}
-                    </Typography>
-                  </div>
-                </Grid>
-                <Grid item xs={12} sm={6} lg={6}></Grid>
-              </Grid>
+                  </Grid>
+
+                  <Grid item xs={12} sm={6} lg={6}>
+                    {/* <Typography sx={{ fontSize: "1.1rem", padding: ".3rem" }}>
+                  {t("text.Status")}:{""}{" "}
+                  <span
+                    style={{
+                      fontSize: "1.15rem",
+                      color: "blueviolet",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {memberData[0].memberStatus}
+                  </span>
+                </Typography> */}
+                  </Grid>
+                </>
+              )}
 
               <Grid item xs={12} sm={4} lg={4}>
                 <Autocomplete
@@ -560,7 +566,7 @@ export default function UserDetails() {
                   name="c_password"
                   id="c_password"
                   placeholder={t("text.ConfirmPassword")}
-                 // value={formik.values.password}
+                  // value={formik.values.password}
                   onChange={formik.handleChange}
                   size="small"
                   fullWidth
@@ -588,7 +594,7 @@ export default function UserDetails() {
                     {t("text.FindUserWithNoUserID")}
                     <Checkbox
                       //checked={checked}
-                      onChange={handleChange}
+                      onChange={handleChecked}
                       inputProps={{ "aria-label": "controlled" }}
                     />
                     {t("text.FindUsers")}
@@ -614,6 +620,7 @@ export default function UserDetails() {
                     height: "20rem",
                     overflowY: "scroll",
                     border: "1px solid blue",
+                    justifyContent: "center",
                   }}
                 >
                   {userWithNoMemberID.map((item) => (

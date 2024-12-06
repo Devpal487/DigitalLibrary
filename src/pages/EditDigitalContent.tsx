@@ -1562,6 +1562,7 @@ export default function EditDigitalContent() {
                   onChange={(event, newValue: any) => {
                     console.log(newValue?.value);
                     formik.setFieldValue("unitId", newValue?.value);
+                    formik.setFieldValue('unitname', newValue?.label);
                   }}
                   value={
                     unitOptions.find(
