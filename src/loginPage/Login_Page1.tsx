@@ -12,7 +12,8 @@ import api, { HOST_URL } from "../utils/Url";
 import Draggable from "react-draggable";
 import Paper, { PaperProps } from "@mui/material/Paper";
 import CloseIcon from "@mui/icons-material/Close";
-import LoginImg from "./loginImg.jpg";
+import LoginImg from "./LoginImg1.jpg";
+import LoginBg from "./loginbg.jpg";
 
 function PaperComponent(props: PaperProps) {
    return (
@@ -169,12 +170,10 @@ function LoginPage() {
 
    return (
       <div style={{ height: "100vh" }}>
-         <Grid container sx={{ height: "100vh", justifyContent: "center", backgroundImage: `url(${LoginImg})`, backgroundSize: 'cover', backgroundColor: "#f5dfc9" }}>
-            {/* <Grid xs={12} sm={7} lg={7} sx={{ backgroundImage:`url(${LoginImg})`,backgroundSize: 'cover', margin:"1px"}}>
-               
-            </Grid> */}
-            <Grid xs={12} sm={7} md={6} lg={5} sx={{ margin: "auto" }}>
-               <div style={{ backgroundColor: "#fff", paddingTop: "2rem", paddingBottom: "2rem", borderRadius: "3rem" }}>
+         <Grid container sx={{ height: '100vh' }}>
+            <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', backgroundColor: "#f2f2fc", backgroundImage: `url(${LoginBg})`, backgroundSize: 'cover' }}>
+
+               <Grid sx={{justifyContent:"center" ,backgroundColor:"white", paddingTop:"2rem",paddingBottom:"2rem", borderRadius:"3rem"}}>
                   <form
                      action="#"
                      onSubmit={handleSubmit}
@@ -210,8 +209,6 @@ function LoginPage() {
                         label="Password"
                         placeholder="Password"
                         type="password"
-
-
                         onChange={(event) => {
                            setPassword(event.target.value);
                         }}
@@ -227,7 +224,7 @@ function LoginPage() {
                               backgroundColor: `#003380`,
                               color: "white",
                               marginTop: "10px",
-                              marginRight:"5px"
+                              marginRight: "5px"
                            }}
                         >
                            Sign In
@@ -238,9 +235,9 @@ function LoginPage() {
                               backgroundColor: `#c9521e`,
                               color: "white",
                               marginTop: "10px",
-                              marginLeft:"5px"
+                              marginLeft: "5px"
                            }}
-                           onClick={()=>{
+                           onClick={() => {
                               setUserID("");
                               setPassword("");
                            }}
@@ -249,7 +246,9 @@ function LoginPage() {
                         </Button>
                      </Grid>
                   </form>
-               </div>
+               </Grid>
+            </Grid>
+            <Grid item xs={12} md={6} sx={{ backgroundImage: `url(${LoginImg})`, backgroundSize: 'cover' }}>
             </Grid>
          </Grid>
       </div>

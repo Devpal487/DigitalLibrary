@@ -98,6 +98,7 @@ import SaleReturn from "../pages/SaleReturn";
 import EditSaleReturnInvoice from "../pages/EditSaleReturnInvoice";
 import CreateSaleReturnInvoice from "../pages/CreateSaleReturnInvoice";
 import Login_Page from "../loginPage/Login_Page";
+import Login_Page1 from "../loginPage/Login_Page1";
 
 const appRoutes: RouteType[] = [
   {

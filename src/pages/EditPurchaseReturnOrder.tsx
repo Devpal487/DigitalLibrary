@@ -30,21 +30,21 @@ import dayjs from "dayjs";
 const EditPurchaseReturnOrder = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const initialRows :any = {
+  const initialRows: any = {
     id: -1,
     purchaseid: -1,
     user_Id: 0,
-    itemNameId:'',
+    itemNameId: "",
     unit: "",
-    qty: '',
-    rate: '',
-    amount: '',
+    qty: "",
+    rate: "",
+    amount: "",
     tax1: "",
     taxId1: "",
     tax2: "P",
     discount: 0,
-    discountAmount: '',
-    netAmount: '',
+    discountAmount: "",
+    netAmount: "",
     documentNo: "",
     documentDate: "",
     invoiceNo: "",
@@ -55,11 +55,11 @@ const EditPurchaseReturnOrder = () => {
     taxId3: "",
     tax3: "",
   };
-  const [items, setItems] = useState<any>([{...initialRows}]);
+  const [items, setItems] = useState<any>([{ ...initialRows }]);
   const { defaultValuestime } = getISTDate();
   const [lang, setLang] = useState<Language>("en");
   const [toaster, setToaster] = useState(false);
-  const location:any = useLocation();
+  const location: any = useLocation();
   const [purchaseInvoiceOption, setPurchaseInvoiceOption] = useState<any>([]);
   const [taxOption, setTaxOption] = useState([
     { value: "-1", label: t("text.tax") },
@@ -89,7 +89,7 @@ const EditPurchaseReturnOrder = () => {
     // getPurchaseInvoicebyId(location.state.id,(location.state.document_No));
     // console.log("location.state.p_InvoiceNo", location.state);
   }, []);
-  
+
   const getPurchaseInvoice = async () => {
     const collectData = {
       id: -1,
@@ -100,7 +100,13 @@ const EditPurchaseReturnOrder = () => {
     );
     const arr =
       res?.data?.data?.map((item: any) => ({
-        label: item.document_No +'('+ item.supplierName + "--" + item.orderNo +')',
+        label:
+          item.document_No +
+          "(" +
+          item.supplierName +
+          "--" +
+          item.orderNo +
+          ")",
         value: item.id,
         document_No: item.document_No,
         orderNo: item.orderNo,
@@ -108,88 +114,95 @@ const EditPurchaseReturnOrder = () => {
         supplierId: item.supplierId,
       })) || [];
 
-      setPurchaseInvoiceOption([{ value: "-1", label: t("text.PurchaseInvoiceOption"), document_No:"" }, ...arr]);
+    setPurchaseInvoiceOption([
+      { value: "-1", label: t("text.PurchaseInvoiceOption"), document_No: "" },
+      ...arr,
+    ]);
   };
-      console.log("purchaseInvoiceOption",purchaseInvoiceOption);
-      console.log(purchaseInvoiceOption.find((opt:any)=> opt.document_No == location.state.document_No))
+  console.log("purchaseInvoiceOption", purchaseInvoiceOption);
+  console.log(
+    purchaseInvoiceOption.find(
+      (opt: any) => opt.document_No == location.state.document_No
+    )
+  );
 
-  const getPurchaseInvoicebyId = async (id:any,docNo:any) => {
+  const getPurchaseInvoicebyId = async (id: any, docNo: any) => {
     const collectData = {
       id: id,
-      "isRequst": true,
-  "document_No": docNo
+      isRequst: true,
+      document_No: docNo,
     };
     const result = await api.post(
       `api/PurchaseInvoice/GetPurchaseInvoice`,
       collectData
     );
     const transData = Array.isArray(result?.data?.data[0]?.["purchaseinv"])
-        ? result.data.data[0]["purchaseinv"]
-        : [];
-      console.log("TransData:", transData);
+      ? result.data.data[0]["purchaseinv"]
+      : [];
+    console.log("TransData:", transData);
 
-      if (transData.length === 0) {
-        // Set initialRows as default if transData is empty
-        setItems([{ ...initialRows }]);
-        return;
-      }
-  
-      let arr: any = [];
-      for (let i = 0; i < transData.length; i++) {
-        arr.push({
-          id: transData[i]["id"],
-          purchaseid: transData[i]["purchaseid"],
-          user_Id: transData[i]["user_Id"],
-          itemNameId: transData[i]["itemNameId"],
-          unit: transData[i]["unit"],
-          // retqty:  Number(transData[i]["qty"]),
-          retqty: transData[i]["taxId3"],
-          qty: 0,
-          rate: transData[i]["rate"],
-          amount: 0,
-          tax1: "",
-          taxId1:"0",
-          tax2: 'P',
-          discount: 0,
-          discountAmount: 0,
-          netAmount: 0,
-          documentNo: transData[i]["documentNo"],
-          documentDate: transData[i]["documentDate"],
-          invoiceNo: transData[i]["invoiceNo"],
-          supplier: transData[i]["supplierId"],
-          orderNo: transData[i]["orderNo"],
-          mrnNo: transData[i]["mrnNo"],
-          mrnDate: transData[i]["mrnDate"],
-          taxId3: Number(transData[i]["taxId3"]) - transData[i]['qty'],
-          tax3: "",
-        });
-      }
-      setItems(arr);
+    if (transData.length === 0) {
+      // Set initialRows as default if transData is empty
+      setItems([{ ...initialRows }]);
+      return;
+    }
+
+    let arr: any = [];
+    for (let i = 0; i < transData.length; i++) {
+      arr.push({
+        id: transData[i]["id"],
+        purchaseid: transData[i]["purchaseid"],
+        user_Id: transData[i]["user_Id"],
+        itemNameId: transData[i]["itemNameId"],
+        unit: transData[i]["unit"],
+        // retqty:  Number(transData[i]["qty"]),
+        retqty: transData[i]["taxId3"],
+        qty: 0,
+        rate: transData[i]["rate"],
+        amount: 0,
+        tax1: "",
+        taxId1: "0",
+        tax2: "P",
+        discount: 0,
+        discountAmount: 0,
+        netAmount: 0,
+        documentNo: transData[i]["documentNo"],
+        documentDate: transData[i]["documentDate"],
+        invoiceNo: transData[i]["invoiceNo"],
+        supplier: transData[i]["supplierId"],
+        orderNo: transData[i]["orderNo"],
+        mrnNo: transData[i]["mrnNo"],
+        mrnDate: transData[i]["mrnDate"],
+        taxId3: Number(transData[i]["taxId3"]) - transData[i]["qty"],
+        tax3: "",
+      });
+    }
+    setItems(arr);
     // const arr =
     //   res?.data?.data?.map((item: any) => ({
     //     label: item.p_InvoiceNo,
     //     value: item.id,
     //   })) || [];
 
-      //setPurchaseInvoiceOption([{ value: "-1", label: t("text.PurchaseInvoiceOption") }, ...arr]);
+    //setPurchaseInvoiceOption([{ value: "-1", label: t("text.PurchaseInvoiceOption") }, ...arr]);
   };
 
   const initializeItemValues = () => {
-    const updatedItems = items.map((item:any) => ({
-        ...item,
-        taxId3: parseFloat(item.qty || 0) * parseFloat(item.tax1 || 0), // Example calculation
+    const updatedItems = items.map((item: any) => ({
+      ...item,
+      taxId3: parseFloat(item.qty || 0) * parseFloat(item.tax1 || 0), // Example calculation
     }));
 
-    console.log("item value", updatedItems)
+    console.log("item value", updatedItems);
     setItems(updatedItems);
-};
+  };
 
-// On load or when items change, initialize calculated values
-// useEffect(() => {
-//     if (items.length > 0) {
-//         initializeItemValues();
-//     }
-// }, [items]);
+  // On load or when items change, initialize calculated values
+  // useEffect(() => {
+  //     if (items.length > 0) {
+  //         initializeItemValues();
+  //     }
+  // }, [items]);
 
   const getSupliar = async () => {
     const collectData = {
@@ -268,20 +281,20 @@ const EditPurchaseReturnOrder = () => {
   const formik = useFormik({
     initialValues: {
       id: location.state.id,
-      p_InvoiceNo:location.state.p_InvoiceNo || null,
+      p_InvoiceNo: location.state.p_InvoiceNo || null,
       document_No: location.state.document_No || null,
-      pR_InvoiceNo: location.state.pR_InvoiceNo || '',
+      pR_InvoiceNo: location.state.pR_InvoiceNo || "",
       doc_Date: dayjs(location.state.doc_Date).format("YYYY-MM-DD"),
       pR_InvoiceDate: dayjs(location.state.pR_InvoiceDate).format("YYYY-MM-DD"),
-      supplierName: location.state.supplierName || '',
-      supplierId:location.state.supplierId || null,
+      supplierName: location.state.supplierName || "",
+      supplierId: location.state.supplierId || null,
       orderNo: location.state.orderNo || "",
       tax: location.state.tax || null,
-      freight: location.state.freight || 0.00,
-      amount: location.state.amount || '',
-      acc_code: location.state.acc_code || '',
-      others: location.state.others || '',
-      remark: location.state.remark || '',
+      freight: location.state.freight || 0.0,
+      amount: location.state.amount || "",
+      acc_code: location.state.acc_code || "",
+      others: location.state.others || "",
+      remark: location.state.remark || "",
       instId: location.state.instId,
       sessionId: location.state.sessionId,
       purReturnChild: [],
@@ -289,15 +302,20 @@ const EditPurchaseReturnOrder = () => {
     validationSchema: Yup.object().shape({
       orderNo: Yup.string().required(t("Order No. required")),
       pR_InvoiceDate: Yup.date().required(t("Invoice Date required")),
-      supplierName: Yup.string().required(t("Supplier Name required"))
+      supplierName: Yup.string().required(t("Supplier Name required")),
     }),
     onSubmit: async (values) => {
       console.log("Form Submitted with values:", values);
-      console.log("Formik errors", formik.errors)
+      console.log("Formik errors", formik.errors);
 
-      // const validItems = items.filter((item: any) => validateItem(item));
-      const updatedItems = items.map((item: any, index: any) => {
+      const validItems = items.filter((item: any) => validateItem(item));
 
+      if (validItems.length === 0) {
+        alert("Please fill  data in tabel");
+        return;
+      }
+
+      const updatedItems = validItems.map((item: any, index: any) => {
         const baseItem = {
           ...item,
           documentNo: values.document_No,
@@ -342,224 +360,257 @@ const EditPurchaseReturnOrder = () => {
     },
   });
 
-  
-    const validateItem = (item: any) => {
-      // console.log("🚀 ~ validateItem ~ item:", item);
-      return (
-        item.itemNameId &&
-        item.unit &&
-        item.qty &&
-        item.rate &&
-        item.amount &&
-        item.tax1 &&
-        item.taxId1 
+  const validateItem = (item: any) => {
+    // console.log("🚀 ~ validateItem ~ item:", item);
+    return (
+      item.itemNameId &&
+      item.unit &&
+      item.qty &&
+      item.rate &&
+      item.amount &&
+      item.tax1 &&
+      item.taxId1
+    );
+  };
+
+  const handleItemChange = (index: number, field: string, value: any) => {
+    const updatedItems = [...items];
+    let item = { ...updatedItems[index] };
+
+    if (field === "itemNameId") {
+      const itemNameDetails = value;
+      if (itemNameDetails) {
+        item = {
+          ...item,
+          itemNameId: itemNameDetails.value || "",
+          rate: itemNameDetails.rate || "",
+          unit: String(itemNameDetails.unitId) || "",
+          tax1: String(itemNameDetails.taxId) || "",
+          taxId1: String(itemNameDetails.taxName) || "",
+        };
+      }
+    } else if (field === "qty") {
+      const qtyValue = value === "" ? 0 : parseFloat(value);
+      item.taxId3 = String(Number(item.retqty) - qtyValue);
+      // console.log("taxval", taxval);
+      // = String(taxval);
+      // Validation to ensure qty does not exceed retqty
+      if (qtyValue > item.retqty) {
+        alert(`Quantity cannot exceed the purchase quantity ${item.retqty}.`);
+        return;
+      }
+
+      item[field] = qtyValue;
+      const selectedTax = taxOption.find((tax: any) => tax.value == item.tax1);
+      if (selectedTax) {
+        item.tax1 = String(selectedTax.value);
+        console.log(
+          "check Value",
+          calculateTax(item.amount, Number(selectedTax.label))
+        );
+        item.taxId1 = String(
+          calculateTax(item.amount, Number(selectedTax.label))
+        );
+      }
+
+      item.amount = calculateAmount(item.qty, item.rate);
+      // item.taxId1 = String(calculateTax(item.amount, Number(item.taxId1)));
+    } else if (field === "rate") {
+      item[field] = value === "" ? 0 : parseFloat(value);
+      item.amount = calculateAmount(item.qty, item.rate);
+      item.taxId1 = String(calculateTax(item.amount, 0));
+    } else if (field === "tax1") {
+      const selectedTax = taxOption.find(
+        (tax: any) => tax.value === value?.value
       );
-    };
-  
-    const handleItemChange = (index: number, field: string, value: any) => {
-      const updatedItems = [...items];
-      let item = { ...updatedItems[index] };
-    
-      if (field === 'itemNameId') {
-        const itemNameDetails = value;
-        if (itemNameDetails) {
-          item = {
-            ...item,
-            itemNameId: itemNameDetails.value || "",
-            rate: itemNameDetails.rate || "",
-            unit: String(itemNameDetails.unitId) || "",
-            tax1: String(itemNameDetails.taxId) || "",
-            taxId1: String(itemNameDetails.taxName) || "",
-          };
-        }
-      }else if (field === 'qty') {
-        const qtyValue = value === "" ? 0 : parseFloat(value);
-        item.taxId3  = String(Number(item.retqty) - qtyValue);
-        // console.log("taxval", taxval);
-        // = String(taxval);
-        // Validation to ensure qty does not exceed retqty
-        if (qtyValue > item.retqty) {
-            alert(`Quantity cannot exceed the purchase quantity ${item.retqty}.`);
-            return; 
-        }
-  
-        item[field] = qtyValue;
-        const selectedTax = taxOption.find((tax: any) => tax.value == item.tax1);
-          if (selectedTax) {
-              item.tax1 = String(selectedTax.value);
-              console.log("check Value", calculateTax(item.amount, Number(selectedTax.label)))
-              item.taxId1 = String(calculateTax(item.amount, Number(selectedTax.label)));
-          } 
+      if (selectedTax) {
+        item.tax1 = String(selectedTax.value);
+        item.taxId1 = String(
+          calculateTax(item.amount, Number(selectedTax.label))
+        );
+      }
 
+      const discountAmount = calculateDiscount(
+        item.amount,
+        item.discount,
+        item.tax2
+      );
+      item.discountAmount = discountAmount;
+      item.netAmount = calculateNetAmount(
+        item.amount,
+        Number(item.taxId1),
+        discountAmount
+      );
+    } else if (field === "tax2") {
+      item.tax2 = value || "";
+    } else if (field === "unit") {
+      item[field] = value;
+    } else if (field === "discount") {
+      item.discount = value === "" ? 0 : parseFloat(value);
+      const discountAmount = calculateDiscount(
+        item.amount,
+        item.discount,
+        item.tax2
+      );
+      item.discountAmount = discountAmount;
+      item.netAmount = calculateNetAmount(
+        item.amount,
+        Number(item.taxId1),
+        discountAmount
+      );
+    }
 
-        item.amount = calculateAmount(item.qty, item.rate);
-        // item.taxId1 = String(calculateTax(item.amount, Number(item.taxId1)));
-    } else if (field === 'rate') {
-        item[field] = value === "" ? 0 : parseFloat(value);
-        item.amount = calculateAmount(item.qty, item.rate);
-        item.taxId1 = String(calculateTax(item.amount, 0));
-    } 
-      else if (field === 'tax1') {
-        const selectedTax = taxOption.find((tax: any) => tax.value === value?.value);
-          if (selectedTax) {
-              item.tax1 = String(selectedTax.value);
-              item.taxId1 = String(calculateTax(item.amount, Number(selectedTax.label)));
-          } 
-  
-          const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
-          item.discountAmount = discountAmount;
-          item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
-  
-      } else if (field === 'tax2') {
-        item.tax2 = value || '';
-      }else if (field === 'unit') {
-        item[field] = value ;
-      } else if (field === 'discount') {
-        item.discount = value === '' ? 0 : parseFloat(value);
-        const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
-        item.discountAmount = discountAmount;
-        item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
-      }
-    
-      if (field !== 'discount' && field !== 'tax2') {
-        const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
-        item.discountAmount = discountAmount;
-        item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
-        // console.log("calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);",calculateNetAmount(item.amount, Number(item.taxId1), discountAmount))
-      }
-    
-      updatedItems[index] = item;
-      
-      if (validateItem(item) && index === updatedItems.length - 1) {
-        handleAddItem();
-      }
-      
-      
-      // console.log("🚀 ~ Updated items:", updatedItems);
-      setItems(updatedItems);
-    };
+    if (field !== "discount" && field !== "tax2") {
+      const discountAmount = calculateDiscount(
+        item.amount,
+        item.discount,
+        item.tax2
+      );
+      item.discountAmount = discountAmount;
+      item.netAmount = calculateNetAmount(
+        item.amount,
+        Number(item.taxId1),
+        discountAmount
+      );
+      // console.log("calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);",calculateNetAmount(item.amount, Number(item.taxId1), discountAmount))
+    }
+
+    updatedItems[index] = item;
+
+    if (validateItem(item) && index === updatedItems.length - 1) {
+      handleAddItem();
+    }
+
+    // console.log("🚀 ~ Updated items:", updatedItems);
+    setItems(updatedItems);
+  };
 
   const calculateAmount = (qty: number, rate: number) => qty * rate;
-  
+
   const calculateTax = (amount: number, taxRate: number) => {
     const tax = (amount * taxRate) / 100;
     return parseFloat(tax.toFixed(2));
   };
-  
-  const calculateDiscount = (amount: number, discount: number, type: string) => {
-    if (type === 'P') { 
+
+  const calculateDiscount = (
+    amount: number,
+    discount: number,
+    type: string
+  ) => {
+    if (type === "P") {
       return (amount * discount) / 100;
-    } else if (type === 'F') { 
+    } else if (type === "F") {
       return discount;
     }
-    return 0; 
+    return 0;
   };
-  
+
   const calculateNetAmount = (amount: number, tax: number, discount: number) =>
     amount + tax - discount;
-  
-  
-    const handleRemoveItem = (index: number) => {
-      if (items.length === 1) {
+
+  const handleRemoveItem = (index: number) => {
+    if (items.length === 1) {
+      setItems([{ ...initialRows }]);
+    } else {
+      const newData = items.filter((_: any, i: any) => i !== index);
+      setItems(newData);
+    }
+    // updateTotalAmounts(tableData);
+  };
+
+  const handleAddItem = () => {
+    setItems([
+      ...items,
+      {
+        id: -1,
+        purchaseid: -1,
+        user_Id: 0,
+        itemNameId: "",
+        unit: "",
+        qty: "",
+        rate: "",
+        amount: "",
+        tax1: "",
+        taxId1: "",
+        tax2: "P",
+        discount: "",
+        discountAmount: "",
+        netAmount: "",
+        documentNo: formik.values.document_No,
+        documentDate: formik.values.doc_Date,
+        invoiceNo: formik.values.pR_InvoiceNo,
+        supplier: formik.values.supplierName,
+        orderNo: formik.values.orderNo,
+        mrnNo: "",
+        mrnDate: defaultValuestime,
+        taxId3: "",
+        tax3: "",
+      },
+    ]);
+  };
+
+  const totalAmount = items.reduce(
+    (acc: number, item: any) => acc + (Number(item.netAmount) || 0),
+    0
+  );
+
+  const getPurchaseOrderById = async (id: any, docno: any) => {
+    const collectData = {
+      id: id,
+      documentNo: docno,
+    };
+
+    try {
+      const result = await api.post(
+        `api/PurchaseReturn/GetPurchaseReturn`,
+        collectData
+      );
+      console.log("API Response:", result);
+
+      const transData = Array.isArray(result?.data?.data[0]?.["purReturnChild"])
+        ? result.data.data[0]["purReturnChild"]
+        : [];
+      console.log("TransData:", transData);
+
+      if (transData.length === 0) {
         setItems([{ ...initialRows }]);
-      } else {
-        const newData = items.filter((_:any, i:any) => i !== index);
-        setItems(newData);
+        return;
       }
-      // updateTotalAmounts(tableData);
-    };
-  
-    const handleAddItem = () => {
-      setItems([
-        ...items,
-        {
-          id: -1,
-          purchaseid: -1,
-          user_Id: 0,
-          itemNameId: "",
-          unit: "",
-          qty: '',
-          rate: '',
-          amount: '',
-          tax1: "",
-          taxId1: "",
-          tax2: "P",
-          discount: '',
-          discountAmount: '',
-          netAmount: '',
-          documentNo: formik.values.document_No,
-          documentDate: formik.values.doc_Date,
-          invoiceNo: formik.values.pR_InvoiceNo,
-          supplier: formik.values.supplierName,
-          orderNo: formik.values.orderNo,
-          mrnNo: "",
-          mrnDate: defaultValuestime,
-          taxId3: "",
-          tax3: "",
-        },
-      ]);
-    };
-  
-    const totalAmount = items.reduce(
-      (acc: number, item: any) => acc + (Number(item.netAmount) || 0),
-      0
-    );
 
-    const getPurchaseOrderById = async (id: any, docno:any) => {
-      const collectData = {
-        id: id,
-        documentNo: docno
-      };
-
-      try {  
-        const result = await api.post(`api/PurchaseReturn/GetPurchaseReturn`, collectData);
-        console.log("API Response:", result);
-    
-        const transData = Array.isArray(result?.data?.data[0]?.["purReturnChild"])
-          ? result.data.data[0]["purReturnChild"]
-          : [];
-        console.log("TransData:", transData);
-
-        if (transData.length === 0) {
-          setItems([{ ...initialRows }]);
-          return;
-        }
-    
-        let arr: any = [];
-        for (let i = 0; i < transData.length; i++) {
-          arr.push({
-            id: transData[i]["id"],
-            purchaseid: transData[i]["purchaseid"],
-            user_Id: transData[i]["user_Id"],
-            itemNameId: transData[i]["itemNameId"],
-            unit: transData[i]["unit"] ,
-            qty: transData[i]["qty"],
-            retqty: String(Number(transData[i]["taxId3"]) - transData[i]['qty']),
-            rate: transData[i]["rate"],
-            amount: transData[i]["amount"],
-            tax2: transData[i]["tax2"],
-            discount: transData[i]["discount"],
-            discountAmount: transData[i]["discountAmount"],
-            netAmount: transData[i]["netamount"],
-            documentNo: transData[i]["documentNo"],
-            documentDate: transData[i]["documentDate"],
-            invoiceNo: transData[i]["invoiceNo"],
-            supplier: transData[i]["supplierId"],
-            orderNo: transData[i]["orderNo"],
-            mrnNo: transData[i]["mrnNo"],
-            mrnDate: transData[i]["mrnDate"],
-          taxId3: String(Number(transData[i]["taxId3"]) - transData[i]['qty']),
-            tax3: transData[i]["tax3"],
-          });
-        }
-        setItems(arr);
-        console.log("arr",arr)
-      } catch (error) {
-        console.error("Error fetching purchase order:", error);
-        setItems([{ ...initialRows }]);
+      let arr: any = [];
+      for (let i = 0; i < transData.length; i++) {
+        arr.push({
+          id: transData[i]["id"],
+          purchaseid: transData[i]["purchaseid"],
+          user_Id: transData[i]["user_Id"],
+          itemNameId: transData[i]["itemNameId"],
+          unit: transData[i]["unit"],
+          qty: transData[i]["qty"],
+          retqty: String(Number(transData[i]["taxId3"]) - transData[i]["qty"]),
+          rate: transData[i]["rate"],
+          amount: transData[i]["amount"],
+          tax2: transData[i]["tax2"],
+          discount: transData[i]["discount"],
+          discountAmount: transData[i]["discountAmount"],
+          netAmount: transData[i]["netamount"],
+          documentNo: transData[i]["documentNo"],
+          documentDate: transData[i]["documentDate"],
+          invoiceNo: transData[i]["invoiceNo"],
+          supplier: transData[i]["supplierId"],
+          orderNo: transData[i]["orderNo"],
+          mrnNo: transData[i]["mrnNo"],
+          mrnDate: transData[i]["mrnDate"],
+          taxId3: String(Number(transData[i]["taxId3"]) - transData[i]["qty"]),
+          tax3: transData[i]["tax3"],
+        });
       }
-    };
-    
+      setItems(arr);
+      console.log("arr", arr);
+    } catch (error) {
+      console.error("Error fetching purchase order:", error);
+      setItems([{ ...initialRows }]);
+    }
+  };
 
   return (
     <div>
@@ -625,43 +676,60 @@ const EditPurchaseReturnOrder = () => {
           <form onSubmit={formik.handleSubmit}>
             {toaster && <ToastApp />}
             <Grid item xs={12} container spacing={2}>
-            <Grid item lg={4} xs={12}>
-                  <Autocomplete
-                    disablePortal
-                    id="combo-box-demo"
-                    options={purchaseInvoiceOption}
-                    fullWidth
-                    size="small"
-                    value={purchaseInvoiceOption.find((opt:any) => opt.document_No === formik.values.p_InvoiceNo) || null}
-                    onChange={(event, newValue: any) => {
-                      console.log(newValue);
-                      if(newValue){
-                        getPurchaseInvoicebyId(newValue?.value, newValue?.document_No );
-                        formik.setFieldValue("p_InvoiceNo", newValue?.document_No);
-                        formik.setFieldValue("supplierId", newValue?.supplierId);
-                        formik.setFieldValue("supplierName", newValue?.supplierName);
-                        formik.setFieldValue("orderNo", newValue?.orderNo);
+              <Grid item lg={4} xs={12}>
+                <Autocomplete
+                  disablePortal
+                  id="combo-box-demo"
+                  options={purchaseInvoiceOption}
+                  fullWidth
+                  size="small"
+                  value={
+                    purchaseInvoiceOption.find(
+                      (opt: any) =>
+                        opt.document_No === formik.values.p_InvoiceNo
+                    ) || null
+                  }
+                  onChange={(event, newValue: any) => {
+                    console.log(newValue);
+                    if (newValue) {
+                      getPurchaseInvoicebyId(
+                        newValue?.value,
+                        newValue?.document_No
+                      );
+                      formik.setFieldValue(
+                        "p_InvoiceNo",
+                        newValue?.document_No
+                      );
+                      formik.setFieldValue("supplierId", newValue?.supplierId);
+                      formik.setFieldValue(
+                        "supplierName",
+                        newValue?.supplierName
+                      );
+                      formik.setFieldValue("orderNo", newValue?.orderNo);
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={
+                        <CustomLabel
+                          text={t("text.PurchaseInvoiceOption")}
+                          required={false}
+                        />
                       }
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label={
-                          <CustomLabel
-                            text={t("text.PurchaseInvoiceOption")}
-                            required={false}
-                          />
-                        }
-                      />
-                    )}
-                  />
-                </Grid>
+                    />
+                  )}
+                />
+              </Grid>
               <Grid item lg={4} xs={12}>
                 <TextField
                   id="document_No"
                   name="document_No"
                   label={
-                    <CustomLabel text={t("text.document_NoPR")} required={true} />
+                    <CustomLabel
+                      text={t("text.document_NoPR")}
+                      required={true}
+                    />
                   }
                   value={formik.values.document_No}
                   placeholder={t("text.document_NoPR")}
@@ -689,7 +757,7 @@ const EditPurchaseReturnOrder = () => {
                   value={formik.values.pR_InvoiceNo}
                   placeholder={t("text.pR_InvoiceNo")}
                   onChange={formik.handleChange}
-              />
+                />
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -712,12 +780,14 @@ const EditPurchaseReturnOrder = () => {
                   onBlur={formik.handleBlur}
                   InputLabelProps={{ shrink: true }}
                   error={
-                    formik.touched.pR_InvoiceDate && Boolean(formik.errors.pR_InvoiceDate)
+                    formik.touched.pR_InvoiceDate &&
+                    Boolean(formik.errors.pR_InvoiceDate)
                   }
                   // helperText={formik.touched.pR_InvoiceDate && String(formik.errors.pR_InvoiceDate)}
                   helperText={
-                    formik.touched.pR_InvoiceDate && typeof formik.errors.pR_InvoiceDate === "string" 
-                      ? formik.errors.pR_InvoiceDate 
+                    formik.touched.pR_InvoiceDate &&
+                    typeof formik.errors.pR_InvoiceDate === "string"
+                      ? formik.errors.pR_InvoiceDate
                       : "" // Fallback to empty string
                   }
                 />
@@ -728,11 +798,11 @@ const EditPurchaseReturnOrder = () => {
                   disablePortal
                   id="combo-box-demo"
                   options={Option}
-                    value={
-                      Option.find(
-                        (option: any) => option.value == formik.values.supplierId
-                      ) || null
-                    }
+                  value={
+                    Option.find(
+                      (option: any) => option.value == formik.values.supplierId
+                    ) || null
+                  }
                   fullWidth
                   size="small"
                   onChange={(event, newValue: any) => {
@@ -745,12 +815,14 @@ const EditPurchaseReturnOrder = () => {
                     <TextField
                       {...params}
                       error={
-                        formik.touched.supplierName && Boolean(formik.errors.supplierName)
+                        formik.touched.supplierName &&
+                        Boolean(formik.errors.supplierName)
                       }
                       // helperText={formik.touched.pR_InvoiceDate && String(formik.errors.pR_InvoiceDate)}
                       helperText={
-                        formik.touched.supplierName && typeof formik.errors.supplierName === "string" 
-                          ? formik.errors.supplierName 
+                        formik.touched.supplierName &&
+                        typeof formik.errors.supplierName === "string"
+                          ? formik.errors.supplierName
                           : "" // Fallback to empty string
                       }
                       label={
@@ -766,26 +838,33 @@ const EditPurchaseReturnOrder = () => {
               </Grid>
 
               <Grid item lg={4} xs={12}>
-              <TextField
-    id="orderNo"
-    name="orderNo"
-    label={
-      <CustomLabel text={t("text.orderNo")} required={true}  value={formik.values.orderNo || ""}/>
-    }
-    value={formik.values.orderNo || ""} 
-    placeholder={t("text.orderNo")}
-    size="small"
-    fullWidth
-    onChange={formik.handleChange}
-    onBlur={formik.handleBlur}
-    error={formik.touched.orderNo && Boolean(formik.errors.orderNo)}
-    //helperText={formik.touched.orderNo && formik.errors.orderNo ? formik.errors.orderNo : ""}
-    helperText={
-      formik.touched.orderNo && typeof formik.errors.orderNo === "string" 
-        ? formik.errors.orderNo 
-        : "" // Fallback to empty string
-    }
-  />
+                <TextField
+                  id="orderNo"
+                  name="orderNo"
+                  label={
+                    <CustomLabel
+                      text={t("text.orderNo")}
+                      required={true}
+                      value={formik.values.orderNo || ""}
+                    />
+                  }
+                  value={formik.values.orderNo || ""}
+                  placeholder={t("text.orderNo")}
+                  size="small"
+                  fullWidth
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={
+                    formik.touched.orderNo && Boolean(formik.errors.orderNo)
+                  }
+                  //helperText={formik.touched.orderNo && formik.errors.orderNo ? formik.errors.orderNo : ""}
+                  helperText={
+                    formik.touched.orderNo &&
+                    typeof formik.errors.orderNo === "string"
+                      ? formik.errors.orderNo
+                      : "" // Fallback to empty string
+                  }
+                />
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -932,8 +1011,7 @@ const EditPurchaseReturnOrder = () => {
                     {items.map((item: any, index: any) => (
                       <tr key={item.id} style={{ border: "1px solid black" }}>
                         {/* <TableCell>{index + 1}</TableCell> */}
-                        <td style={{ width: "180px", padding:"5px" }}>
-                          
+                        <td style={{ width: "180px", padding: "5px" }}>
                           <Autocomplete
                             disablePortal
                             id="combo-box-demo"
@@ -941,12 +1019,11 @@ const EditPurchaseReturnOrder = () => {
                             size="small"
                             value={
                               contentOptions.find(
-                                (opt: any) =>
-                                  opt.value == (item.itemNameId)
+                                (opt: any) => opt.value == item.itemNameId
                               ) || null
                             }
                             onChange={(event, newValue: any) => {
-                              handleItemChange(index,"itemNameId",newValue);
+                              handleItemChange(index, "itemNameId", newValue);
                             }}
                             renderInput={(params) => (
                               <TextField
@@ -968,11 +1045,7 @@ const EditPurchaseReturnOrder = () => {
                             type="text"
                             value={item.qty}
                             onChange={(e) =>
-                              handleItemChange(
-                                index,
-                                "qty",
-                                (e.target.value)
-                              )
+                              handleItemChange(index, "qty", e.target.value)
                             }
                             size="small"
                           />
@@ -982,11 +1055,7 @@ const EditPurchaseReturnOrder = () => {
                             type="text"
                             value={item.rate}
                             onChange={(e) =>
-                              handleItemChange(
-                                index,
-                                "rate",
-                                (e.target.value)
-                              )
+                              handleItemChange(index, "rate", e.target.value)
                             }
                             size="small"
                           />
@@ -998,17 +1067,11 @@ const EditPurchaseReturnOrder = () => {
                             id="combo-box-demo"
                             options={taxOption}
                             size="small"
-                            value={
-                              taxOption.find(
-                                (opt: any) => opt.value == (item.tax1)
-                              )
-                            }
+                            value={taxOption.find(
+                              (opt: any) => opt.value == item.tax1
+                            )}
                             onChange={(event, newValue: any) => {
-                              handleItemChange(
-                                index,
-                                "tax1",
-                                newValue 
-                              );
+                              handleItemChange(index, "tax1", newValue);
                             }}
                             renderInput={(params) => (
                               <TextField
@@ -1039,14 +1102,20 @@ const EditPurchaseReturnOrder = () => {
                               handleItemChange(
                                 index,
                                 "discount",
-                                (e.target.value)
+                                e.target.value
                               )
                             }
                             size="small"
                           />
                         </td>
-                        <td>{item.discountAmount ? item.discountAmount.toFixed(2) : 0}</td>
-                        <td>{item.netAmount ? item.netAmount.toFixed(2) : 0}</td>
+                        <td>
+                          {item.discountAmount
+                            ? item.discountAmount.toFixed(2)
+                            : 0}
+                        </td>
+                        <td>
+                          {item.netAmount ? item.netAmount.toFixed(2) : 0}
+                        </td>
                         <td>
                           <Button
                             onClick={() => handleRemoveItem(index)}
@@ -1066,7 +1135,9 @@ const EditPurchaseReturnOrder = () => {
                       </td>
                       <td colSpan={3}>
                         <strong style={{ color: "#fff" }}>
-                        {isNaN(totalAmount) ? '0.00' : Number(totalAmount).toFixed(2)}
+                          {isNaN(totalAmount)
+                            ? "0.00"
+                            : Number(totalAmount).toFixed(2)}
                         </strong>
                       </td>
                     </tr>

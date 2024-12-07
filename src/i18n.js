@@ -1200,7 +1200,9 @@ const resources = {
         find: "Find",
         ConfirmPassword: "Confirm Password",
         OrderNo:"Order Number",
-        PurchaseNo:"Purchase No."
+        PurchaseNo:"Purchase No.",
+        FillBookAccnNo:"Fill Book Accn No.",
+        FillMemberCode:"Fill Member Code",
       },
 
       content: {},
@@ -2224,7 +2226,9 @@ const resources = {
         find: "खोजो",
         ConfirmPassword: "पासवर्ड की पुष्टि कीजिये",
         OrderNo:"क्रम संख्या",
-        PurchaseNo:"खरीदने की संख्या"
+        PurchaseNo:"खरीदने की संख्या",
+        FillBookAccnNo:"बुक खाता संख्या भरें",
+        FillMemberCode:"सदस्य कोड भरें",
       },
       content: {},
     },

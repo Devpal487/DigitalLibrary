@@ -273,7 +273,7 @@ const StockLedgerTable = ({ data, title }: { data: any[]; title: any }) => {
                         fetchApiData(
                           row.voucherType,
                           row.voucherType == "StockGeneral" ? row.itemId : row.voucherId, 
-                            row.voucherType == "PurchaseReturn" ? row.itemId : row.id
+                            row.voucherType == "PurchaseReturn" ? row.companyId : row.id
                         )
                       }
                       //   style={{cursor:"pointer",}}

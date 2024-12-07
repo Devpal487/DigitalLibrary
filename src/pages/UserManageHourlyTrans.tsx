@@ -68,7 +68,7 @@ export default function UserManageHourlyTrans() {
   ]);
 
   const [isCirculation, setCirculation] = useState<any>([
-    { value: "-1", label: t("text.CirculationClass") },
+    { value: "-1", label: t("text.MemberGroup") },
   ]);
 
   const [IsTrans, setTrans] = useState<any>([
@@ -341,6 +341,9 @@ export default function UserManageHourlyTrans() {
     initialValues: {
       appId: menuId,
       appName: menuName,
+      DeptId: -1,
+      circId: 0,
+      TransId: 0,
 
       designationId: 0,
       designation: "",
@@ -407,6 +410,14 @@ export default function UserManageHourlyTrans() {
       .then((res) => {
         if (res.data.isSuccess) {
           toast.success(res.data.mesg);
+
+          formik.resetForm();
+
+          formik.setFieldValue("TransId", "");
+
+          formik.setFieldValue("circId", "");
+          formik.setFieldValue("DeptId", "");
+          setIsVisible(false);
         } else {
           toast.error(res.data.mesg);
         }
@@ -501,7 +512,7 @@ export default function UserManageHourlyTrans() {
                 <TextField
                   type="date"
                   label={
-                    <CustomLabel text={t("text.DOJFrom")} required={false} />
+                    <CustomLabel text={t("text.DOJFrom")} required={true} />
                   }
                   variant="outlined"
                   fullWidth
@@ -534,48 +545,28 @@ export default function UserManageHourlyTrans() {
               </Grid>
 
               <Grid item xs={12} sm={4} lg={4}>
-                <TextField
-                  label={
-                    <CustomLabel text={t("text.MemberName")} required={false} />
-                  }
-                  variant="outlined"
-                  fullWidth
-                  size="small"
-                  name="MemberName"
-                  id="MemberName"
-                  value={formik.values.MemberName}
-                  placeholder={t("text.MemberName")}
-                  onChange={formik.handleChange}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={4} lg={4}>
                 <Autocomplete
                   disablePortal
                   id="combo-box-demo"
                   options={isCirculation}
-                  //   value={
-                  //     DeptOption.find(
-                  //       (option: any) => option.value === formik.values.stateId
-                  //     ) || null
-                  //   }
+                  value={
+                    isCirculation.find(
+                      (option: any) => option.value === formik.values.circId
+                    ) || null
+                  }
                   fullWidth
                   size="small"
                   onChange={(event: any, newValue: any) => {
                     console.log(newValue?.value);
 
-                    formik.setFieldValue("stateId", newValue?.value);
-                    formik.setFieldValue("stateName", newValue?.label);
-
-                    formik.setFieldTouched("stateId", true);
-                    formik.setFieldTouched("stateId", false);
+                    formik.setFieldValue("circId", newValue?.value);
                   }}
                   renderInput={(params: any) => (
                     <TextField
                       {...params}
                       label={
                         <CustomLabel
-                          text={t("text.CirculationClass")}
+                          text={t("text.MemberGroup")}
                           required={false}
                         />
                       }
@@ -584,7 +575,7 @@ export default function UserManageHourlyTrans() {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={4} lg={4}>
+              {/* <Grid item xs={12} sm={4} lg={4}>
                 <Autocomplete
                   disablePortal
                   id="combo-box-demo"
@@ -617,28 +608,24 @@ export default function UserManageHourlyTrans() {
                     />
                   )}
                 />
-              </Grid>
+              </Grid> */}
 
-              <Grid item xs={12} sm={4} lg={4}>
+              {/* <Grid item xs={12} sm={4} lg={4}>
                 <Autocomplete
                   disablePortal
                   id="combo-box-demo"
                   options={Department}
-                  //   value={
-                  //     DeptOption.find(
-                  //       (option: any) => option.value === formik.values.stateId
-                  //     ) || null
-                  //   }
+                  value={
+                    Department.find(
+                      (option: any) => option.value === formik.values.DeptId
+                    ) || null
+                  }
                   fullWidth
                   size="small"
                   onChange={(event: any, newValue: any) => {
                     console.log(newValue?.value);
 
-                    formik.setFieldValue("stateId", newValue?.value);
-                    formik.setFieldValue("stateName", newValue?.label);
-
-                    formik.setFieldTouched("stateId", true);
-                    formik.setFieldTouched("stateId", false);
+                    formik.setFieldValue("DeptId", newValue?.value);
                   }}
                   renderInput={(params: any) => (
                     <TextField
@@ -652,37 +639,7 @@ export default function UserManageHourlyTrans() {
                     />
                   )}
                 />
-              </Grid>
-
-              <Grid item xs={12} sm={4} lg={4}>
-                <Autocomplete
-                  disablePortal
-                  id="combo-box-demo"
-                  options={IsTrans}
-                  //   value={
-                  //     DeptOption.find(
-                  //       (option: any) => option.value === formik.values.stateId
-                  //     ) || null
-                  //   }
-                  fullWidth
-                  size="small"
-                  onChange={(event: any, newValue: any) => {
-                    console.log(newValue?.value);
-                    setCirc(newValue?.value);
-                  }}
-                  renderInput={(params: any) => (
-                    <TextField
-                      {...params}
-                      label={
-                        <CustomLabel
-                          text={t("text.HourlyTransClass")}
-                          required={false}
-                        />
-                      }
-                    />
-                  )}
-                />
-              </Grid>
+              </Grid> */}
 
               <Grid item xs={12} sm={4} lg={4}>
                 <TextField
@@ -710,9 +667,16 @@ export default function UserManageHourlyTrans() {
                     //marginTop: "10px",
                   }}
                   onClick={(e) => {
-                    fetchZonesData();
-                    setIsVisible(true);
-                    e.preventDefault();
+                    if (
+                      formik.values.DOJFrom != "" &&
+                      formik.values.DOJFrom != null
+                    ) {
+                      fetchZonesData();
+                      setIsVisible(true);
+                      e.preventDefault();
+                    } else {
+                      alert("Please fill Date of Joining ");
+                    }
                   }}
                 >
                   <SearchIcon style={{ marginRight: "8px" }} />
@@ -721,27 +685,62 @@ export default function UserManageHourlyTrans() {
               </Grid>
             </Grid>
 
-            <Grid item xs={12} container spacing={2}>
-              <Grid item xs={12} sm={4} lg={4}>
-                <Button
-                  type="submit"
-                  fullWidth
-                  style={{
-                    backgroundColor: "#3474eb",
-                    color: "white",
-                    marginTop: "10px",
-                  }}
-                  onClick={(e) => {
-                    applyRule();
-                    e.preventDefault();
-                  }}
-                >
-                  <ScheduleIcon style={{ marginRight: "8px" }} />
-                  Apply Hourly Rules
-                </Button>
-              </Grid>
+            {isVisible && (
+              <>
+                <br />
+                <Divider sx={{ borderWidth: "1px", borderColor: "#524f4f" }} />
+                <br />
+                <Grid item xs={12} container spacing={2}>
+                  <Grid item xs={12} sm={6} lg={6}>
+                    <Autocomplete
+                      disablePortal
+                      id="combo-box-demo"
+                      options={IsTrans}
+                      value={
+                        IsTrans.find(
+                          (option: any) =>
+                            option.value === formik.values.TransId
+                        ) || null
+                      }
+                      fullWidth
+                      size="small"
+                      onChange={(event: any, newValue: any) => {
+                        console.log(newValue?.value);
+                        formik.setFieldValue("TransId", newValue?.value);
+                        setCirc(newValue?.value);
+                      }}
+                      renderInput={(params: any) => (
+                        <TextField
+                          {...params}
+                          label={
+                            <CustomLabel
+                              text={t("text.HourlyTransClass")}
+                              required={false}
+                            />
+                          }
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} lg={6}>
+                    <Button
+                      type="submit"
+                      fullWidth
+                      style={{
+                        backgroundColor: "#3474eb",
+                        color: "white",
+                      }}
+                      onClick={(e) => {
+                        applyRule();
+                        e.preventDefault();
+                      }}
+                    >
+                      <ScheduleIcon style={{ marginRight: "8px" }} />
+                      Apply Hourly Rules
+                    </Button>
+                  </Grid>
 
-              <Grid item xs={12} sm={8} lg={8}>
+                  {/* <Grid item xs={12} sm={8} lg={8}>
                 <Typography
                   gutterBottom
                   variant="h6"
@@ -751,8 +750,10 @@ export default function UserManageHourlyTrans() {
                 >
                   Delete later when - no currently issued items
                 </Typography>
-              </Grid>
-            </Grid>
+              </Grid> */}
+                </Grid>
+              </>
+            )}
 
             <Grid item xs={12} container spacing={2} sx={{ marginTop: "3%" }}>
               {isVisible && (
