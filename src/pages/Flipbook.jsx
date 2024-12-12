@@ -222,9 +222,11 @@ function Flipbook({ filePath }) {
                 boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
                 transition: 'background-color 0.3s, box-shadow 0.3s',
               }}
-              // onMouseEnter={() => {
-              //   alert("This page is not readable")
-              // }}
+              onMouseEnter={() => {
+                if(!page.text) {
+                 alert("This page is not readable")
+                }
+               }}
             >
               <FontAwesomeIcon icon={faPlay} style={{ marginRight: '8px' }} />
               Start Reading
