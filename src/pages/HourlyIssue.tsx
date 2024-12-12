@@ -61,21 +61,8 @@ export default function HourlyIssue() {
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
-  const [isName, setName] = useState("");
-  const [isProgramName, setProgramName] = useState("");
-  const [isCategory, setCategory] = useState("");
-  const [isValid, setValid] = useState("");
-  const [isPhone, setPhone] = useState("");
-  const [isPic, setPic] = useState("");
-
-  const [isAcTitle, setAcTitle] = useState("");
-  const [isAuthor, setAuthor] = useState("");
-  const [isCallNo, setCallNo] = useState("");
-  const [isAccnCat, setAccnCat] = useState("");
-  const [isIssueCount, setIssueCount] = useState("");
-  const [selectedRows, setSelectedRows] = useState<any>([]);
-
-  const [rightOpen, setRightOpen] = useState(false);
+  
+ 
 
   const [isVisible1, setIsVisible1] = useState(false);
 
@@ -86,11 +73,11 @@ export default function HourlyIssue() {
   const instId: any = getinstId();
 
   const [Program, setProgram] = useState<any>([
-    { value: "-1", label: t("text.FindMember") },
+    { value: "-1", label: t("text.FillMemberCode") },
   ]);
 
   const [IsAccn, setAccn] = useState<any>([
-    { value: "-1", label: t("text.ItemToIssue") },
+    { value: "-1", label: t("text.FillBookAccnNo") },
   ]);
 
   const [timerCheck, setTimerCheck] = useState<NodeJS.Timeout | null>(null);
@@ -145,7 +132,7 @@ export default function HourlyIssue() {
     };
     api.post(`api/Transaction/MembBalanceData`, collectData).then((res) => {
       console.log("checkMemb", res?.data?.data);
-      setRightOpen(true);
+      
 
       if (res?.data?.data) {
         setMember(res?.data?.data?.memSmall);
@@ -217,9 +204,7 @@ export default function HourlyIssue() {
     },
   });
 
-  const toggleClose = () => {
-    setRightOpen(false);
-  };
+ 
 
   const handleAccordionToggle = () => {
     setAccordionExpanded((prev) => !prev);

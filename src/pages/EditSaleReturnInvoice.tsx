@@ -270,6 +270,11 @@ const EditSaleReturnInvoice = () => {
       console.log("Form Submitted with values:", values);
 
       const validItems = items.filter((item: any) => validateItem(item));
+
+      if (validItems.length === 0) {
+        alert("Please fill  data in tabel");
+        return;
+      }
       const updatedItems = validItems.map((item: any, index: any) => {
         const baseItem = {
           ...item,

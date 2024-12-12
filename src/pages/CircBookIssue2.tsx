@@ -69,19 +69,8 @@ export default function CircBookIssue2() {
 
   const [isVisible2, setIsVisible2] = useState(false);
 
-  const [isName, setName] = useState("");
-  const [isProgramName, setProgramName] = useState("");
-  const [isCategory, setCategory] = useState("");
-  const [isValid, setValid] = useState("");
-  const [isPhone, setPhone] = useState("");
-  const [isPic, setPic] = useState("");
-
-  const [isAcTitle, setAcTitle] = useState("");
-  const [isAuthor, setAuthor] = useState("");
-  const [isCallNo, setCallNo] = useState("");
-  const [isAccnCat, setAccnCat] = useState("");
-  const [isIssueCount, setIssueCount] = useState("");
-
+ 
+  
   const { t } = useTranslation();
 
   const { menuId, menuName } = getMenuData();
@@ -89,11 +78,11 @@ export default function CircBookIssue2() {
   const instId: any = getinstId();
 
   const [Program, setProgram] = useState<any>([
-    { value: "-1", label: t("text.FindMember") },
+    { value: "-1", label: t("text.FillMemberCode") },
   ]);
 
   const [IsAccn, setAccn] = useState<any>([
-    { value: "-1", label: t("text.ItemToIssue") },
+    { value: "-1", label: t("text.FillBookAccnNo") },
   ]);
 
   const [member, setMember] = useState<any>([]);
@@ -203,6 +192,8 @@ export default function CircBookIssue2() {
   const handleAccordionToggle1 = () => {
     setAccordionExpanded1((prev) => !prev);
   };
+
+  
 
   const formik = useFormik({
     initialValues: {

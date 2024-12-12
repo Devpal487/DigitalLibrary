@@ -377,7 +377,12 @@ import {
         console.log("Form Submitted with values:", values);
         values.amount = totalAmount
   
-        // const validItems = items.filter((item: any) => validateItem(item));
+         const validItems = items.filter((item: any) => validateItem(item));
+
+         if (validItems.length === 0) {
+          alert("Please fill  data in tabel");
+          return;
+        }
         //console.log("🚀 ~ onSubmit: ~ validateItem(item):", validateItem(item))
   
         // Check if there are valid items
@@ -388,7 +393,7 @@ import {
         // }
   
         // Map the valid items, setting values at the first index
-        const updatedItems = items.map((item: any, index: any) => {
+        const updatedItems = validItems.map((item: any, index: any) => {
           const documentDate = values.doc_Date;
   
           const baseItem = {

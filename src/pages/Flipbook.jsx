@@ -6,7 +6,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faStop, faPause } from '@fortawesome/free-solid-svg-icons';
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
 import { franc } from 'franc-min';
-import CircularProgress from '@mui/material/CircularProgress'; // Import CircularProgress
+
+///import CircularProgress from '@mui/material/CircularProgress'; // Import CircularProgress
+
+
+
 
 // Set the workerSrc for pdfjs
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
@@ -21,13 +25,18 @@ function Flipbook({ filePath }) {
   const [isPaused, setIsPaused] = useState(false);
   const [language, setLanguage] = useState('hi-IN');
   const [isTextLayerActive, setIsTextLayerActive] = useState(false);
-  const [loading, setLoading] = useState(true);  // Loading state to track if text is being extracted
+
+  const [loading, setLoading] = useState(true); 
+  const [cachedPages, setCachedPages] = useState({});  
 
   const flipBookRef = useRef(null);
 
+  // Validate filePath
   useEffect(() => {
     if (filePath) {
       extractTextFromPDF(filePath);
+    } else {
+      console.error("Invalid file path provided.");
     }
   }, [filePath]);
 
@@ -51,11 +60,26 @@ function Flipbook({ filePath }) {
     }
   }
 
+  // Extract text from PDF and handle errors
   function extractTextFromPDF(file) {
     const loadingTask = pdfjs.getDocument(file);
-    loadingTask.promise.then((pdf) => {
-      const numPages = pdf.numPages;
-      const textPromises = [];
+    loadingTask.promise
+      .then((pdf) => {
+        const numPages = pdf.numPages;
+        setNumPages(numPages);
+        const textPromises = [];
+
+
+        // Start loading pages concurrently, for faster data retrieval
+        for (let i = 1; i <= numPages; i++) {
+          textPromises.push(
+            pdf.getPage(i).then((page) =>
+              page.getTextContent().then((textContent) => {
+                const text = textContent.items.map((item) => item.str).join(" ");
+                return { pageNumber: i, text };
+              })
+            )
+          );
 
       for (let i = 1; i <= numPages; i++) {
         textPromises.push(
@@ -74,9 +98,28 @@ function Flipbook({ filePath }) {
         if (texts.length > 0) {
           const detectedLanguage = detectLanguage(texts[0].text);
           setLanguage(detectedLanguage);
+
         }
+
+        // Wait for all pages to be processed
+        Promise.all(textPromises)
+          .then((texts) => {
+            setTextContents(texts);
+            setLoading(false);
+            if (texts.length > 0) {
+              const detectedLanguage = detectLanguage(texts[0].text);
+              setLanguage(detectedLanguage);
+            }
+          })
+          .catch((error) => {
+            console.error("Error extracting text from PDF:", error);
+            setLoading(false);
+          });
+      })
+      .catch((error) => {
+        console.error("Error loading PDF:", error);
+        setLoading(false);
       });
-    });
   }
 
   function onDocumentLoadSuccess({ numPages }) {
@@ -110,7 +153,11 @@ function Flipbook({ filePath }) {
       setIsTextLayerActive(false);
     };
 
-    window.speechSynthesis.speak(newUtterance);
+    try {
+      window.speechSynthesis.speak(newUtterance);
+    } catch (error) {
+      console.error("Speech synthesis error:", error);
+    }
     setUtterance(newUtterance);
   }
 
@@ -146,6 +193,14 @@ function Flipbook({ filePath }) {
       flipBookRef.current.pageFlip().flip(pageNumber - currentPage);
     }
     setCurrentPage(pageNumber);
+
+    // Preload the next page text if not cached
+    if (!cachedPages[pageNumber + 1] && pageNumber < numPages) {
+      const nextPageText = textContents.find(item => item.pageNumber === pageNumber + 1)?.text;
+      if (nextPageText) {
+        setCachedPages(prev => ({ ...prev, [pageNumber + 1]: nextPageText }));
+      }
+    }
   }
 
   function handleLanguageChange(event) {
@@ -174,6 +229,36 @@ function Flipbook({ filePath }) {
           gap: '10px'
         }}>
           {!isSpeaking && (
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleStartSpeech(page.text);
+              }}
+              disabled={!page.text}
+              style={{
+                backgroundColor: page.text ? '#007bff' : '#ccc',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                padding: '10px 15px',
+                cursor: page.text ? 'pointer' : 'not-allowed',
+                display: 'flex',
+                alignItems: 'center',
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                transition: 'background-color 0.3s, box-shadow 0.3s',
+              }}
+              onMouseEnter={() => {
+                if(!page.text) {
+                 alert("This page is not readable")
+                }
+               }}
+            >
+              <FontAwesomeIcon icon={faPlay} style={{ marginRight: '8px' }} />
+              Start Reading
+            </button>
+          )}
+
   <button
     onClick={(e) => {
       e.stopPropagation();
@@ -215,6 +300,7 @@ function Flipbook({ filePath }) {
     Start Reading
   </button>
 )}
+
           {isSpeaking && !isPaused && (
             <button
               onClick={(e) => {
@@ -233,14 +319,12 @@ function Flipbook({ filePath }) {
                 boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
                 transition: 'background-color 0.3s, box-shadow 0.3s',
               }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e0a800'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ffc107'}
             >
               <FontAwesomeIcon icon={faPause} style={{ marginRight: '8px' }} />
               Pause Reading
             </button>
           )}
-          {isPaused && (
+          {isSpeaking && isPaused && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -258,8 +342,6 @@ function Flipbook({ filePath }) {
                 boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
                 transition: 'background-color 0.3s, box-shadow 0.3s',
               }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#218838'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#28a745'}
             >
               <FontAwesomeIcon icon={faPlay} style={{ marginRight: '8px' }} />
               Resume Reading
@@ -283,8 +365,6 @@ function Flipbook({ filePath }) {
                 boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
                 transition: 'background-color 0.3s, box-shadow 0.3s',
               }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c82333'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
             >
               <FontAwesomeIcon icon={faStop} style={{ marginRight: '8px' }} />
               Stop Reading
@@ -298,13 +378,17 @@ function Flipbook({ filePath }) {
   return (
     <div style={{
       position: 'relative',
-      backgroundImage: `url('https://cdn.magicdecor.in/com/2023/10/27162016/Bhagwan-Shiva-With-Om-Namah-Shivay-in-Background-Wallpaper-for-Wall-M.jpg')`,
+      backgroundImage: `url('https://img.freepik.com/premium-photo/abstract-blurred-empty-college-library-interior-space-blurry-classroom-with-bookshelves-by-defocused-effect-generative-ai_438099-11738.jpg?w=740')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       height: '100vh',
     }}>
       {/* Loading Spinner */}
       {loading && (
+
+        <div className="spinner">
+          
+
         <div style={{
           position: 'absolute',
           top: '50%',
@@ -313,6 +397,7 @@ function Flipbook({ filePath }) {
           zIndex: 10,
         }}>
           <CircularProgress />
+
         </div>
       )}
       <div style={{

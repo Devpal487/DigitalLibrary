@@ -65,3 +65,73 @@ body {
     /* height: 60%; */
     /* background-color: "red"; */
 }
+
+.spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border: 10px solid transparent; /* Transparent border to create space for the gradient */
+    border-radius: 50%;
+    border-top: 10px solid #1abc9c; /* Elegant teal color */
+    animation: spin 2s ease-in-out infinite, colorCycle 3s ease-in-out infinite, shadowPulse 2s ease-in-out infinite;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4); /* Darker, more noticeable shadow for contrast */
+    background: conic-gradient(#1abc9c, #e74c3c, #f39c12, #9b59b6, #1abc9c); /* Smooth gradient effect */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10; /* Ensure the spinner is above other content */
+}
+
+/* Add a swastik symbol in the center */
+.spinner::before {
+    content: "卍"; /* Unicode character for swastik */
+    font-size: 30px; /* Adjust size of the swastik */
+    color: white; /* White color for the symbol */
+    font-family: Arial, sans-serif; /* Set font family */
+    position: absolute; /* Center it in the spinner */
+}
+
+/* Keyframes for spinning animation */
+@keyframes spin {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Keyframes for smooth color transition */
+@keyframes colorCycle {
+    0% {
+        border-top-color: #1abc9c; /* Elegant teal */
+    }
+    25% {
+        border-top-color: #e74c3c; /* Rich red */
+    }
+    50% {
+        border-top-color: #f39c12; /* Warm yellow */
+    }
+    75% {
+        border-top-color: #9b59b6; /* Subtle purple */
+    }
+    100% {
+        border-top-color: #1abc9c; /* Back to elegant teal */
+    }
+}
+
+/* Keyframes for refined shadow pulse effect */
+@keyframes shadowPulse {
+    0% {
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4); /* Increased opacity of shadow */
+    }
+    50% {
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5); /* Stronger shadow at midpoint */
+    }
+    100% {
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4); /* Reset to initial shadow */
+    }
+}

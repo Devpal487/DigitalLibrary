@@ -1190,5 +1190,6 @@ export default function Stockledger() {
             <ToastApp />
         </>
     );
+
 };
 

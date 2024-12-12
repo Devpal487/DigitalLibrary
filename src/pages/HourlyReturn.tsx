@@ -78,7 +78,7 @@ export default function HourlyReturn() {
   const instId: any = getinstId();
 
   const [Program, setProgram] = useState<any>([
-    { value: "-1", label: t("text.FindMember") },
+    { value: "-1", label: t("text.FillMemberCode") },
   ]);
 
   const [timerCheck, setTimerCheck] = useState<NodeJS.Timeout | null>(null);

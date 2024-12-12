@@ -330,6 +330,11 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
       values.amount = totalAmount
 
       const validItems = items.filter((item: any) => validateItem(item));
+
+      if (validItems.length === 0) {
+        alert("Please fill  data in tabel");
+        return;
+      }
       //console.log("🚀 ~ onSubmit: ~ validateItem(item):", validateItem(item))
 
       // Check if there are valid items

@@ -197,7 +197,7 @@ function SwipeableTemporaryDrawer({
                 <strong>Rate:</strong> {userData.rate}
               </StyledTableCell>
               <StyledTableCell align="left">
-                <strong>In Qty. :</strong> {userData.inQty}
+                <strong> Qty. :</strong> {userData.inQty}
               </StyledTableCell>
             </StyledTableRow>
             <StyledTableRow>
@@ -244,7 +244,7 @@ function SwipeableTemporaryDrawer({
                 <strong>Invoice No:</strong> {userData.sR_InvoiceNo}
               </StyledTableCell>
               <StyledTableCell align="left">
-                <strong>Document Date:</strong>{" "}
+                <strong>Invoice Date:</strong>{" "}
                 {dayjs(userData.doc_Date).format("DD-MM-YYYY")}
               </StyledTableCell>
             </StyledTableRow>
@@ -256,14 +256,7 @@ function SwipeableTemporaryDrawer({
                 <strong>Supplier Name:</strong> {userData.supplierName}
               </StyledTableCell>
             </StyledTableRow>
-            <StyledTableRow>
-              <StyledTableCell align="left">
-                <strong>Amount:</strong> {userData.amount}
-              </StyledTableCell>
-              <StyledTableCell align="left">
-                <strong>Remark:</strong> {userData.remark}
-              </StyledTableCell>
-            </StyledTableRow>
+           
           </TableBody>
         </Table>
       </TableContainer>
@@ -341,7 +334,7 @@ function SwipeableTemporaryDrawer({
               <TableCell
                 style={{ color: "black", fontWeight: 600, fontSize: "14px" }}
                 align="center"
-                colSpan={4}
+                colSpan={3}
               >
                 Total
               </TableCell>
@@ -413,7 +406,7 @@ function SwipeableTemporaryDrawer({
                 <strong>Invoice No:</strong> {userData.s_InvoiceNo}
               </StyledTableCell>
               <StyledTableCell align="left">
-                <strong>Document Date:</strong>{" "}
+                <strong>Invoice Date:</strong>{" "}
                 {dayjs(userData.doc_Date).format("DD-MM-YYYY")}
               </StyledTableCell>
             </StyledTableRow>
@@ -425,14 +418,7 @@ function SwipeableTemporaryDrawer({
                 <strong>Supplier Name:</strong> {userData.supplierName}
               </StyledTableCell>
             </StyledTableRow>
-            <StyledTableRow>
-              <StyledTableCell align="left">
-                <strong>Amount:</strong> {userData.amount}
-              </StyledTableCell>
-              <StyledTableCell align="left">
-                <strong>Remark:</strong> {userData.remark}
-              </StyledTableCell>
-            </StyledTableRow>
+           
           </TableBody>
         </Table>
       </TableContainer>
@@ -453,7 +439,7 @@ function SwipeableTemporaryDrawer({
           <TableHead>
             <TableRow>
               <StyledTableCell align="center">Sr. No.</StyledTableCell>
-              <StyledTableCell align="center">Document Date</StyledTableCell>
+              
               <StyledTableCell align="center">Item Name</StyledTableCell>
               <StyledTableCell align="center">Unit Name</StyledTableCell>
               <StyledTableCell align="center">Out Qty</StyledTableCell>
@@ -472,9 +458,7 @@ function SwipeableTemporaryDrawer({
                   <StyledTableCell component="th" scope="row" align="center">
                     {index + 1}
                   </StyledTableCell>
-                  <StyledTableCell align="left">
-                    {dayjs(userData.documentDate).format("DD-MM-YYYY")}
-                  </StyledTableCell>
+                 
                   <StyledTableCell align="center">
                     {row.itemNames}
                   </StyledTableCell>
@@ -510,7 +494,7 @@ function SwipeableTemporaryDrawer({
               <TableCell
                 style={{ color: "black", fontWeight: 600, fontSize: "14px" }}
                 align="center"
-                colSpan={4}
+                colSpan={3}
               >
                 Total
               </TableCell>
@@ -582,7 +566,7 @@ function SwipeableTemporaryDrawer({
                 <strong>Invoice No:</strong> {userData.pR_InvoiceNo}
               </StyledTableCell>
               <StyledTableCell align="left">
-                <strong>Document Date:</strong>{" "}
+                <strong>Invoive Date:</strong>{" "}
                 {dayjs(userData.pR_InvoiceDate).format("DD-MM-YYYY")}
               </StyledTableCell>
             </StyledTableRow>
@@ -594,14 +578,7 @@ function SwipeableTemporaryDrawer({
                 <strong>Supplier Name:</strong> {userData.supplierName}
               </StyledTableCell>
             </StyledTableRow>
-            <StyledTableRow>
-              <StyledTableCell align="left">
-                <strong>Amount:</strong> {userData.amount}
-              </StyledTableCell>
-              <StyledTableCell align="left">
-                <strong>Remark:</strong> {userData.remark}
-              </StyledTableCell>
-            </StyledTableRow>
+           
           </TableBody>
         </Table>
       </TableContainer>
@@ -622,7 +599,7 @@ function SwipeableTemporaryDrawer({
           <TableHead>
             <TableRow>
               <StyledTableCell align="center">Sr. No.</StyledTableCell>
-              <StyledTableCell align="center">Document Date</StyledTableCell>
+              
               <StyledTableCell align="center">Item Name</StyledTableCell>
               <StyledTableCell align="center">Unit Name</StyledTableCell>
               <StyledTableCell align="center">Return Qty</StyledTableCell>
@@ -641,9 +618,7 @@ function SwipeableTemporaryDrawer({
                   <StyledTableCell component="th" scope="row" align="center">
                     {index + 1}
                   </StyledTableCell>
-                  <StyledTableCell align="left">
-                    {dayjs(userData.documentDate).format("DD-MM-YYYY")}
-                  </StyledTableCell>
+                 
                   <StyledTableCell align="center">
                     {row.itemNames}
                   </StyledTableCell>
@@ -679,7 +654,7 @@ function SwipeableTemporaryDrawer({
               <TableCell
                 style={{ color: "black", fontWeight: 600, fontSize: "14px" }}
                 align="center"
-                colSpan={4}
+                colSpan={3}
               >
                 Total
               </TableCell>
@@ -751,7 +726,7 @@ function SwipeableTemporaryDrawer({
                 <strong>Invoice No:</strong> {userData.p_InvoiceNo}
               </StyledTableCell>
               <StyledTableCell align="left">
-                <strong>Document Date:</strong>{" "}
+                <strong>Invoice Date:</strong>{" "}
                 {dayjs(userData.doc_Date).format("DD-MM-YYYY")}
               </StyledTableCell>
             </StyledTableRow>
@@ -763,14 +738,7 @@ function SwipeableTemporaryDrawer({
                 <strong>Supplier Name:</strong> {userData.supplierName}
               </StyledTableCell>
             </StyledTableRow>
-            <StyledTableRow>
-              <StyledTableCell align="left">
-                <strong>Amount:</strong> {userData.amount}
-              </StyledTableCell>
-              <StyledTableCell align="left">
-                <strong>Remark:</strong> {userData.remark}
-              </StyledTableCell>
-            </StyledTableRow>
+            
           </TableBody>
         </Table>
       </TableContainer>
@@ -791,10 +759,10 @@ function SwipeableTemporaryDrawer({
           <TableHead>
             <TableRow>
               <StyledTableCell align="center">Sr. No.</StyledTableCell>
-              <StyledTableCell align="center">Document Date</StyledTableCell>
+              
               <StyledTableCell align="center">Item Name</StyledTableCell>
               <StyledTableCell align="center">Unit Name</StyledTableCell>
-              <StyledTableCell align="center">In Qty</StyledTableCell>
+              <StyledTableCell align="center"> Qty</StyledTableCell>
               <StyledTableCell align="center">Rate</StyledTableCell>
               <StyledTableCell align="center">Amt</StyledTableCell>
               {/* <StyledTableCell align="center" >Discount</StyledTableCell> */}
@@ -810,9 +778,7 @@ function SwipeableTemporaryDrawer({
                   <StyledTableCell component="th" scope="row" align="center">
                     {index + 1}
                   </StyledTableCell>
-                  <StyledTableCell align="left">
-                    {dayjs(userData.documentDate).format("DD-MM-YYYY")}
-                  </StyledTableCell>
+                  
                   <StyledTableCell align="center">
                     {row.itemNames}
                   </StyledTableCell>
@@ -848,7 +814,7 @@ function SwipeableTemporaryDrawer({
               <TableCell
                 style={{ color: "black", fontWeight: 600, fontSize: "14px" }}
                 align="center"
-                colSpan={4}
+                colSpan={3}
               >
                 Total
               </TableCell>
