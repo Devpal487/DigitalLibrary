@@ -99,6 +99,7 @@ import EditSaleReturnInvoice from "../pages/EditSaleReturnInvoice";
 import CreateSaleReturnInvoice from "../pages/CreateSaleReturnInvoice";
 import Login_Page from "../loginPage/Login_Page";
 import Login_Page1 from "../loginPage/Login_Page1";
+import Banner from "../pages/Banner";
 
 const appRoutes: RouteType[] = [
   {
@@ -397,6 +398,12 @@ const appRoutes: RouteType[] = [
     sidebarProps: {
       displayText: "loadingstatus",
     },
+  },
+
+  {
+    path: "BannerMaster",
+    element: <Banner/>,
+    state: "BannerMaster",
   },
   {
     path: "/translationlanguages",

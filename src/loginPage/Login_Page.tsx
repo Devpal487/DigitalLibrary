@@ -5,7 +5,7 @@ import { faUser, faLock, faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import advPics from '../assets/images/headDoc.png';
-import logo from '../assets/images/adlogo1.png';
+import logo from '../assets/images/LibLogo1.png';
 import { Grid, Divider, DialogTitle, IconButton, DialogContent, Typography, DialogContentText, DialogActions, TextField, Button, Box, ImageList, ImageListItem } from "@mui/material";
 import Dialog, { DialogProps } from "@mui/material/Dialog";
 import api, { HOST_URL } from "../utils/Url";
