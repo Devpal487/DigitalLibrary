@@ -6,7 +6,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faStop, faPause } from '@fortawesome/free-solid-svg-icons';
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
 import { franc } from 'franc-min';
+
 ///import CircularProgress from '@mui/material/CircularProgress'; // Import CircularProgress
+
+
+
 
 // Set the workerSrc for pdfjs
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
@@ -21,6 +25,7 @@ function Flipbook({ filePath }) {
   const [isPaused, setIsPaused] = useState(false);
   const [language, setLanguage] = useState('hi-IN');
   const [isTextLayerActive, setIsTextLayerActive] = useState(false);
+
   const [loading, setLoading] = useState(true); 
   const [cachedPages, setCachedPages] = useState({});  
 
@@ -64,6 +69,7 @@ function Flipbook({ filePath }) {
         setNumPages(numPages);
         const textPromises = [];
 
+
         // Start loading pages concurrently, for faster data retrieval
         for (let i = 1; i <= numPages; i++) {
           textPromises.push(
@@ -74,6 +80,25 @@ function Flipbook({ filePath }) {
               })
             )
           );
+
+      for (let i = 1; i <= numPages; i++) {
+        textPromises.push(
+          pdf.getPage(i).then((page) =>
+            page.getTextContent().then((textContent) => {
+              const text = textContent.items.map((item) => item.str).join(" ");
+              return { pageNumber: i, text };
+            })
+          )
+        );
+      }
+
+      Promise.all(textPromises).then((texts) => {
+        setTextContents(texts);
+        setLoading(false); 
+        if (texts.length > 0) {
+          const detectedLanguage = detectLanguage(texts[0].text);
+          setLanguage(detectedLanguage);
+
         }
 
         // Wait for all pages to be processed
@@ -204,6 +229,7 @@ function Flipbook({ filePath }) {
           gap: '10px'
         }}>
           {!isSpeaking && (
+
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -232,6 +258,49 @@ function Flipbook({ filePath }) {
               Start Reading
             </button>
           )}
+
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      handleStartSpeech(page.text);
+    }}
+    disabled={!page.text}
+    style={{
+      backgroundColor: page.text ? '#007bff' : '#ccc',
+      color: 'white',
+      border: 'none',
+      borderRadius: '5px',
+      padding: '10px 15px',
+      cursor: page.text ? 'pointer' : 'not-allowed',
+      display: 'flex',
+      alignItems: 'center',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+      transition: 'background-color 0.3s, box-shadow 0.3s',
+    }}
+    onMouseOver={(e) => {
+      if (!page.text) {
+        
+        e.currentTarget.setAttribute('title', 'This page is scannned thats why not aloud');
+      } else {
+        e.currentTarget.setAttribute('title', ''); 
+      }
+
+      if (page.text) {
+        e.currentTarget.style.backgroundColor = '#0056b3';
+      }
+    }}
+    onMouseOut={(e) => {
+      e.currentTarget.removeAttribute('title'); 
+      if (page.text) {
+        e.currentTarget.style.backgroundColor = '#007bff';
+      }
+    }}
+  >
+    <FontAwesomeIcon icon={faPlay} style={{ marginRight: '8px' }} />
+    Start Reading
+  </button>
+)}
+
           {isSpeaking && !isPaused && (
             <button
               onClick={(e) => {
@@ -316,8 +385,19 @@ function Flipbook({ filePath }) {
     }}>
       {/* Loading Spinner */}
       {loading && (
+
         <div className="spinner">
           
+
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 10,
+        }}>
+          <CircularProgress />
+
         </div>
       )}
       <div style={{
