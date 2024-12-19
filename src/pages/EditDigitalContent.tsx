@@ -71,6 +71,8 @@ export default function EditDigitalContent() {
   // console.log("useLocation " + useLocation());
   const location = useLocation();
 
+    console.log("location " ,location);
+
   const back = useNavigate();
   const [lang, setLang] = useState<Language>("en");
   const [contentListOption, setContentListOption] = useState([
@@ -165,6 +167,11 @@ export default function EditDigitalContent() {
   const [isTax, setTax] = useState([
     { value: "-1", label: t("text.SelectTax") },
   ]);
+
+  const textType = [
+    { value: 1, label: "Included" },
+    { value: 2, label: "Excluded" },
+  ];
 
   const removeDynamicId = (id: any) => {
     return id.replace(/ /g, "");
@@ -530,6 +537,30 @@ export default function EditDigitalContent() {
         return value > 0;
       }
     ),
+
+    taxId: Yup.number().test(
+      "required",
+      "Tax is required",
+      function (value: any) {
+        return value > 0;
+      }
+    ),
+
+    unitId: Yup.number().test(
+      "required",
+      "Unit is required",
+      function (value: any) {
+        return value > 0;
+      }
+    ),
+
+    taxType: Yup.string().test(
+      "required",
+      "Tax Type is required",
+      function (value: any) {
+        return value && value.trim() !== "";
+      }
+    ),
   });
 
   const formik = useFormik({
@@ -556,7 +587,7 @@ export default function EditDigitalContent() {
       audience: location.state.audience,
       dateSaved: new Date().toISOString().slice(0, 10),
       validTill: new Date().toISOString().slice(0, 10),
-      forAllUsers: location.state.forAllUsers || "",
+      forAllUsers: location.state.forAllUsers || true,
       forMember: location.state.forMember,
       noOfFiles: location.state.noOfFiles,
       files: location.state.files || "",
@@ -576,6 +607,7 @@ export default function EditDigitalContent() {
       taxId: location.state.taxId,
       unitname: location.state.unitname,
       taxName: location.state.taxName,
+      taxType: location.state.taxType,
     },
 
     validationSchema: validationSchema,
@@ -1448,7 +1480,7 @@ export default function EditDigitalContent() {
                   value={
                     isCategory.find(
                       (option: any) =>
-                        option.value === formik.values.categoryId + ""
+                        option.value === formik.values.categoryId 
                     ) || null
                   }
                   fullWidth
@@ -1550,6 +1582,44 @@ export default function EditDigitalContent() {
                     />
                   )}
                 />
+
+                {formik.touched.taxId && formik.errors.taxId ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.taxId)}
+                  </div>
+                ) : null}
+              </Grid>
+
+              <Grid item xs={12} sm={4} lg={4}>
+                <Autocomplete
+                  disablePortal
+                  id="combo-box-demo"
+                  options={textType}
+                  fullWidth
+                  size="small"
+                  onChange={(event, newValue: any) => {
+                    console.log(newValue);
+
+                    formik.setFieldValue("taxType", newValue?.label);
+                  }}
+                  value={
+                    textType.find(
+                      (opt: any) => opt.label === formik.values.taxType 
+                    ) || null
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={<CustomLabel text={t("text.SelectTaxType")} />}
+                    />
+                  )}
+                />
+
+                {formik.touched.taxType && formik.errors.taxType ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.taxType)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item xs={12} sm={4} lg={4}>
@@ -1562,7 +1632,7 @@ export default function EditDigitalContent() {
                   onChange={(event, newValue: any) => {
                     console.log(newValue?.value);
                     formik.setFieldValue("unitId", newValue?.value);
-                    formik.setFieldValue('unitname', newValue?.label);
+                    formik.setFieldValue("unitname", newValue?.label);
                   }}
                   value={
                     unitOptions.find(
@@ -1576,9 +1646,15 @@ export default function EditDigitalContent() {
                     />
                   )}
                 />
+
+                {formik.touched.unitId && formik.errors.unitId ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.unitId)}
+                  </div>
+                ) : null}
               </Grid>
 
-              <Grid
+              {/* <Grid
                 xs={12}
                 sm={4}
                 lg={4}
@@ -1599,10 +1675,10 @@ export default function EditDigitalContent() {
                       color="primary"
                     />
                   }
-                  label="Check If Public for All"
+                  label={t("text.CheckIfPublicforAll")}
                   labelPlacement="end"
                 />
-              </Grid>
+              </Grid> */}
 
               <Grid xs={12} sm={12} lg={12} item>
                 <TextareaAutosize
@@ -1713,7 +1789,7 @@ export default function EditDigitalContent() {
                     )}
                   </Box>
                 </Modal>
-                <Grid item lg={2} sm={2} xs={12}>
+                {/* <Grid item lg={2} sm={2} xs={12}>
                   <Grid>
                     <Button
                       // type="reset"
@@ -1728,7 +1804,7 @@ export default function EditDigitalContent() {
                       {t("text.save")}
                     </Button>
                   </Grid>
-                </Grid>
+                </Grid> */}
               </Grid>
               <br />
               <Divider sx={{ borderWidth: "1px", borderColor: "black" }} />
@@ -2147,6 +2223,7 @@ export default function EditDigitalContent() {
                       backgroundColor: "#059669",
                       margin: "1%",
                     }}
+                    onClick={uploadThubnail}
                   >
                     {t("text.update")}
                   </Button>

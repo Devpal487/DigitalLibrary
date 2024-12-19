@@ -485,7 +485,7 @@ export default function HourlyReturn() {
                         <Typography
                           style={{ fontWeight: 600, fontSize: "16px" }}
                         >
-                          Member : {member?.name}
+                          {t("text.Member")} : {member?.name}
                         </Typography>
                       </AccordionSummary>
                       <AccordionDetails>
@@ -501,7 +501,7 @@ export default function HourlyReturn() {
                               align="left"
                               marginTop="2%"
                             >
-                              Member Group:{""} {""}
+                              {t("text.MemberGroup")}:{""} {""}
                               <span style={{ fontWeight: "bold" }}>
                                 {member?.classname}
                               </span>
@@ -516,7 +516,7 @@ export default function HourlyReturn() {
                               align="left"
                               marginTop="2%"
                             >
-                              Program:{""}{" "}
+                              {t("text.Program")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {member?.program}
                               </span>
@@ -531,7 +531,7 @@ export default function HourlyReturn() {
                               align="left"
                               marginTop="2%"
                             >
-                              Category Applied:{""}{" "}
+                              {t("text.CategoryApplied")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {member?.itemCategory}
                               </span>
@@ -546,7 +546,7 @@ export default function HourlyReturn() {
                               align="left"
                               marginTop="2%"
                             >
-                              Valid Upto:{""}{" "}
+                              {t("text.ValidUpto")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {member?.validUpto}
                               </span>
@@ -561,7 +561,7 @@ export default function HourlyReturn() {
                               align="left"
                               marginTop="2%"
                             >
-                              phone:{""}{" "}
+                              {t("text.Phone")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {member?.phone1}
                               </span>
@@ -576,7 +576,7 @@ export default function HourlyReturn() {
                               align="left"
                               marginTop="2%"
                             >
-                              Item Limit:{""}{" "}
+                              {t("text.ItemLimit")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {member?.issueLimit}
                               </span>
@@ -618,7 +618,7 @@ export default function HourlyReturn() {
                         <Typography
                           style={{ fontWeight: 600, fontSize: "16px" }}
                         >
-                          Accession Details
+                          {t("text.AccessionDetails")}
                         </Typography>
                       </AccordionSummary>
                       <AccordionDetails>
@@ -637,7 +637,7 @@ export default function HourlyReturn() {
                               align="left"
                               marginTop="2%"
                             >
-                              Accn/Title : {""} {selectedRows[0]?.title}
+                              {t("text.AccnOrTitle")} : {""} {selectedRows[0]?.title}
                             </Typography>
                           </Grid>
 
@@ -649,7 +649,7 @@ export default function HourlyReturn() {
                               align="left"
                               marginTop="2%"
                             >
-                              Fine Ammount (If Any) : {""}{" "}
+                              {t("text.FineAmmountIfAny")} : {""}{" "}
                               {selectedRows[0]?.fineamount}
                             </Typography>
                           </Grid>
@@ -677,7 +677,7 @@ export default function HourlyReturn() {
                   }}
                 >
                   <CreateIcon style={{ marginRight: "8px" }} />
-                  Receive
+                  {t("text.Receive")}
                 </Button>
               </Grid>
 
@@ -695,7 +695,7 @@ export default function HourlyReturn() {
                   }}
                 >
                   <RefreshIcon style={{ marginRight: "8px" }} />
-                  Reset
+                  {t("text.reset")}
                 </Button>
               </Grid>
               <Grid item xs={12} sm={1.5} lg={1.5}></Grid>

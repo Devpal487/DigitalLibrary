@@ -660,7 +660,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                           padding: "5px",
                         }}
                       >
-                        {t("text.Unit")}
+                        {t("text.unit")}
                       </th>
                       <th
                         style={{

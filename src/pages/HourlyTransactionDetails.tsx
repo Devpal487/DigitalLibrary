@@ -70,27 +70,7 @@ export default function HourlyTransactionDetails() {
     formik.setFieldValue(params, text);
   };
 
-  const handleSwitchChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    value: any
-  ) => {
-    const collectData = {
-      zoneID: value.id,
-      zoneName: value.zoneName,
-      zoneCode: value.zoneCode,
-      isActive: event.target.checked,
-      user_ID: Userid,
-      sortOrder: value.sortOrder,
-    };
-    api.post(`Zone/AddUpdateZonemaster`, collectData).then((response: any) => {
-      if (response.data.isSuccess) {
-        toast.success(response.data.mesg);
-        fetchZonesData();
-      } else {
-        toast.error(response.data.mesg);
-      }
-    });
-  };
+  
 
   const routeChangeEdit = (row: any) => {
     console.log(row);
@@ -226,7 +206,7 @@ export default function HourlyTransactionDetails() {
           {
             field: "serialNo",
             headerName: t("text.SrNo"),
-            flex:0.5,
+            flex: 0.5,
             // headerClassName: "MuiDataGrid-colCell",
           },
           {

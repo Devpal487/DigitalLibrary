@@ -207,7 +207,7 @@ export default function AddDigitalContent() {
               },
               {
                 field: "title",
-                headerName: t("text.title"),
+                headerName: t("text.Title"),
                 flex: 1,
                 headerClassName: "MuiDataGrid-colCell",
               },
@@ -219,7 +219,7 @@ export default function AddDigitalContent() {
               },
               {
                 field: "descr",
-                headerName: t("text.descrip"),
+                headerName: t("text.Description"),
                 flex: 1,
                 headerClassName: "MuiDataGrid-colCell",
               },
@@ -231,7 +231,7 @@ export default function AddDigitalContent() {
               // },
               {
                 field: "dateSaved",
-                headerName: t("text.date"),
+                headerName: t("text.Date"),
                 flex: 0.7,
                 headerClassName: "MuiDataGrid-colCell",
                 renderCell: (params) => {

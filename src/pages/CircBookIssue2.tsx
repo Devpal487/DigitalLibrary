@@ -564,7 +564,7 @@ export default function CircBookIssue2() {
                         <Typography
                           style={{ fontWeight: 600, fontSize: "16px" }}
                         >
-                          Member : {member?.name}
+                          {t("text.Member")} : {member?.name}
                         </Typography>
                       </AccordionSummary>
                       <AccordionDetails>
@@ -580,7 +580,7 @@ export default function CircBookIssue2() {
                               align="left"
                               marginTop="2%"
                             >
-                              Member Group:{""} {""}
+                              {t("text.MemberGroup")}:{""} {""}
                               <span style={{ fontWeight: "bold" }}>
                                 {member?.classname}
                               </span>
@@ -595,7 +595,7 @@ export default function CircBookIssue2() {
                               align="left"
                               marginTop="2%"
                             >
-                              Program:{""}{" "}
+                              {t("text.Program")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {member?.program}
                               </span>
@@ -610,7 +610,7 @@ export default function CircBookIssue2() {
                               align="left"
                               marginTop="2%"
                             >
-                              Category Applied:{""}{" "}
+                              {t("text.CategoryApplied")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {member?.itemCategory}
                               </span>
@@ -625,7 +625,7 @@ export default function CircBookIssue2() {
                               align="left"
                               marginTop="2%"
                             >
-                              Valid Upto:{""}{" "}
+                              {t("text.ValidUpto")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {member?.validUpto}
                               </span>
@@ -640,7 +640,7 @@ export default function CircBookIssue2() {
                               align="left"
                               marginTop="2%"
                             >
-                              phone:{""}{" "}
+                              {t("text.Phone")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {member?.phone1}
                               </span>
@@ -655,7 +655,7 @@ export default function CircBookIssue2() {
                               align="left"
                               marginTop="2%"
                             >
-                              Item Limit:{""}{" "}
+                              {t("text.ItemLimit")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {member?.issueLimit}
                               </span>
@@ -697,7 +697,7 @@ export default function CircBookIssue2() {
                         <Typography
                           style={{ fontWeight: 600, fontSize: "16px" }}
                         >
-                          Accession Details
+                          {t("text.AccessionDetails")}
                         </Typography>
                       </AccordionSummary>
                       <AccordionDetails>
@@ -716,7 +716,7 @@ export default function CircBookIssue2() {
                               align="left"
                               marginTop="2%"
                             >
-                              Accn/Title:{""}{" "}
+                              {t("text.AccnOrTitle")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {isAccnData[0]?.title}
                               </span>
@@ -731,7 +731,7 @@ export default function CircBookIssue2() {
                               align="left"
                               marginTop="2%"
                             >
-                              Author(s):{""}{" "}
+                              {t("text.Authors")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {isAccnData[0]?.auth}
                               </span>
@@ -746,7 +746,7 @@ export default function CircBookIssue2() {
                               align="left"
                               marginTop="2%"
                             >
-                              Call No:{""}{" "}
+                              {t("text.CallNo")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {isAccnData[0]?.callno}
                               </span>
@@ -761,7 +761,7 @@ export default function CircBookIssue2() {
                               align="left"
                               marginTop="2%"
                             >
-                              Category:{""}{" "}
+                              {t("text.Category")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {isAccnData[0]?.category}
                               </span>
@@ -776,7 +776,7 @@ export default function CircBookIssue2() {
                               align="left"
                               marginTop="2%"
                             >
-                              Issue Count:{""}{" "}
+                              {t("text.IssueCount")}:{""}{" "}
                               <span style={{ fontWeight: "bold" }}>
                                 {isAccnData[0]?.issuedCount}
                               </span>
@@ -805,7 +805,7 @@ export default function CircBookIssue2() {
                   }}
                 >
                   <CreateIcon style={{ marginRight: "8px" }} />
-                  Issue
+                  {t("text.Issue")}
                 </Button>
               </Grid>
 
@@ -823,7 +823,7 @@ export default function CircBookIssue2() {
                   }}
                 >
                   <RefreshIcon style={{ marginRight: "8px" }} />
-                  Reset
+                  {t("text.reset")}
                 </Button>
               </Grid>
               <Grid item xs={12} sm={1.5} lg={1.5}></Grid>

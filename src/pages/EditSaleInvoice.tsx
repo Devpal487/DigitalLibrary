@@ -831,7 +831,7 @@ const EditSaleInvoice = () => {
                           padding: "5px",
                         }}
                       >
-                        {t("text.Unit")}
+                        {t("text.unit")}
                       </th>
                       <th
                         style={{

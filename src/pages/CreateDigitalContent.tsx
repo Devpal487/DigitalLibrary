@@ -159,6 +159,11 @@ export default function CreateDigitalContent() {
   ]);
   const InstituteName = sessionStorage.getItem("institutename");
 
+  const textType = [
+    { value: 1, label: "Included" },
+    { value: 2, label: "Excluded" },
+  ];
+
   useEffect(() => {
     setOpen(true);
     getDigitalDDl();
@@ -497,6 +502,30 @@ export default function CreateDigitalContent() {
         return value > 0;
       }
     ),
+
+    taxId: Yup.number().test(
+      "required",
+      "Tax is required",
+      function (value: any) {
+        return value > 0;
+      }
+    ),
+
+    unitId: Yup.number().test(
+      "required",
+      "Unit is required",
+      function (value: any) {
+        return value > 0;
+      }
+    ),
+
+    taxType: Yup.string().test(
+      "required",
+      "Tax Type is required",
+      function (value: any) {
+        return value && value.trim() !== "";
+      }
+    ),
   });
 
   const formik = useFormik({
@@ -523,7 +552,7 @@ export default function CreateDigitalContent() {
       audience: "",
       dateSaved: new Date().toISOString().slice(0, 10),
       validTill: new Date().toISOString().slice(0, 10),
-      forAllUsers: "",
+      forAllUsers: true,
       forMember: "",
       noOfFiles: 0,
       files: "",
@@ -543,6 +572,7 @@ export default function CreateDigitalContent() {
       taxId: 0,
       unitname: "",
       taxName: "",
+      taxType: "",
     },
     validationSchema: validationSchema,
     onSubmit: async (values: any) => {
@@ -858,8 +888,7 @@ export default function CreateDigitalContent() {
                   )}
                 />
 
-                {formik.touched.subjectId &&
-                formik.errors.subjectId ? (
+                {formik.touched.subjectId && formik.errors.subjectId ? (
                   <div style={{ color: "red", margin: "5px" }}>
                     {String(formik.errors.subjectId)}
                   </div>
@@ -937,15 +966,6 @@ export default function CreateDigitalContent() {
                   }}
                   renderInput={(params) => (
                     <TextField {...params} label={t("text.SelectCurrency")} />
-                    //   <TextField
-                    //   {...params}
-                    //   label={
-                    //     <span>
-                    //       {t("text.SelectCurrency")}{" "}
-                    //       <span style={{ color: "red" }}>*</span>
-                    //     </span>
-                    //   }
-                    // />
                   )}
                 />
               </Grid>
@@ -1125,6 +1145,44 @@ export default function CreateDigitalContent() {
                     />
                   )}
                 />
+
+                {formik.touched.taxId && formik.errors.taxId ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.taxId)}
+                  </div>
+                ) : null}
+              </Grid>
+
+              <Grid item xs={12} sm={4} lg={4}>
+                <Autocomplete
+                  disablePortal
+                  id="combo-box-demo"
+                  options={textType}
+                  fullWidth
+                  size="small"
+                  onChange={(event, newValue: any) => {
+                    console.log(newValue);
+
+                    formik.setFieldValue("taxType", newValue?.label);
+                  }}
+                  // value={
+                  //   taxOptions.find(
+                  //     (opt: any) => opt.value === formik.values.gstid
+                  //   ) || null
+                  // }
+                  // value={}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={<CustomLabel text={t("text.SelectTaxType")} />}
+                    />
+                  )}
+                />
+                {formik.touched.taxType && formik.errors.taxType ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.taxType)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item xs={12} sm={4} lg={4}>
@@ -1137,7 +1195,7 @@ export default function CreateDigitalContent() {
                   onChange={(event, newValue: any) => {
                     console.log(newValue?.value);
                     formik.setFieldValue("unitId", newValue?.value);
-                    formik.setFieldValue('unitname',newValue?.label)
+                    formik.setFieldValue("unitname", newValue?.label);
                   }}
                   // value={
                   //   unitOptions.find(
@@ -1152,9 +1210,14 @@ export default function CreateDigitalContent() {
                     />
                   )}
                 />
+                {formik.touched.unitId && formik.errors.unitId ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.unitId)}
+                  </div>
+                ) : null}
               </Grid>
 
-              <Grid
+              {/* <Grid
                 xs={12}
                 sm={4}
                 lg={4}
@@ -1182,7 +1245,7 @@ export default function CreateDigitalContent() {
                   }
                   label={
                     <span>
-                      Check If Public for All{" "}
+                      {t("text.CheckIfPublicforAll")}{" "}
                       <span style={{ color: "red" }}>*</span>
                     </span>
                   }
@@ -1190,7 +1253,7 @@ export default function CreateDigitalContent() {
                   // label="Check If Public for All"
                   // labelPlacement="end"
                 />
-              </Grid>
+              </Grid> */}
 
               <Grid xs={12} sm={12} lg={12} item>
                 <TextareaAutosize

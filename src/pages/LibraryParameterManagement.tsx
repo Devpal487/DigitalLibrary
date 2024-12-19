@@ -718,7 +718,7 @@ const LibraryParameterManagement = (props: Props) => {
                   <Button onClick={handleCreateNewLibrary}>
                     {" "}
                     <AddCircleOutlineIcon />
-                    Create New Library
+                    {t("text.CreateNewLibrary")}
                   </Button>
                 </Grid>
               </Grid>

@@ -100,6 +100,9 @@ import CreateSaleReturnInvoice from "../pages/CreateSaleReturnInvoice";
 import Login_Page from "../loginPage/Login_Page";
 import Login_Page1 from "../loginPage/Login_Page1";
 import Banner from "../pages/Banner";
+import CintentDescription from "../pages/CintentDescription";
+import BlogMaster from "../pages/BlogMaster";
+import PosterMaster from "../pages/PosterMaster";
 
 const appRoutes: RouteType[] = [
   {
@@ -812,6 +815,23 @@ const appRoutes: RouteType[] = [
     path: "/EditSaleReturnInvoice",
     element: <EditSaleReturnInvoice/>,
     state: "Edit Sale Return Invoice",
+  },
+  {
+    path: "/CintentDescription",
+    element: <CintentDescription/>,
+    state: "Content Description",
+  },
+
+  {
+    path: "/BlogMaster",
+    element: <BlogMaster/>,
+    state: "Blog",
+  },
+
+  {
+    path: "/PosterMaster",
+    element: <PosterMaster/>,
+    state: "Poster Master",
   },
 
 ];

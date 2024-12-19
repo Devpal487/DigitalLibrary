@@ -17,7 +17,7 @@ import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useTranslation } from "react-i18next";
-import { toast,ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import ToastApp from "../ToastApp";
 import api from "../utils/Url";
 import Languages from "../utils/Languages";
@@ -82,8 +82,6 @@ const DepartmentAdd = (props: Props) => {
         return value && value.trim() !== "";
       }
     ),
-
-    
   });
 
   const formik = useFormik({
@@ -112,15 +110,10 @@ const DepartmentAdd = (props: Props) => {
       if (response.data.isSuccess) {
         // setToaster(true);
         toast.success(response.data.mesg);
-       
 
         setTimeout(() => {
           navigate("/DepartmentMaster2");
-          
-        }, 900);
-
-
-
+        }, 700);
       } else {
         // setToaster(true);
         toast.error(response.data.mesg);
@@ -202,7 +195,7 @@ const DepartmentAdd = (props: Props) => {
           <Divider />
           <br />
           <form onSubmit={formik.handleSubmit}>
-          {/* <ToastContainer />
+            {/* <ToastContainer />
             { <ToastApp />} */}
             <Grid item xs={12} container spacing={2}>
               <Grid xs={12} lg={4} item>
@@ -222,7 +215,6 @@ const DepartmentAdd = (props: Props) => {
 
                     formik.setFieldValue("institutecode", newValue?.value);
                     formik.setFieldValue("institutename", newValue?.label);
-
 
                     formik.setFieldTouched("institutecode", true);
                     formik.setFieldTouched("institutecode", false);
@@ -251,22 +243,31 @@ const DepartmentAdd = (props: Props) => {
                   required={true}
                   lang={lang}
                 />
-                  {formik.touched.departmentname && formik.errors.departmentname ? (
-                      <div style={{ color: "red", margin: "5px" }}>
-                        {String(formik.errors.departmentname)}
-                      </div>
-                    ) : null}
+                {formik.touched.departmentname &&
+                formik.errors.departmentname ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.departmentname)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
-                <TranslateTextField
-                  label={t("text.ShortName")}
-                  value={formik.values.shortname}
-                  onChangeText={(text: string) =>
-                    handleConversionChange("shortname", text)
+                <TextField
+
+                id="shortname"
+                name="shortname"
+                value={formik.values.shortname}
+                  label={
+                    <CustomLabel text={t("text.ShortName")} required={false} />
                   }
-                  required={false}
-                  lang={lang}
+
+                  placeholder={t("text.ShortName")}
+                  size="small"
+                  fullWidth
+                  style={{ backgroundColor: "white" }}
+                  onChange={formik.handleChange}
+
+                  inputProps={{ maxLength: 5 }} 
                 />
               </Grid>
 

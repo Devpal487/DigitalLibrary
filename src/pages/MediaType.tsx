@@ -65,8 +65,7 @@ export default function MediaType() {
   useEffect(() => {
     getSession();
     getlang();
-   // getSubject();
-
+    // getSubject();
   }, []);
 
   const showhide = async () => {
@@ -90,7 +89,7 @@ export default function MediaType() {
       setZoneOption(arr);
     });
   };
-//======================Basic/GetMedia Api================
+  //======================Basic/GetMedia Api================
   const getlang = () => {
     const collectData = {
       appId: menuId,
@@ -125,11 +124,11 @@ export default function MediaType() {
       setProgramSubjectOption(arr);
     });
   };
-  
+
   const handleConversionChange = (params: any, text: string) => {
     formik.setFieldValue(params, text);
   };
-// ==========Edit==============================
+  // ==========Edit==============================
   const routeChangeEdit = (row: any) => {
     console.log(row);
     setIsEdit(true);
@@ -146,18 +145,16 @@ export default function MediaType() {
       id: delete_id.toString(),
     };
     console.log("collectData " + JSON.stringify(collectData));
-    api
-      .post(`api/Basic/DeleteExchangemaster`, collectData)
-      .then((response) => {
-        if (response.data.isSuccess) {
-          toast.success(response.data.mesg);
-        } else {
-          toast.error(response.data.mesg);
-        }
-        if (!years) {
-          fetchZonesData(years);
-        }
-      });
+    api.post(`api/Basic/DeleteMediaType`, collectData).then((response) => {
+      if (response.data.isSuccess) {
+        toast.success(response.data.mesg);
+      } else {
+        toast.error(response.data.mesg);
+      }
+      if (!years) {
+        fetchZonesData(years);
+      }
+    });
   };
 
   const reject = () => {
@@ -181,12 +178,12 @@ export default function MediaType() {
     //   appId: menuId,
     //   sess: year,
     //   isActive: true,
-     //};
+    //};
     try {
       const response = await api.get(
-        `api/Basic/GetMedia`,
+        `api/Basic/GetMedia`
         //`api/Academic/GetProgramSubject`,
-        
+
         //collectData
       );
       const data = response.data.data;
@@ -247,15 +244,14 @@ export default function MediaType() {
 
           {
             field: "media_name",
-            headerName: t("text.Media Name"),
+            headerName: t("text.MediaName"),
             flex: 1,
           },
           {
             field: "short_name",
-            headerName: t("text.Short Name"),
+            headerName: t("text.ShortName"),
             flex: 1,
           },
-          
         ];
         setColumns(columns as any);
       }
@@ -269,9 +265,9 @@ export default function MediaType() {
   }));
 
   const validationSchema = Yup.object({
-    subject: Yup.string().test(
+    media_name: Yup.string().test(
       "required",
-      t("text.reqZoneName"),
+     "Media Name is Required",
       function (value: any) {
         return value && value.trim() !== "";
       }
@@ -293,47 +289,43 @@ export default function MediaType() {
       media_id: 0,
       media_name: "",
       short_name: "",
-      userid: ""
+      userid: "",
     },
+    validationSchema:validationSchema,
     onSubmit: async (values: any) => {
-        if (isEdit === false) {
-          values = Object.keys(values)
-            .filter((objKey: any) => objKey !== "media_id")
-            .reduce((newObj: any, key: any) => {
-              newObj[key] = values[key];
-              return newObj;
-            }, {});
-        }
-  
-        console.log("before submitting value check", values);
-        const response = await api.post(`api/Basic/AddUpdateMediaType`, values);
-        if (response.data.isSuccess) {
-          // setToaster(true);
-          toast.success(response.data.mesg);
-         
-  
-          // setTimeout(() => {
-          //   navigate("/DepartmentMaster2");
-            
-          // }, 900);
-  
-  
-  
-        } else {
-          // setToaster(true);
-          toast.error(response.data.mesg);
-        }
-      },
-    });
+      if (isEdit === false) {
+        values = Object.keys(values)
+          .filter((objKey: any) => objKey !== "media_id")
+          .reduce((newObj: any, key: any) => {
+            newObj[key] = values[key];
+            return newObj;
+          }, {});
+      }
 
+      console.log("before submitting value check", values);
+      const response = await api.post(`api/Basic/AddUpdateMediaType`, values);
+      if (response.data.isSuccess) {
+        // setToaster(true);
+        toast.success(response.data.mesg);
 
-  const requiredFields = ["subjectId", "prgId", "sess"];
+        // setTimeout(() => {
+        //   navigate("/DepartmentMaster2");
+
+        // }, 900);
+      } else {
+        // setToaster(true);
+        toast.error(response.data.mesg);
+      }
+    },
+  });
+
+  const requiredFields = ["media_name"];
 
   const handleSubmitWrapper = async () => {
     await formik.handleSubmit();
   };
 
-//=========================Form=======================
+  //=========================Form=======================
   return (
     <>
       <Card
@@ -363,7 +355,7 @@ export default function MediaType() {
                 sx={{ padding: "20px" }}
                 align="left"
               >
-                {t("text.Media Type")}
+                {t("text.MediaType")}
               </Typography>
             </Grid>
 
@@ -388,8 +380,8 @@ export default function MediaType() {
           <form onSubmit={formik.handleSubmit}>
             <Grid item xs={12} container spacing={2}>
               <Grid item xs={12} sm={3} lg={3}>
-              <TranslateTextField
-                  label={t("text.Media Name")}
+                <TranslateTextField
+                  label={t("text.MediaName")}
                   value={formik.values.media_name}
                   onChangeText={(text: string) =>
                     handleConversionChange("media_name", text)
@@ -397,31 +389,35 @@ export default function MediaType() {
                   required={true}
                   lang={lang}
                 />
-                  {formik.touched.media_name && formik.errors.media_name ? (
-                      <div style={{ color: "red", margin: "5px" }}>
-                        {String(formik.errors.media_name)}
-                      </div>
-                    ) : null}
-             
+                {formik.touched.media_name && formik.errors.media_name ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.media_name)}
+                  </div>
+                ) : null}
               </Grid>
               <Grid item xs={12} sm={3} lg={3}>
-              <TranslateTextField
-                  label={t("text.Short Name")}
+                <TextField
+                  id="short_name"
+                  name="short_name"
                   value={formik.values.short_name}
-                  onChangeText={(text: string) =>
-                    handleConversionChange("short_name", text)
+                  label={
+                    <CustomLabel text={t("text.ShortName")} required={false} />
                   }
-                  required={true}
-                  lang={lang}
+                  placeholder={t("text.ShortName")}
+                  size="small"
+                  fullWidth
+                  style={{ backgroundColor: "white" }}
+                  onChange={formik.handleChange}
+                  inputProps={{ maxLength: 5 }}
                 />
-                  {formik.touched.short_name && formik.errors.short_name ? (
-                      <div style={{ color: "red", margin: "5px" }}>
-                        {String(formik.errors.short_name)}
-                      </div>
-                    ) : null}
-                
+
+                {formik.touched.short_name && formik.errors.short_name ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.short_name)}
+                  </div>
+                ) : null}
               </Grid>
-             
+
               <Grid item xs={1.5} sx={{ m: -1 }}>
                 {/* {editId === -1 && permissionData?.isAdd && ( */}
                 {editId === -1 && (
@@ -441,7 +437,7 @@ export default function MediaType() {
                 )}
               </Grid>
 
-              <Grid item xs={1.5} sx={{ m: -1 }}>
+              {/* <Grid item xs={1.5} sx={{ m: -1 }}>
                 <ButtonWithLoader
                   buttonText={show === false ? t("text.show") : "hide"}
                   onClickHandler={showhide}
@@ -469,7 +465,7 @@ export default function MediaType() {
                 </Grid>
               ) : (
                 <></>
-              )}
+              )} */}
             </Grid>
           </form>
 
@@ -493,7 +489,6 @@ export default function MediaType() {
               initialPageSize={5}
             />
           )}
-          
         </Paper>
       </Card>
       <ToastApp />

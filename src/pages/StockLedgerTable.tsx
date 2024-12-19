@@ -287,7 +287,7 @@ const StockLedgerTable = ({ data, title }: { data: any[]; title: any }) => {
                     </a>
                   </TableCell>
                   <TableCell>
-                    {dayjs(row.voucherDate).format("DD-MMM-YYYY")}
+                    {row.voucherDate ? dayjs(row.voucherDate).format("DD-MMM-YYYY") : '--'}
                   </TableCell>
                   <TableCell align="right">{row.rate}</TableCell>
                   <TableCell align="right">{row.inQty}</TableCell>

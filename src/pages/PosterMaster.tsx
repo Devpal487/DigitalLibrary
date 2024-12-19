@@ -10,6 +10,7 @@ import {
   Typography,
   Input,
   TextField,
+  Modal,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import Switch from "@mui/material/Switch";
@@ -33,6 +34,21 @@ import "react-transliterate/dist/index.css";
 import TranslateTextField from "../utils/TranslateTextField";
 import DataGrids from "../utils/Datagrids";
 import ToastApp from "../ToastApp";
+import nopdf from "../assets/images/imagepreview.jpg";
+
+const style = {
+  position: "absolute" as "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "180vh",
+  height: "85vh",
+  bgcolor: "#f5f5f5",
+  border: "1px solid #000",
+  boxShadow: 24,
+  p: 4,
+  borderRadius: 10,
+};
 
 interface MenuPermission {
   isAdd: boolean;
@@ -41,87 +57,129 @@ interface MenuPermission {
   isDel: boolean;
 }
 
-export default function Designation_Master() {
+export default function PosterMaster() {
   const Userid = getId();
   const [editId, setEditId] = useState(-1);
   const [zones, setZones] = useState([]);
   const [columns, setColumns] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const location = useLocation();
+
   const [lang, setLang] = useState<Language>("en");
-  const [permissionData, setPermissionData] = useState<MenuPermission>({
-    isAdd: false,
-    isEdit: false,
-    isPrint: false,
-    isDel: false,
-  });
 
   const [isEdit, setisEdit] = useState(false);
 
+  const [modalImg, setModalImg] = useState("");
+
+  console.log("modalImg", modalImg);
+  const [panOpens, setPanOpen] = React.useState(false);
+
   const { t } = useTranslation();
 
+  const handlePanClose = () => {
+    setPanOpen(false);
+  };
+
+  const modalOpenHandle = (event: any) => {
+    setPanOpen(true);
+    if (event === "posterImage") {
+      setModalImg(formik.values.posterImage);
+    }
+  };
+
+  const ConvertBase64 = (file: Blob) => {
+    console.log(file);
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(file);
+      fileReader.onload = () => {
+        resolve(fileReader.result);
+      };
+      fileReader.onerror = (error) => {
+        reject(error);
+      };
+    });
+  };
+
+  const otherDocChangeHandler = async (event: any, params: any) => {
+    console.log("check");
+  
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      const fileNameParts = file.name.split(".");
+      const fileExtension = fileNameParts[fileNameParts.length - 1];
+  
+      // Check if the file extension is valid (jpg, jpeg, png)
+      if (!fileExtension.toLowerCase().match(/(jpg|jpeg|png)$/)) {
+        alert("Only image files (jpg, jpeg, png) are allowed to be uploaded.");
+        event.target.value = null;
+        return;
+      }
+  
+     
+      const image = new Image();
+      const reader = new FileReader();
+  
+      reader.onload = async (e: any) => {
+        image.src = e.target.result;
+  
+        image.onload = () => {
+          const imageHeight = image.height;
+          const imageWidth = image.width;
+  
+          
+          if (imageHeight < 200 || imageHeight > 250) {
+            alert("Image height should be between 200px and 250px.");
+            event.target.value = null;
+            return;
+          }
+ 
+          if (imageWidth < 2000) {
+            alert("Image width should be greater than or equal to 2000px.");
+            event.target.value = null;
+            return;
+          }
+  
+          
+          ConvertBase64(file).then((base64) => {
+            formik.setFieldValue(params, base64);
+            //console.log(base64);
+          });
+        };
+      };
+  
+      
+      reader.readAsDataURL(file);
+    }
+  };
+  const getImgById = (ImgId: any) => {
+    const collectData = {
+        posterId: ImgId,
+    };
+
+    api.post(`api/Poster/GetPosterAdmin`, collectData).then((res) => {
+      const Doc = res.data.data[0]["posterImage"];
+      if (Doc) {
+        formik.setFieldValue("posterImage", Doc);
+      }
+    });
+  };
+
   useEffect(() => {
-    // const dataString = localStorage.getItem("userdata");
-    // if (dataString) {
-    //   const data = JSON.parse(dataString);
-    //   if (data && data.length > 0) {
-    //     const userPermissionData = data[0]?.userPermission;
-    //     if (userPermissionData && userPermissionData.length > 0) {
-    //       const menudata = userPermissionData[0]?.parentMenu;
-    //       for (let index = 0; index < menudata.length; index++) {
-    //         const childMenudata = menudata[index]?.childMenu;
-    //         const pathrow = childMenudata.find(
-    //           (x: any) => x.path === location.pathname
-    //         );
-
-    //         if (pathrow) {
-    //           console.log("data", pathrow);
-    //           setPermissionData(pathrow);
-    //           fetchZonesData();
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
-
     fetchZonesData();
   }, []);
 
-  // }, [isLoading]);
-
   const handleConversionChange = (params: any, text: string) => {
     formik.setFieldValue(params, text);
-  };
-
-  const handleSwitchChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    value: any
-  ) => {
-    const collectData = {
-      zoneID: value.id,
-      zoneName: value.zoneName,
-      zoneCode: value.zoneCode,
-      isActive: event.target.checked,
-      user_ID: Userid,
-      sortOrder: value.sortOrder,
-    };
-    api.post(`Zone/AddUpdateZonemaster`, collectData).then((response: any) => {
-      if (response.data.isSuccess) {
-        toast.success(response.data.mesg);
-        fetchZonesData();
-      } else {
-        toast.error(response.data.mesg);
-      }
-    });
   };
 
   const routeChangeEdit = (row: any) => {
     console.log(row);
 
     setisEdit(true);
-    formik.setFieldValue("designationId", row.designationId);
-    formik.setFieldValue("designation", row.designation);
-    formik.setFieldValue("shortName", row.shortName);
+    formik.setFieldValue("posterName", row.posterName);
+
+    getImgById(row.id);
+
     // formik.setFieldValue("isActive", row.isActive);
     setEditId(row.id);
   };
@@ -130,26 +188,17 @@ export default function Designation_Master() {
 
   const accept = () => {
     const collectData = {
-      appId: menuId,
-      appName: menuName,
-      add: false,
-      update: false,
-      delete: true,
-      read: false,
-      instId: 0,
-      id: delete_id.toString(),
+      posterId: delete_id,
     };
     console.log("collectData " + JSON.stringify(collectData));
-    api
-      .post(`api/Basic/DeleteDesignationMaster`, collectData)
-      .then((response: any) => {
-        if (response.data.isSuccess) {
-          toast.success(response.data.mesg);
-        } else {
-          toast.error(response.data.mesg);
-        }
-        fetchZonesData();
-      });
+    api.post(`api/Poster/DeletePoster`, collectData).then((response: any) => {
+      if (response.data.isSuccess) {
+        toast.success(response.data.mesg);
+      } else {
+        toast.error(response.data.mesg);
+      }
+      fetchZonesData();
+    });
   };
 
   const reject = () => {
@@ -171,18 +220,14 @@ export default function Designation_Master() {
   const fetchZonesData = async () => {
     try {
       const collectData = {
-        // zoneID: -1,
-        // user_ID: Userid,
-        // // isActive: true
+        posterId: -1,
       };
-      const response = await api.get(`api/Basic/GetDesignationMaster`, {
-        params: { collectData },
-      });
+      const response = await api.post(`api/Poster/GetPosterAdmin`, collectData);
       const data = response.data.data;
       const zonesWithIds = data.map((zone: any, index: any) => ({
         ...zone,
         serialNo: index + 1,
-        id: zone.designationId,
+        id: zone.posterId,
       }));
       setZones(zonesWithIds);
       setIsLoading(false);
@@ -226,21 +271,6 @@ export default function Designation_Master() {
                       handledeleteClick(params.row.id);
                     }}
                   />
-                  {/* ) : (
-                    ""
-                  )} */}
-                  {/* <Switch
-                    checked={Boolean(params.row.isActive)}
-                    style={{
-                      color: params.row.isActive ? "green" : "#FE0000",
-                    }}
-                    onChange={(value: any) =>
-                      handleSwitchChange(value, params.row)
-                    }
-                    inputProps={{
-                      "aria-label": "Toggle Switch",
-                    }}
-                  /> */}
                 </Stack>,
               ];
             },
@@ -253,40 +283,11 @@ export default function Designation_Master() {
             // headerClassName: "MuiDataGrid-colCell",
           },
           {
-            field: "designation",
-            headerName: t("text.Designation"),
+            field: "posterName",
+            headerName: t("text.PosterName"),
             flex: 1,
             // headerClassName: "MuiDataGrid-colCell",
           },
-          {
-            field: "shortName",
-            headerName: t("text.ShortName"),
-            flex: 1,
-            // headerClassName: "MuiDataGrid-colCell",
-          },
-          // {
-          //   field: "isActive",
-          //   headerName: t("text.Status"),
-          //   flex: 1,
-          //   headerClassName: "MuiDataGrid-colCell",
-          //   renderCell: (params) => [
-          //     <Stack direction="row" spacing={1}>
-          //       {params.row.isActive ? (
-          //         <Chip
-          //           label={t("text.Active")}
-          //           color="success"
-          //           style={{ fontSize: "14px" }}
-          //         />
-          //       ) : (
-          //         <Chip
-          //           label={t("text.InActive")}
-          //           color="error"
-          //           style={{ fontSize: "14px" }}
-          //         />
-          //       )}
-          //     </Stack>,
-          //   ],
-          // },
         ];
         setColumns(columns as any);
       }
@@ -299,70 +300,29 @@ export default function Designation_Master() {
     ...column,
   }));
 
-  const { menuId, menuName } = getMenuData();
-
-  // interface FormValues {
-  //   appId: string;
-  //   appName: any;
-  //   add: boolean;
-  //   update: boolean;
-  //   delete: boolean;
-  //   read: boolean;
-  //   //designationId: any;
-  //   designation: string;
-  //   shortName: string;
-  //   instId: number;
-  // }
-
-  const validationSchema = Yup.object({
-    designation: Yup.string().test(
-      "required",
-      t("text.DesignationNameRequired"),
-      function (value: any) {
-        return value && value.trim() !== "";
-      }
-    ),
-  });
-
   const instId: any = getinstId();
 
   const formik = useFormik({
     initialValues: {
-      appId: menuId,
-      appName: menuName,
-
-      designationId: 0,
-      designation: "",
-      shortName: "",
-      instId: parseInt(instId),
+      posterId: -1,
+      posterName: "",
+      isActive: true,
+      posterImage: "",
+      createdBy: "",
+      updatedBy: "",
+      createdOn: new Date().toISOString(),
+      updatedOn: new Date().toISOString(),
     },
 
-    validationSchema: validationSchema,
-
     onSubmit: async (values: any) => {
-      //values.designationId = editId;
-      // if (editId !== undefined) {
-      //   values.designationId = editId;
-      // }
-
-      if (isEdit === false) {
-        values = Object.keys(values)
-          .filter((objKey: any) => objKey !== "designationId")
-          .reduce((newObj: any, key: any) => {
-            newObj[key] = values[key];
-            return newObj;
-          }, {});
-      }
-
+      values.posterId = editId;
       console.log("before submitting value check", values);
-      const response = await api.post(
-        `api/Basic/AddUpdateDesignationMaster`,
-        values
-      );
+      const response = await api.post(`api/Poster/AddUpdatePoster`, values);
 
       if (response.data.isSuccess) {
-        formik.setFieldValue("designation", "");
-        formik.setFieldValue("shortName", "");
+        formik.setFieldValue("posterName", "");
+        formik.setFieldValue("posterImage", "");
+
         fetchZonesData();
         toast.success(response.data.mesg);
         setEditId(-1);
@@ -407,7 +367,7 @@ export default function Designation_Master() {
                 sx={{ padding: "20px" }}
                 align="left"
               >
-                {t("text.desName")}
+                {t("text.PosterMaster")}
               </Typography>
             </Grid>
 
@@ -431,42 +391,114 @@ export default function Designation_Master() {
           <Box height={10} />
           <form onSubmit={formik.handleSubmit}>
             <Grid item xs={12} container spacing={2}>
-              <Grid xs={12} sm={5} lg={5} item>
-                <TranslateTextField
-                  label={t("text.enterDesName")}
-                  value={formik.values.designation}
-                  onChangeText={(text: string) =>
-                    handleConversionChange("designation", text)
-                  }
-                  required={true}
-                  lang={lang}
-                />
-
-                {formik.touched.designation && formik.errors.designation ? (
-                  <div style={{ color: "red", margin: "5px" }}>
-                    {String(formik.errors.designation)}
-                  </div>
-                ) : null}
-              </Grid>
-
-              <Grid item xs={12} sm={5} lg={5}>
+              <Grid item xs={12} sm={12} lg={12}>
                 <TextField
                   label={
-                    <CustomLabel text={t("text.ShortName")} required={false} />
+                    <CustomLabel text={t("text.PosterName")} required={true} />
                   }
                   variant="outlined"
                   fullWidth
                   size="small"
-                  name="shortName"
-                  id="shortName"
-                  value={formik.values.shortName}
-                  placeholder={t("text.ShortName")}
+                  name="posterName"
+                  id="posterName"
+                  value={formik.values.posterName}
+                  placeholder={t("text.PosterName")}
                   onChange={formik.handleChange}
-                  inputProps={{ maxLength: 5 }} 
                 />
               </Grid>
 
-              <Grid item xs={2} sx={{ m: -1 }}>
+              <Grid container spacing={1} item>
+                <Grid
+                  xs={12}
+                  md={4}
+                  sm={4}
+                  item
+                  style={{ marginBottom: "30px", marginTop: "30px" }}
+                >
+                  <TextField
+                    type="file"
+                    inputProps={{ accept: "image/*" }}
+                    InputLabelProps={{ shrink: true }}
+                    label={<CustomLabel text={t("text.AttachedImg")} />}
+                    size="small"
+                    fullWidth
+                    style={{ backgroundColor: "white" }}
+                    onChange={(e) => otherDocChangeHandler(e, "posterImage")}
+                  />
+                </Grid>
+                <Grid xs={12} md={4} sm={4} item></Grid>
+
+                <Grid xs={12} md={4} sm={4} item>
+                  <Grid
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-around",
+                      alignItems: "center",
+                      margin: "10px",
+                    }}
+                  >
+                    {formik.values.posterImage == "" ? (
+                      <img
+                        src={nopdf}
+                        style={{
+                          width: 150,
+                          height: 100,
+                          border: "1px solid grey",
+                          borderRadius: 10,
+                        }}
+                      />
+                    ) : (
+                      <img
+                        src={formik.values.posterImage}
+                        style={{
+                          width: 150,
+                          height: 100,
+                          border: "1px solid grey",
+                          borderRadius: 10,
+                          padding: "2px",
+                        }}
+                      />
+                    )}
+                    <Typography
+                      onClick={() => modalOpenHandle("posterImage")}
+                      style={{
+                        textDecorationColor: "blue",
+                        textDecorationLine: "underline",
+                        color: "blue",
+                        fontSize: "15px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {t("text.Preview")}
+                    </Typography>
+                  </Grid>
+                </Grid>
+                <Modal open={panOpens} onClose={handlePanClose}>
+                  <Box sx={style}>
+                    {modalImg == "" ? (
+                      <img
+                        src={nopdf}
+                        style={{
+                          width: "170vh",
+                          height: "75vh",
+                        }}
+                      />
+                    ) : (
+                      <img
+                        alt="preview image"
+                        src={modalImg}
+                        style={{
+                          width: "170vh",
+                          height: "75vh",
+                          borderRadius: 10,
+                        }}
+                      />
+                    )}
+                  </Box>
+                </Modal>
+              </Grid>
+
+              <Grid item xs={12} sx={{ m: -1 }}>
                 {/* {editId === -1 && permissionData?.isAdd && ( */}
                 {editId === -1 && (
                   <ButtonWithLoader

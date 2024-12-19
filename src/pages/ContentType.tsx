@@ -149,6 +149,7 @@ export default function ContentType() {
     setisEdit(true);
     formik.setFieldValue("contentType", row.contentType);
     formik.setFieldValue("contentImg", row.contentImg);
+    formik.setFieldValue("displayNo", row.displayNo);
     getImgById(row.id)
 
     // formik.setFieldValue("isActive", row.isActive);
@@ -264,6 +265,13 @@ export default function ContentType() {
             flex: 1,
             // headerClassName: "MuiDataGrid-colCell",
           },
+
+          {
+            field: "displayNo",
+            headerName: t("text.DisplayNo"),
+            flex: 1,
+            // headerClassName: "MuiDataGrid-colCell",
+          },
         ];
         setColumns(columns as any);
       }
@@ -284,6 +292,7 @@ export default function ContentType() {
       contentType: "",
       active: true,
       contentImg: "",
+      displayNo:0,
     },
 
     onSubmit: async (values: any) => {
@@ -298,6 +307,7 @@ export default function ContentType() {
       if (response.data.isSuccess) {
         formik.setFieldValue("contentType", "");
         formik.setFieldValue("contentImg", "");
+        formik.setFieldValue("displayNo", "");
         fetchZonesData();
         toast.success(response.data.mesg);
         setEditId(-1);
@@ -366,7 +376,7 @@ export default function ContentType() {
           <Box height={10} />
           <form onSubmit={formik.handleSubmit}>
             <Grid item xs={12} container spacing={2}>
-              <Grid item xs={12} sm={12} lg={12}>
+              <Grid item xs={12} sm={6} lg={6}>
                 <TextField
                   label={
                     <CustomLabel
@@ -384,6 +394,26 @@ export default function ContentType() {
                   onChange={formik.handleChange}
                 />
               </Grid>
+
+              <Grid item xs={12} sm={6} lg={6}>
+                <TextField
+                  label={
+                    <CustomLabel
+                      text={t("text.DisplayNo")}
+                      required={false}
+                    />
+                  }
+                  variant="outlined"
+                  fullWidth
+                  size="small"
+                  name="displayNo"
+                  id="displayNo"
+                  value={formik.values.displayNo}
+                  placeholder={t("text.DisplayNo")}
+                  onChange={formik.handleChange}
+                />
+              </Grid>
+
 
               <Grid container spacing={1} item>
                 <Grid
