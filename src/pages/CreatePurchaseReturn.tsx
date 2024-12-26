@@ -283,7 +283,7 @@ const CreatePurchaseReturn = () => {
     console.log(amount, taxRate);
     const tax = (amount * taxRate) / 100;
     console.log("tax", tax);
-    return tax.toFixed(2);
+    return tax;
   };
 
   const calculateDiscount = (

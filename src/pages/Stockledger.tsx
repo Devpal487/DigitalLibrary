@@ -296,7 +296,7 @@ export default function Stockledger() {
                     },
                     {
                         field: "inQty",
-                        headerName: t("text.inQty"),
+                        headerName: t("text.enterinQty"),
                         flex: .80,
                         // headerClassName: "MuiDataGrid-colCell",
                     },
