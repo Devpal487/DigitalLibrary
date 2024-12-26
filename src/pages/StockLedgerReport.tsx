@@ -20,17 +20,17 @@ import { getISTDate } from "../utils/Constant";
 import CustomLabel from "../utils/CustomLabel";
 import "react-transliterate/dist/index.css";
 import PrintIcon from "@mui/icons-material/Print";
-import jsPDF from "jspdf"; 
+import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import SearchIcon from "@mui/icons-material/Search";
 import PrintReportFormatpdf from "./PrintReportFormatpdf";
 import PrintReportFormat from "./PrintReportFormat";
-import * as ReactDOM from 'react-dom/client';
-import DownloadIcon from '@mui/icons-material/Download';
+import * as ReactDOM from "react-dom/client";
+import DownloadIcon from "@mui/icons-material/Download";
 
 export default function StockLedgerReport() {
   const [zones, setZones] = useState<any>([]);
-  const {defaultValuestime} = getISTDate();
+  const { defaultValuestime } = getISTDate();
   const [isVisible, setIsVisible] = useState(false);
   const [isMember, setMember] = useState<any>([]);
   const [isHovered, setIsHovered] = useState(false);
@@ -42,6 +42,8 @@ export default function StockLedgerReport() {
     { value: "-1", label: t("text.SelectItem") },
   ]);
 
+  const [isFromDate, setFromDate] = useState<any>("");
+  const [isToDate, setToDate] = useState<any>( new Date().toISOString().slice(0, 10));
 
   useEffect(() => {
     getProgram();
@@ -61,7 +63,6 @@ export default function StockLedgerReport() {
     });
   };
 
-
   const exportToPDF = async () => {
     // Dynamically create a div to render the PrintReportFormatpdf component
     const container = document.createElement("div");
@@ -70,7 +71,11 @@ export default function StockLedgerReport() {
     document.body.appendChild(container);
 
     const element = (
-      <PrintReportFormatpdf itemName={itemName} zones={zones} showHide={false} />
+      <PrintReportFormatpdf
+        itemName={itemName}
+        zones={zones}
+        showHide={false}
+      />
     );
 
     // Render the component in the hidden div
@@ -88,7 +93,7 @@ export default function StockLedgerReport() {
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
       let position = 0;
-      
+
       pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
       while (heightLeft >= 0) {
@@ -109,7 +114,9 @@ export default function StockLedgerReport() {
       const collectData = {
         voucherId: -1,
         stockBinId: 5,
-        itemId: isItemId,
+        itemId: isItemId? isItemId : -1,
+        fromDate:isFromDate,
+        toDate:isToDate,
       };
 
       const response = await api.post(
@@ -124,7 +131,7 @@ export default function StockLedgerReport() {
         balQty: parseInt(zone.inQty) - parseInt(zone.outQty),
       }));
 
-      console.log("zonesWithIds",zonesWithIds);
+      console.log("zonesWithIds", zonesWithIds);
       setZones(zonesWithIds);
       setIsVisible(true);
       setMember(data);
@@ -132,8 +139,6 @@ export default function StockLedgerReport() {
       console.error("Error fetching data:", error);
     }
   };
-
-
 
   const formik = useFormik({
     initialValues: {
@@ -146,7 +151,6 @@ export default function StockLedgerReport() {
 
     onSubmit: async (values) => {},
   });
-
 
   return (
     <>
@@ -189,7 +193,7 @@ export default function StockLedgerReport() {
           <Box height={10} />
           <form onSubmit={formik.handleSubmit}>
             <Grid item xs={12} container spacing={2}>
-              <Grid item xs={4} md={6} lg={6}>
+              <Grid item xs={3} md={3} lg={3}>
                 <Autocomplete
                   disablePortal
                   id="combo-box-demo"
@@ -214,6 +218,44 @@ export default function StockLedgerReport() {
                 />
               </Grid>
 
+              <Grid item lg={3} xs={12}>
+                <TextField
+                  id="toDate"
+                  type="date"
+                  name="toDate"
+                  label={
+                    <CustomLabel text={t("text.FromDate")} required={false} />
+                  }
+                  value={isFromDate}
+                  placeholder={t("text.FromDate")}
+                  size="small"
+                  fullWidth
+                  onChange={(e) => {
+                    setFromDate(e.target.value);
+                  }}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+
+              <Grid item lg={3} xs={12}>
+                <TextField
+                  id="toDate"
+                  type="date"
+                  name="toDate"
+                  label={
+                    <CustomLabel text={t("text.ToDate")} required={false} />
+                  }
+                  value={isToDate}
+                  placeholder={t("text.ToDate")}
+                  size="small"
+                  fullWidth
+                  onChange={(e) => {
+                    setToDate(e.target.value);
+                  }}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+
               <Grid item xs={2} md={2} lg={2}>
                 <Button
                   onClick={fetchZonesData}
@@ -227,21 +269,30 @@ export default function StockLedgerReport() {
 
               <Grid
                 item
-                md={4}
-                lg={4}
+                md={1}
+                lg={1}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 onClick={exportToPDF}
               >
                 <DownloadIcon
-                  style={{ color: isHovered ? "green" : "blue", cursor:"pointer" }}
+                  style={{
+                    color: isHovered ? "green" : "blue",
+                    cursor: "pointer",
+                  }}
                   fontSize="large"
                 />
               </Grid>
               {isVisible && (
                 <>
-                  <Grid item sm={12} lg={12} xs={12} >
-                    <PrintReportFormat itemName={itemName} zones={zones} showHide={showHide}/>
+                  <Grid item sm={12} lg={12} xs={12}>
+                    <PrintReportFormat
+                      itemName={itemName}
+                      zones={zones}
+                      showHide={showHide}
+                      fromdate={isFromDate}
+                      todate={isToDate}
+                    />
                   </Grid>
                 </>
               )}

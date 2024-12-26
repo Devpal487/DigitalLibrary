@@ -41,7 +41,7 @@ const CreatePurchaseOrder = () => {
     tax1: "",
     taxId1: "",
     tax2: "P",
-    discount: '',
+    discount:0,
     discountAmount: '',
     netAmount: '',
     documentNo: "",
@@ -194,13 +194,13 @@ const handleItemChange = (index: number, field: string, value: any) => {
   } else if (field === 'qty' || field === 'rate') {
     item[field] = value === "" ? 0 : parseFloat(value);
     item.amount = calculateAmount(item.qty, item.rate);
-    item.taxId1 = String(calculateTax(item.amount, Number(item.taxId1)));
+    item.taxId2 = String(calculateTax(item.amount, Number(item.taxId1)));
   } else if (field === 'tax1') {
     const selectedTax = taxOption.find((tax: any) => tax.value === value?.value);
     if (selectedTax) {
       item.tax1 = String(selectedTax.value);
       console.log("calculateTax(item.amount, Number(selectedTax.label))", calculateTax(item.amount, Number(selectedTax.label)))
-      item.taxId1 = String(calculateTax(item.amount, Number(selectedTax.label)));
+      item.taxId2 = String(calculateTax(item.amount, Number(selectedTax.label)));
     }
   } else if (field === 'tax2') {
     item.tax2 = value || '';
@@ -210,25 +210,25 @@ const handleItemChange = (index: number, field: string, value: any) => {
     item.discount = value === '' ? 0 : parseFloat(value);
     const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
     item.discountAmount = discountAmount;
-    item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
+    item.netAmount = calculateNetAmount(item.amount, Number(item.taxId2), discountAmount);
   }
 
   // Recalculate dependent fields
   if (field !== 'discount' && field !== 'tax2') {
     const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
     item.discountAmount = discountAmount;
-    item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
+    item.netAmount = calculateNetAmount(item.amount, Number(item.taxId2), discountAmount);
   }
 
   updatedItems[index] = item;
   setItems(updatedItems);
 
   if (validateItem(item) && index === updatedItems.length - 1) {
-    handleAddItem();
+    handleAddItem(updatedItems);
   }
 
 
-  console.log("🚀 ~ Updated items:", updatedItems);
+  //console.log("🚀 ~ Updated items:", updatedItems);
 };
 
 const calculateAmount = (qty: number, rate: number) => qty * rate;
@@ -261,7 +261,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
     // updateTotalAmounts(tableData);
   };
 
-  const handleAddItem = () => {
+  const handleAddItem = (items:any) => {
     setItems([
       ...items,
       {
@@ -276,7 +276,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
         tax1: "",
         taxId1: "",
         tax2: "P",
-        discount: '',
+        discount: 0,
         discountAmount: '',
         netAmount: '',
         documentNo: formik.values.document_No,
@@ -660,7 +660,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                           padding: "5px",
                         }}
                       >
-                        {t("text.Unit")}
+                        {t("text.unit")}
                       </th>
                       <th
                         style={{
@@ -826,6 +826,8 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                                 (e.target.value)
                               )
                             }
+
+                            InputProps={{readOnly: true,}}
                             size="small"
                           />
                         </td>
@@ -856,7 +858,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                             )}
                           />
                         </td>
-                        <td>{item.taxId1}</td>
+                        <td>{item.taxId2}</td>
                         <td>
                           <Select
                             value={item.tax2}
@@ -880,7 +882,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                                 (e.target.value)
                               )
                             }
-                            // onFocus={(e) => e.target.select()}
+                             onFocus={(e) => e.target.select()}
                             size="small"
                           />
                         </td>

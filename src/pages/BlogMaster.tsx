@@ -29,28 +29,28 @@ import { getId, getinstId, getMenuData } from "../utils/Constant";
 import ButtonWithLoader from "../utils/ButtonWithLoader";
 import CustomLabel from "../utils/CustomLabel";
 import Languages from "../utils/Languages";
-import { Language } from "react-transliterate";
+import { Language, ReactTransliterate } from "react-transliterate";
 import "react-transliterate/dist/index.css";
 import TranslateTextField from "../utils/TranslateTextField";
 import DataGrids from "../utils/Datagrids";
 import ToastApp from "../ToastApp";
 import nopdf from "../assets/images/imagepreview.jpg";
-
+import dayjs from "dayjs";
+import ReactQuill from "react-quill";
 
 const style = {
-    position: "absolute" as "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: "180vh",
-    height: "85vh",
-    bgcolor: "#f5f5f5",
-    border: "1px solid #000",
-    boxShadow: 24,
-    p: 4,
-    borderRadius: 10,
-  };
-
+  position: "absolute" as "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "180vh",
+  height: "85vh",
+  bgcolor: "#f5f5f5",
+  border: "1px solid #000",
+  boxShadow: 24,
+  p: 4,
+  borderRadius: 10,
+};
 
 interface MenuPermission {
   isAdd: boolean;
@@ -59,7 +59,7 @@ interface MenuPermission {
   isDel: boolean;
 }
 
-export default function Banner() {
+export default function BlogMaster() {
   const Userid = getId();
   const [editId, setEditId] = useState(-1);
   const [zones, setZones] = useState([]);
@@ -72,8 +72,17 @@ export default function Banner() {
 
   const [modalImg, setModalImg] = useState("");
 
-  console.log('modalImg',modalImg);
+  console.log("modalImg", modalImg);
   const [panOpens, setPanOpen] = React.useState(false);
+  const [editorContent, setEditorContent] = useState<string>("");
+
+  const handleEditorChange = (content: any) => {
+    setEditorContent(content);
+  };
+
+  const handleTransliterateChange = (text: string) => {
+    setEditorContent(text);
+  };
 
   const { t } = useTranslation();
 
@@ -83,8 +92,8 @@ export default function Banner() {
 
   const modalOpenHandle = (event: any) => {
     setPanOpen(true);
-    if (event === "banner_img") {
-      setModalImg(formik.values.banner_img);
+    if (event === "blogImage") {
+      setModalImg(formik.values.blogImage);
     }
   };
 
@@ -121,19 +130,18 @@ export default function Banner() {
     }
   };
 
-  const getImgById = (ImgId:any) => {
+  const getImgById = (ImgId: any) => {
     const collectData = {
-        id:ImgId,
+      blogId: ImgId,
     };
 
-    api.post(`api/Banner/GetBannerAdmin`, collectData)
-        .then((res) => {
-            const Doc = res.data.data[0]["banner_img"];
-            if (Doc) {
-                formik.setFieldValue("banner_img", Doc);
-            }
-        });
-};
+    api.post(`api/Blog/GetBlogAdmin`, collectData).then((res) => {
+      const Doc = res.data.data[0]["blogImage"];
+      if (Doc) {
+        formik.setFieldValue("blogImage", Doc);
+      }
+    });
+  };
 
   useEffect(() => {
     fetchZonesData();
@@ -147,12 +155,17 @@ export default function Banner() {
     console.log(row);
 
     setisEdit(true);
-    formik.setFieldValue("banner_type", row.banner_type);
-    formik.setFieldValue("banner_title", row.banner_title);
+    formik.setFieldValue("title", row.title);
+    formik.setFieldValue("author", row.author);
     formik.setFieldValue("description", row.description);
-    //formik.setFieldValue("isActive", row.isActive);
-    formik.setFieldValue("banner_img", row.banner_img);
-    getImgById(row.id)
+    // formik.setFieldValue("isActive", row.isActive);
+    formik.setFieldValue("blogImage", row.blogImage);
+    formik.setFieldValue(
+      "publishDate",
+      dayjs(row.publishDate).format("YYYY-MM-DD")
+    );
+    setEditorContent(row.description);
+    getImgById(row.id);
 
     // formik.setFieldValue("isActive", row.isActive);
     setEditId(row.id);
@@ -162,19 +175,17 @@ export default function Banner() {
 
   const accept = () => {
     const collectData = {
-      id: delete_id,
+      blogId: delete_id,
     };
     console.log("collectData " + JSON.stringify(collectData));
-    api
-      .post(`api/Banner/DeleteBanner`, collectData)
-      .then((response: any) => {
-        if (response.data.isSuccess) {
-          toast.success(response.data.mesg);
-        } else {
-          toast.error(response.data.mesg);
-        }
-        fetchZonesData();
-      });
+    api.post(`api/Blog/DeleteBlog`, collectData).then((response: any) => {
+      if (response.data.isSuccess) {
+        toast.success(response.data.mesg);
+      } else {
+        toast.error(response.data.mesg);
+      }
+      fetchZonesData();
+    });
   };
 
   const reject = () => {
@@ -196,17 +207,14 @@ export default function Banner() {
   const fetchZonesData = async () => {
     try {
       const collectData = {
-        id: -1,
+        blogId: -1,
       };
-      const response = await api.post(
-        `api/Banner/GetBanner`,
-        collectData
-      );
+      const response = await api.post(`api/Blog/GetBlogAdmin`, collectData);
       const data = response.data.data;
       const zonesWithIds = data.map((zone: any, index: any) => ({
         ...zone,
         serialNo: index + 1,
-        id: zone.id,
+        id: zone.blogId,
       }));
       setZones(zonesWithIds);
       setIsLoading(false);
@@ -262,8 +270,15 @@ export default function Banner() {
             // headerClassName: "MuiDataGrid-colCell",
           },
           {
-            field: "banner_type",
-            headerName: t("text.BannerType"),
+            field: "title",
+            headerName: t("text.Title"),
+            flex: 1,
+            // headerClassName: "MuiDataGrid-colCell",
+          },
+
+          {
+            field: "author",
+            headerName: t("text.Author"),
             flex: 1,
             // headerClassName: "MuiDataGrid-colCell",
           },
@@ -289,28 +304,33 @@ export default function Banner() {
 
   const formik = useFormik({
     initialValues: {
-      id: -1,
-      banner_type: "",
-      banner_title: "",
+      blogId: -1,
+      title: "",
       description: "",
+      author: "",
+      publishDate: new Date().toISOString().slice(0, 10),
       isActive: true,
-      banner_img: "",
+      blogImage: "",
+      createdBy: "",
+      updatedBy: "",
+      createdOn: new Date().toISOString(),
+      updatedOn: new Date().toISOString(),
     },
 
     onSubmit: async (values: any) => {
+      values.blogId = editId;
 
-      values.id = editId;
+      values.description = editorContent;
       console.log("before submitting value check", values);
-      const response = await api.post(
-       `api/Banner/AddUpdateBanner`,
-        values
-      );
+      const response = await api.post(`api/Blog/AddUpdateBlog`, values);
 
       if (response.data.isSuccess) {
-        formik.setFieldValue("banner_type", "");
-        formik.setFieldValue("banner_title", "");
+        formik.setFieldValue("title", "");
+        formik.setFieldValue("author", "");
         formik.setFieldValue("description", "");
-        formik.setFieldValue("banner_img", "");
+        formik.setFieldValue("blogImage", "");
+        formik.setFieldValue("publishDate", "");
+        setEditorContent("");
         fetchZonesData();
         toast.success(response.data.mesg);
         setEditId(-1);
@@ -355,7 +375,7 @@ export default function Banner() {
                 sx={{ padding: "20px" }}
                 align="left"
               >
-                {t("text.Banner")}
+                {t("text.Blog")}
               </Typography>
             </Grid>
 
@@ -379,25 +399,54 @@ export default function Banner() {
           <Box height={10} />
           <form onSubmit={formik.handleSubmit}>
             <Grid item xs={12} container spacing={2}>
-              <Grid item xs={12} sm={6} lg={6}>
+              <Grid item xs={12} sm={4} lg={4}>
+                <TextField
+                  label={<CustomLabel text={t("text.Title")} required={true} />}
+                  variant="outlined"
+                  fullWidth
+                  size="small"
+                  name="title"
+                  id="title"
+                  value={formik.values.title}
+                  placeholder={t("text.Title")}
+                  onChange={formik.handleChange}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={4} lg={4}>
                 <TextField
                   label={
-                    <CustomLabel
-                      text={t("text.BannerType")}
-                      required={true}
-                    />
+                    <CustomLabel text={t("text.Author")} required={true} />
                   }
                   variant="outlined"
                   fullWidth
                   size="small"
-                  name="banner_type"
-                  id="banner_type"
-                  value={formik.values.banner_type}
-                  placeholder={t("text.BannerType")}
+                  name="author"
+                  id="author"
+                  value={formik.values.author}
+                  placeholder={t("text.Author")}
                   onChange={formik.handleChange}
                 />
               </Grid>
-              <Grid item xs={12} sm={6} lg={6}>
+
+              <Grid item xs={12} sm={4} lg={4}>
+                <TextField
+                  label={
+                    <CustomLabel text={t("text.PublishDate")} required={true} />
+                  }
+                  variant="outlined"
+                  fullWidth
+                  size="small"
+                  name="publishDate"
+                  id="publishDate"
+                  value={formik.values.publishDate}
+                  placeholder={t("text.PublishDate")}
+                  onChange={formik.handleChange}
+                  InputLabelProps={{ shrink: true }}
+                  type="date"
+                />
+              </Grid>
+              {/* <Grid item xs={12} sm={6} lg={6}>
                 <TextField
                   label={
                     <CustomLabel
@@ -413,6 +462,25 @@ export default function Banner() {
                   value={formik.values.description}
                   placeholder={t("text.description")}
                   onChange={formik.handleChange}
+                />
+              </Grid> */}
+
+              <Grid item xs={12} sm={12}>
+                <ReactTransliterate
+                  renderComponent={(props: any) => (
+                    <ReactQuill
+                      {...props}
+                      value={editorContent}
+                      onChange={handleEditorChange}
+                      modules={modules}
+                      formats={formats}
+                    />
+                  )}
+                  value={editorContent}
+                  placeholder={t("text.description")}
+                  label={t("text.description")}
+                  onChangeText={handleTransliterateChange}
+                  lang={lang}
                 />
               </Grid>
 
@@ -432,7 +500,7 @@ export default function Banner() {
                     size="small"
                     fullWidth
                     style={{ backgroundColor: "white" }}
-                    onChange={(e) => otherDocChangeHandler(e, "banner_img")}
+                    onChange={(e) => otherDocChangeHandler(e, "blogImage")}
                   />
                 </Grid>
                 <Grid xs={12} md={4} sm={4} item></Grid>
@@ -446,7 +514,7 @@ export default function Banner() {
                       margin: "10px",
                     }}
                   >
-                    {formik.values.banner_img == "" ? (
+                    {formik.values.blogImage == "" ? (
                       <img
                         src={nopdf}
                         style={{
@@ -458,7 +526,7 @@ export default function Banner() {
                       />
                     ) : (
                       <img
-                        src={formik.values.banner_img}
+                        src={formik.values.blogImage}
                         style={{
                           width: 150,
                           height: 100,
@@ -469,7 +537,7 @@ export default function Banner() {
                       />
                     )}
                     <Typography
-                      onClick={() => modalOpenHandle("banner_img")}
+                      onClick={() => modalOpenHandle("blogImage")}
                       style={{
                         textDecorationColor: "blue",
                         textDecorationLine: "underline",
@@ -541,3 +609,42 @@ export default function Banner() {
     </>
   );
 }
+
+const modules = {
+  toolbar: [
+    [{ header: "1" }, { header: "2" }],
+    [{ font: [] }],
+    [{ size: ["small", false, "large", "huge"] }],
+    ["bold", "italic", "underline", "strike"],
+    [{ color: [] }, { background: [] }],
+    [{ script: "sub" }, { script: "super" }],
+    ["blockquote", "code-block"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    [{ indent: "-1" }, { indent: "+1" }],
+    [{ align: [] }],
+    ["link", "image", "video", "formula"],
+    ["clean"],
+  ],
+};
+
+const formats = [
+  "header",
+  "font",
+  "size",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "color",
+  "background",
+  "script",
+  "list",
+  "bullet",
+  "indent",
+  "align",
+  "link",
+  "image",
+  "video",
+  "formula",
+  "code-block",
+];

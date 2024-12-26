@@ -1,36 +1,57 @@
-import * as React from "react";
-import Paper from "@mui/material/Paper";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { GridColDef } from "@mui/x-data-grid";
+import api from "../utils/Url";
+import Card from "@mui/material/Card";
 import {
   Box,
-  Button,
   Divider,
   Stack,
-  TextField,
+  Grid,
   Typography,
+  Input,
+  TextField,
+  Modal,
+  Autocomplete,
 } from "@mui/material";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
-import SearchIcon from "@mui/icons-material/Search";
-import Swal from "sweetalert2";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import Card from "@mui/material/Card";
-import Grid from "@mui/material/Grid";
-import PrintIcon from "@mui/icons-material/Print";
-import axios from "axios";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
-//import HOST_URL from '../../../utils/Url';
-import { useNavigate, useLocation } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
-import ToastApp from "../ToastApp";
-import { DataGrid, GridColDef, GridToolbar } from "@mui/x-data-grid";
 import Switch from "@mui/material/Switch";
+import { useNavigate, useLocation } from "react-router-dom";
 import Chip from "@mui/material/Chip";
+import { useTranslation } from "react-i18next";
+import Paper from "@mui/material/Paper";
+import { toast } from "react-toastify";
+
+import DeleteIcon from "@mui/icons-material/Delete";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import CircularProgress from "@mui/material/CircularProgress";
-import api from "../utils/Url";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { getId, getinstId, getMenuData } from "../utils/Constant";
+import ButtonWithLoader from "../utils/ButtonWithLoader";
+import CustomLabel from "../utils/CustomLabel";
+import Languages from "../utils/Languages";
+import { Language, ReactTransliterate } from "react-transliterate";
+import "react-transliterate/dist/index.css";
+import TranslateTextField from "../utils/TranslateTextField";
 import DataGrids from "../utils/Datagrids";
-import { getMenuData } from "../utils/Constant";
+import ToastApp from "../ToastApp";
+import nopdf from "../assets/images/imagepreview.jpg";
+import dayjs from "dayjs";
+import ReactQuill from "react-quill";
+
+const style = {
+  position: "absolute" as "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: "180vh",
+  height: "85vh",
+  bgcolor: "#f5f5f5",
+  border: "1px solid #000",
+  boxShadow: 24,
+  p: 4,
+  borderRadius: 10,
+};
 
 interface MenuPermission {
   isAdd: boolean;
@@ -40,76 +61,88 @@ interface MenuPermission {
 }
 
 export default function DepartmentMaster2() {
-  const [dept, setDept] = useState([]);
+  const Userid = getId();
+  const [editId, setEditId] = useState(-1);
+  const [zones, setZones] = useState([]);
   const [columns, setColumns] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const location = useLocation();
-  const [permissionData, setPermissionData] = useState<MenuPermission>({
-    isAdd: false,
-    isEdit: false,
-    isPrint: false,
-    isDel: false,
-  });
 
-  let navigate = useNavigate();
-  const { t } = useTranslation();
-
-  useEffect(() => {
-    // const dataString = localStorage.getItem("userdata");
-    //   if (dataString) {
-    //     const data = JSON.parse(dataString);
-    //     if (data && data.length > 0) {
-    //       const userPermissionData = data[0]?.userPermission;
-    //       if (userPermissionData && userPermissionData.length > 0) {
-    //         const menudata = userPermissionData[0]?.parentMenu;
-    //         for (let index = 0; index < menudata.length; index++) {
-    //           const childMenudata = menudata[index]?.childMenu;
-    //           const pathrow = childMenudata.find(
-    //             (x: any) => x.path === location.pathname
-    //           );
-    //           console.log("data", pathrow);
-    //           if (pathrow) {
-    //             setPermissionData(pathrow);
-    fetchZonesData();
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
-  }, []);
-
-  const routeChangeEdit = (row: any) => {
-    console.log("row " + row);
-
-    let path = `/DepartmentEdit`;
-    navigate(path, {
-      state: row,
-    });
-  };
-
-  const routeChangeAdd = () => {
-    let path = `/DepartmentAdd`;
-    navigate(path);
-  };
+  const [lang, setLang] = useState<Language>("en");
 
   const { menuId, menuName } = getMenuData();
 
+ 
+
+  const { t } = useTranslation();
+
+ 
+
+  useEffect(() => {
+    fetchZonesData();
+    getInstitute();
+  }, []);
+
+
+
+  const getInstitute = () => {
+    const collectData = {
+      name: "",
+      all: true,
+    };
+    api.post(`api/Basic/GetInstitutes`, collectData).then((res) => {
+      const arr: any = [];
+      console.log("result" + JSON.stringify(res.data.data));
+      for (let index = 0; index < res.data.data.length; index++) {
+        arr.push({
+          label: res.data.data[index]["instituteName"],
+          value: res.data.data[index]["instituteCode"],
+        });
+      }
+      setInstOption(arr);
+    });
+  };
+
+  const [InstOption, setInstOption] = useState([
+    { value: "-1", label: t("text.SelectInstitute") },
+  ]);
+
+
+  const handleConversionChange = (params: any, text: string) => {
+    formik.setFieldValue(params, text);
+  };
+
+  const routeChangeEdit = (row: any) => {
+    console.log(row);
+
+    
+    formik.setFieldValue("departmentname", row.departmentname);
+    formik.setFieldValue("institutecode", row.institutecode);
+    formik.setFieldValue("institutename", row.institutename);
+    // formik.setFieldValue("isActive", row.isActive);
+    formik.setFieldValue("shortname", row.shortname);
+   
+   
+   
+
+   
+    setEditId(row.id);
+  };
 
   let delete_id = "";
 
   const accept = () => {
     const collectData = {
-      appId:menuId,
-      appName:menuName,
+      appId: menuId,
+      appName: menuName,
       add: false,
       update: false,
       delete: true,
-      read: true,
+      read: false,
       instId: 0,
-      id:delete_id.toString()
+      id: delete_id.toString(),
     };
     console.log("collectData " + JSON.stringify(collectData));
-    api.post(`api/Basic/DeleteDeptmaster`, collectData).then((response) => {
+    api.post(`api/Basic/DeleteDeptmaster`, collectData).then((response: any) => {
       if (response.data.isSuccess) {
         toast.success(response.data.mesg);
       } else {
@@ -120,12 +153,10 @@ export default function DepartmentMaster2() {
   };
 
   const reject = () => {
-    // toast.warn({summary: 'Rejected', detail: 'You have rejected', life: 3000 });
     toast.warn("Rejected: You have rejected", { autoClose: 3000 });
   };
 
   const handledeleteClick = (del_id: any) => {
-    // console.log(del_id + " del_id ");
     delete_id = del_id;
     confirmDialog({
       message: "Do you want to delete this record ?",
@@ -154,7 +185,7 @@ export default function DepartmentMaster2() {
         serialNo: index + 1,
         id:dept.departmentcode,
       }));
-      setDept(deptWithIds);
+      setZones(deptWithIds);
       setIsLoading(false);
 
       if (data.length > 0) {
@@ -247,14 +278,66 @@ export default function DepartmentMaster2() {
     ...column,
   }));
 
+
+  const instId: any = getinstId();
+
+  const formik = useFormik({
+    initialValues: {
+      appId: menuId,
+      appName: menuName,
+      add: true,
+      update: false,
+      delete: false,
+      read: false,
+      instId:parseInt(instId),
+
+      departmentcode: -1,
+      departmentname: "",
+      departmentname2: "",
+      shortname: "",
+      institutecode: 0,
+      institutename: "",
+      currentPosition: 0,
+      currJrnlPosition: 0,
+      userid: "",
+    },
+
+    onSubmit: async (values: any) => {
+      values.departmentcode = editId;
+
+      
+      console.log("before submitting value check", values);
+      const response = await api.post(`api/Basic/AddUpdateDepartment`, values);
+
+      if (response.data.isSuccess) {
+        formik.setFieldValue("departmentname", "");
+        formik.setFieldValue("institutename", "");
+        formik.setFieldValue("institutecode", "");
+        formik.setFieldValue("shortname", "");
+       
+      
+        fetchZonesData();
+        toast.success(response.data.mesg);
+        setEditId(-1);
+      } else {
+        toast.error(response.data.mesg);
+      }
+    },
+  });
+
+  // const requiredFields = ["designation"];
+
+  const handleSubmitWrapper = async () => {
+    await formik.handleSubmit();
+  };
+
   return (
     <>
       <Card
         style={{
           width: "100%",
-          // height: "100%",
-          backgroundColor: "#E9FDEE",
-          border:".5px solid #2B4593",
+          backgroundColor: "lightgreen",
+          border: ".5px solid #2B4593",
           marginTop: "3vh",
         }}
       >
@@ -262,50 +345,148 @@ export default function DepartmentMaster2() {
           sx={{
             width: "100%",
             overflow: "hidden",
-           
+            // backgroundColor:"lightseagreen"
           }}
           style={{ padding: "10px" }}
         >
           <ConfirmDialog />
 
-          <Typography
-            gutterBottom
-            variant="h5"
-            component="div"
-            sx={{ padding: "20px" }}
-            align="left"
-          >
-            {t("text.deptMaster")}
-          </Typography>
+          <Grid item xs={12} container spacing={1}>
+            <Grid item lg={10} md={10} xs={12}>
+              <Typography
+                gutterBottom
+                variant="h5"
+                component="div"
+                sx={{ padding: "20px" }}
+                align="left"
+              >
+                {t("text.deptMaster")}
+              </Typography>
+            </Grid>
+
+            <Grid item lg={2} md={2} xs={12} marginTop={2}>
+              <select
+                className="language-dropdown"
+                value={lang}
+                onChange={(e) => setLang(e.target.value as Language)}
+              >
+                {Languages.map((l) => (
+                  <option key={l.value} value={l.value}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+            </Grid>
+          </Grid>
+
           <Divider />
 
           <Box height={10} />
+          <form onSubmit={formik.handleSubmit}>
+            <Grid item xs={12} container spacing={2}>
+            <Grid xs={12} lg={3} item>
+                <Autocomplete
+                  disablePortal
+                  id="combo-box-demo"
+                  options={InstOption}
+                  value={
+                    InstOption.find(
+                      (option: any) => option.value === formik.values.institutecode
+                    ) || null
+                  }
+                  fullWidth
+                  size="small"
+                  onChange={(event, newValue) => {
+                    console.log(newValue?.value);
 
-          <Stack direction="row" spacing={2} classes="my-2 mb-2">
-            {/* {permissionData?.isAdd == true && ( */}
-            <Button
-              onClick={routeChangeAdd}
-              variant="contained"
-              endIcon={<AddCircleIcon />}
-              size="large"
-              style={{backgroundColor:`var(--header-background)`}}
-            >
-              {t("text.add")}
-            </Button>
-            {/* ) } */}
+                    formik.setFieldValue("institutecode", newValue?.value);
+                    formik.setFieldValue("institutename", newValue?.label);
 
-            {/* {permissionData?.isPrint == true ? (
-              <Button variant="contained" endIcon={<PrintIcon />} size="large">
-                {t("text.print")}
-              </Button>
-            ) : (
-              ""
-            )} */}
-          </Stack>
+                    formik.setFieldTouched("institutecode", true);
+                    formik.setFieldTouched("institutecode", false);
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={
+                        <CustomLabel
+                          text={t("text.SelectInstitute")}
+                          required={false}
+                        />
+                      }
+                    />
+                  )}
+                />
+              </Grid>
+
+              <Grid item lg={3} xs={12}>
+                <TranslateTextField
+                  label={t("text.DepartmentName")}
+                  value={formik.values.departmentname}
+                  onChangeText={(text: string) =>
+                    handleConversionChange("departmentname", text)
+                  }
+                  required={true}
+                  lang={lang}
+                />
+                {formik.touched.departmentname &&
+                formik.errors.departmentname ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.departmentname)}
+                  </div>
+                ) : null}
+              </Grid>
+
+              <Grid item lg={3} xs={12}>
+                <TextField
+
+                id="shortname"
+                name="shortname"
+                value={formik.values.shortname}
+                  label={
+                    <CustomLabel text={t("text.ShortName")} required={false} />
+                  }
+
+                  placeholder={t("text.ShortName")}
+                  size="small"
+                  fullWidth
+                  style={{ backgroundColor: "white" }}
+                  onChange={formik.handleChange}
+
+                  inputProps={{ maxLength: 5 }} 
+                />
+              </Grid>
+
+              
+
+             
+
+              
+
+              <Grid item xs={3} sx={{ m: -1 }}>
+                {/* {editId === -1 && permissionData?.isAdd && ( */}
+                {editId === -1 && (
+                  <ButtonWithLoader
+                    buttonText={t("text.save")}
+                    onClickHandler={handleSubmitWrapper}
+                    fullWidth={true}
+                  />
+                )}
+
+                {editId !== -1 && (
+                  <ButtonWithLoader
+                    buttonText={t("text.update")}
+                    onClickHandler={handleSubmitWrapper}
+                    fullWidth={true}
+                  />
+                )}
+              </Grid>
+            </Grid>
+          </form>
 
           <DataGrids
             isLoading={isLoading}
-            rows={dept}
+            rows={zones}
             columns={adjustedColumns}
             pageSizeOptions={[5, 10, 25, 50, 100]}
             initialPageSize={5}
@@ -316,3 +497,4 @@ export default function DepartmentMaster2() {
     </>
   );
 }
+

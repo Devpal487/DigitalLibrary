@@ -66,6 +66,8 @@ export default function ItemStatus() {
     getSession();
     getProgramSubject();
     getSubject();
+    formik.setFieldValue("isIsued", "N");
+    formik.setFieldValue("isBardateApplicable", "N");
   }, []);
 
   const showhide = async () => {
@@ -157,46 +159,45 @@ export default function ItemStatus() {
       setSubjectOption(arr);
     });
   };
-//   itms status api
- 
-// const AddItm = () => {
-//     const collectData = {
-//     appId: menuId,
-//       appName: menuName,
-//       instId: parseInt(instid?.toString()),
-//       id: -1,
-//       subjectId: 0,
-//       subjectName: "",
-//       prgId: null,
-//       prgName: "",
-//       sess: "",
-//       isActive: true,
-//     },
-//     // validationSchema: validationSchema,
-//     onSubmit: async (values: any) => {
-//       if (isEdit === false) {
-//         values = Object.keys(values)
-//           .filter((objKey: any) => objKey !== "id")
-//           .reduce((newObj: any, key: any) => {
-//             newObj[key] = values[key];
-//             return newObj;
-//           }, {});
-//       }
+  //   itms status api
 
-//       console.log("before submitting value check", values);
-//       const response = await api.post(`api/Academic/AddUpdatePrgSubj`, values);
-//       if (response.data.isSuccess) {
-//         fetchZonesData(AddItm.values.sess);
-//         AddItm.resetForm();
-       
+  // const AddItm = () => {
+  //     const collectData = {
+  //     appId: menuId,
+  //       appName: menuName,
+  //       instId: parseInt(instid?.toString()),
+  //       id: -1,
+  //       subjectId: 0,
+  //       subjectName: "",
+  //       prgId: null,
+  //       prgName: "",
+  //       sess: "",
+  //       isActive: true,
+  //     },
+  //     // validationSchema: validationSchema,
+  //     onSubmit: async (values: any) => {
+  //       if (isEdit === false) {
+  //         values = Object.keys(values)
+  //           .filter((objKey: any) => objKey !== "id")
+  //           .reduce((newObj: any, key: any) => {
+  //             newObj[key] = values[key];
+  //             return newObj;
+  //           }, {});
+  //       }
 
-//         toast.success(response.data.mesg);
-//         // setEditId(-1);
-//       } else {
-//         toast.error(response.data.mesg);
-//       }
-//     },
-//   }};
+  //       console.log("before submitting value check", values);
+  //       const response = await api.post(`api/Academic/AddUpdatePrgSubj`, values);
+  //       if (response.data.isSuccess) {
+  //         fetchZonesData(AddItm.values.sess);
+  //         AddItm.resetForm();
+
+  //         toast.success(response.data.mesg);
+  //         // setEditId(-1);
+  //       } else {
+  //         toast.error(response.data.mesg);
+  //       }
+  //     },
+  //   }};
 
   const handleConversionChange = (params: any, text: string) => {
     formik.setFieldValue(params, text);
@@ -210,7 +211,7 @@ export default function ItemStatus() {
     formik.setFieldValue("itemStatusShort", row.itemStatusShort);
     formik.setFieldValue("isBardateApplicable", row.isBardateApplicable);
     formik.setFieldValue("isIsued", row.isIsued);
-   // formik.setFieldValue("id", row.id);
+    // formik.setFieldValue("id", row.id);
 
     setEditId(row.id);
   };
@@ -224,7 +225,7 @@ export default function ItemStatus() {
     };
     console.log("collectData " + JSON.stringify(collectData));
     api
-      .post(`api/Academic/DeleteProgramSubject`, collectData)
+      .post(`api/Basic/DeleteItemStatusMaster`, collectData)
       .then((response) => {
         if (response.data.isSuccess) {
           toast.success(response.data.mesg);
@@ -261,7 +262,7 @@ export default function ItemStatus() {
     // };
     try {
       const response = await api.get(
-        `api/Basic/GetItemStatus`,
+        `api/Basic/GetItemStatus`
         //collectData
       );
       const data = response.data.data;
@@ -332,7 +333,7 @@ export default function ItemStatus() {
           },
           {
             field: "itemStatusShort",
-            headerName: t("text.ItemStatusShort"),
+            headerName: t("text.ShortName"),
             flex: 1,
           },
           {
@@ -345,11 +346,11 @@ export default function ItemStatus() {
             headerName: t("text.IsIsued"),
             flex: 1,
           },
-        //   {
-        //     field: "sess",
-        //     headerName: t("text.session"),
-        //     flex: 1,
-        //   },
+          //   {
+          //     field: "sess",
+          //     headerName: t("text.session"),
+          //     flex: 1,
+          //   },
         ];
         setColumns(columns as any);
       }
@@ -363,9 +364,9 @@ export default function ItemStatus() {
   }));
 
   const validationSchema = Yup.object({
-    subject: Yup.string().test(
+    itemStatus: Yup.string().test(
       "required",
-      t("text.reqZoneName"),
+      "Item Name Required",
       function (value: any) {
         return value && value.trim() !== "";
       }
@@ -387,41 +388,38 @@ export default function ItemStatus() {
       itemStatus: "",
       itemStatusShort: "",
       isBardateApplicable: "",
-      isIsued: ""
+      isIsued: "",
     },
+
+    validationSchema:validationSchema,
     onSubmit: async (values: any) => {
-        if (isEdit === false) {
-          values = Object.keys(values)
-            .filter((objKey: any) => objKey !== "itemStatusId")
-            .reduce((newObj: any, key: any) => {
-              newObj[key] = values[key];
-              return newObj;
-            }, {});
-        }
-  
-        console.log("before submitting value check", values);
-        const response = await api.post(`api/Admin/SaveItemStatus`, values);
-        if (response.data.isSuccess) {
-          // setToaster(true);
-          toast.success(response.data.mesg);
-         
-  
-          // setTimeout(() => {
-          //   navigate("/DepartmentMaster2");
-            
-          // }, 900);
-  
-  
-  
-        } else {
-          // setToaster(true);
-          toast.error(response.data.mesg);
-        }
-      },
-    });
+      if (isEdit === false) {
+        values = Object.keys(values)
+          .filter((objKey: any) => objKey !== "itemStatusId")
+          .reduce((newObj: any, key: any) => {
+            newObj[key] = values[key];
+            return newObj;
+          }, {});
+      }
 
+      console.log("before submitting value check", values);
+      const response = await api.post(`api/Admin/SaveItemStatus`, values);
+      if (response.data.isSuccess) {
+        // setToaster(true);
+        toast.success(response.data.mesg);
 
-  const requiredFields = ["subjectId", "prgId", "sess"];
+        // setTimeout(() => {
+        //   navigate("/DepartmentMaster2");
+
+        // }, 900);
+      } else {
+        // setToaster(true);
+        toast.error(response.data.mesg);
+      }
+    },
+  });
+
+  const requiredFields = ["itemStatus"];
 
   const handleSubmitWrapper = async () => {
     await formik.handleSubmit();
@@ -456,7 +454,7 @@ export default function ItemStatus() {
                 sx={{ padding: "20px" }}
                 align="left"
               >
-                {t("text.Item Status")}
+                {t("text.ItemStatus")}
               </Typography>
             </Grid>
 
@@ -481,8 +479,8 @@ export default function ItemStatus() {
           <form onSubmit={formik.handleSubmit}>
             <Grid item xs={12} container spacing={2}>
               <Grid item xs={12} sm={3} lg={3}>
-              <TranslateTextField
-                  label={t("text.Item Name")}
+                <TranslateTextField
+                  label={t("text.ItemName")}
                   value={formik.values.itemStatus}
                   onChangeText={(text: string) =>
                     handleConversionChange("itemStatus", text)
@@ -490,29 +488,34 @@ export default function ItemStatus() {
                   required={true}
                   lang={lang}
                 />
-                  {formik.touched.itemStatus && formik.errors.itemStatus ? (
-                      <div style={{ color: "red", margin: "5px" }}>
-                        {String(formik.errors.itemStatus)}
-                      </div>
-                    ) : null}
-             
+                {formik.touched.itemStatus && formik.errors.itemStatus ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.itemStatus)}
+                  </div>
+                ) : null}
               </Grid>
               <Grid item xs={12} sm={3} lg={3}>
-              <TranslateTextField
-                  label={t("text.itemStatusShort")}
+                <TextField
+                  id="itemStatusShort"
+                  name="itemStatusShort"
                   value={formik.values.itemStatusShort}
-                  onChangeText={(text: string) =>
-                    handleConversionChange("itemStatusShort", text)
+                  label={
+                    <CustomLabel text={t("text.ShortName")} required={false} />
                   }
-                  required={true}
-                  lang={lang}
+                  placeholder={t("text.ShortName")}
+                  size="small"
+                  fullWidth
+                  style={{ backgroundColor: "white" }}
+                  onChange={formik.handleChange}
+                  inputProps={{ maxLength: 5 }}
                 />
-                  {formik.touched.itemStatusShort && formik.errors.itemStatusShort ? (
-                      <div style={{ color: "red", margin: "5px" }}>
-                        {String(formik.errors.itemStatusShort)}
-                      </div>
-                    ) : null}
-                
+
+                {formik.touched.itemStatusShort &&
+                formik.errors.itemStatusShort ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.itemStatusShort)}
+                  </div>
+                ) : null}
               </Grid>
               <Grid
                 xs={12}
@@ -527,23 +530,27 @@ export default function ItemStatus() {
                     <Checkbox
                       id="isBardateApplicable"
                       name="isBardateApplicable"
-                      //checked={formik.values.forAllUsers === 'Y'}
+                      checked={
+                        formik.values.isBardateApplicable === "Y" ? true : false
+                      }
                       onChange={(e) => {
                         console.log("🚀 ~ CreateDigitalContent ~ e:", e);
-                        const newValue = e.target.checked ? true : false;
-                        console.log(
-                          "🚀 ~ CreateDigitalContent ~ newValue:",
-                          newValue
-                        );
-                        formik.setFieldValue("isBardateApplicable", newValue);
+                        //const newValue = e.target.checked === true ? "Y" : "N";
+                        if (e.target.checked === true) {
+                          formik.setFieldValue("isBardateApplicable", "Y");
+                        } else {
+                          formik.setFieldValue("isBardateApplicable", "N");
+                        }
+
+                        //formik.setFieldValue("isBardateApplicable", newValue);
                       }}
                       color="primary"
                     />
                   }
                   label={
                     <span>
-                      Bar Date Applicable{" "}
-                      <span style={{ color: "red" }}>*</span>
+                      {t("text.BarDateAplicable")}{" "}
+                      
                     </span>
                   }
                   labelPlacement="end"
@@ -564,23 +571,23 @@ export default function ItemStatus() {
                     <Checkbox
                       id="isIsued"
                       name="isIsued"
-                      //checked={formik.values.forAllUsers === 'Y'}
+                      checked={formik.values.isIsued === "Y" ? true : false}
                       onChange={(e) => {
                         console.log("🚀 ~ CreateDigitalContent ~ e:", e);
-                        const newValue = e.target.checked ? true : false;
-                        console.log(
-                          "🚀 ~ CreateDigitalContent ~ newValue:",
-                          newValue
-                        );
-                        formik.setFieldValue("isIsued", newValue);
+                        // const newValue = e.target.checked === true? "Y": "N";
+
+                        if (e.target.checked === true) {
+                          formik.setFieldValue("isIsued", "Y");
+                        } else {
+                          formik.setFieldValue("isIsued", "N");
+                        }
                       }}
                       color="primary"
                     />
                   }
                   label={
                     <span>
-                      Can be issued{" "}
-                      <span style={{ color: "red" }}>*</span>
+                      {t("text.CanBeIssued")}
                     </span>
                   }
                   labelPlacement="end"
@@ -607,7 +614,7 @@ export default function ItemStatus() {
                 )}
               </Grid>
 
-              <Grid item xs={1.5} sx={{ m: -1 }}>
+              {/* <Grid item xs={1.5} sx={{ m: -1 }}>
                 <ButtonWithLoader
                   buttonText={show === false ? t("text.show") : "hide"}
                   onClickHandler={showhide}
@@ -635,7 +642,7 @@ export default function ItemStatus() {
                 </Grid>
               ) : (
                 <></>
-              )}
+              )} */}
             </Grid>
           </form>
 
@@ -659,7 +666,6 @@ export default function ItemStatus() {
               initialPageSize={5}
             />
           )}
-          
         </Paper>
       </Card>
       <ToastApp />

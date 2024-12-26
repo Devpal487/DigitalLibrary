@@ -100,11 +100,11 @@ const InstituteAdd = (props: Props) => {
 
   const getCluster = (BlockId: any) => {
     const collectData = {
-      clusterId: -1,
-      stateId: -1,
-      divisionId: -1,
-      districtId: -1,
-      blockId: BlockId,
+      "clusterId": -1,
+      "stateId": -1,
+      "divisionId": -1,
+      "districtId": -1,
+      "blockId": BlockId
     };
     api.post(`api/ClusterMaster/GetClusterMaster`, collectData).then((res) => {
       const arr: any = [];
@@ -282,7 +282,7 @@ const InstituteAdd = (props: Props) => {
     },
   });
 
-  const requiredFields = ['stateId','divisionId','districtId','blockId'];
+  const requiredFields = ['stateId', 'divisionId', 'districtId', 'blockId'];
 
   const handleConversionChange = (params: any, text: string) => {
     formik.setFieldValue(params, text);
@@ -383,53 +383,53 @@ const InstituteAdd = (props: Props) => {
                 />
               </Grid>
 
-              {showState && (
-                <>
-                  <Grid xs={12} sm={4} item>
-                    <Autocomplete
-                      disablePortal
-                      id="combo-box-demo"
-                      options={DivOption}
-                      value={
-                        DivOption.find(
-                          (option: any) =>
-                            option.value === formik.values.stateId
-                        ) || null
-                      }
-                      fullWidth
-                      size="small"
-                      onChange={(event, newValue) => {
-                        console.log(newValue?.value);
+              {/* {showState && (
+                <> */}
+              <Grid xs={12} sm={4} item>
+                <Autocomplete
+                  disablePortal
+                  id="combo-box-demo"
+                  options={DivOption}
+                  value={
+                    DivOption.find(
+                      (option: any) =>
+                        option.value === formik.values.stateId
+                    ) || null
+                  }
+                  fullWidth
+                  size="small"
+                  onChange={(event, newValue) => {
+                    console.log(newValue?.value);
 
-                        formik.setFieldValue("stateId", newValue?.value);
-                        formik.setFieldValue("stateName", newValue?.label);
+                    formik.setFieldValue("stateId", newValue?.value);
+                    formik.setFieldValue("stateName", newValue?.label);
 
-                        getDivision(newValue?.value);
+                    getDivision(newValue?.value);
 
-                        formik.setFieldTouched("stateId", true);
-                        formik.setFieldTouched("stateId", false);
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label={
-                            <CustomLabel
-                              text={t("text.SelectState")}
-                              required={requiredFields.includes("stateId")}
-                            />
-                          }
+                    formik.setFieldTouched("stateId", true);
+                    formik.setFieldTouched("stateId", false);
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={
+                        <CustomLabel
+                          text={t("text.SelectState")}
+                          required={requiredFields.includes("stateId")}
                         />
-                      )}
+                      }
                     />
+                  )}
+                />
 
-                    {formik.touched.stateId && formik.errors.stateId ? (
-                      <div style={{ color: "red", margin: "5px" }}>
-                        {String(formik.errors.stateId)}
-                      </div>
-                    ) : null}
-                  </Grid>
-                </>
-              )}
+                {formik.touched.stateId && formik.errors.stateId ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.stateId)}
+                  </div>
+                ) : null}
+              </Grid>
+              {/* </>
+              )} */}
 
               <Grid xs={12} sm={4} item>
                 <Autocomplete

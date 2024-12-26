@@ -300,12 +300,12 @@ export default function Stockledger() {
                         flex: .80,
                         // headerClassName: "MuiDataGrid-colCell",
                     },
-                    {
-                        field: "outQty",
-                        headerName: t("text.OutQty"),
-                        flex: 1,
-                        // headerClassName: "MuiDataGrid-colCell",
-                    },
+                    // {
+                    //     field: "outQty",
+                    //     headerName: t("text.OutQty"),
+                    //     flex: 1,
+                    //     // headerClassName: "MuiDataGrid-colCell",
+                    // },
                     // {
                     //     field: "voucherDate",
                     //     headerName: t("text.voucherDate"),

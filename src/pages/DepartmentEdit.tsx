@@ -251,14 +251,19 @@ const DepartmentEdit = (props: Props) => {
               </Grid>
 
               <Grid item lg={4} xs={12}>
-                <TranslateTextField
-                  label={t("text.ShortName")}
+                <TextField
+                  id="shortname"
+                  name="shortname"
                   value={formik.values.shortname}
-                  onChangeText={(text: string) =>
-                    handleConversionChange("shortname", text)
+                  label={
+                    <CustomLabel text={t("text.ShortName")} required={false} />
                   }
-                  required={false}
-                  lang={lang}
+                  placeholder={t("text.ShortName")}
+                  size="small"
+                  fullWidth
+                  style={{ backgroundColor: "white" }}
+                  onChange={formik.handleChange}
+                  inputProps={{ maxLength: 5 }} 
                 />
               </Grid>
 

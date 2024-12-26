@@ -195,6 +195,12 @@ export default function SaleInvoiceMaster() {
                         headerClassName: "MuiDataGrid-colCell",
                     },
                     {
+                        field: "others",
+                        headerName: t("text.OnlineUser"),
+                        flex: 1,
+                        headerClassName: "MuiDataGrid-colCell",
+                    },
+                    {
                         field: "orderNo",
                         headerName: t("text.OrderNo"),
                         flex: 1,
@@ -202,13 +208,13 @@ export default function SaleInvoiceMaster() {
                     },
                     {
                         field: "s_InvoiceNo",
-                        headerName: t("text.s_InvoiceNos"),
+                        headerName: t("text.p_InvoiceNos"),
                         flex: 1,
                         headerClassName: "MuiDataGrid-colCell",
                     },
                     {
                         field: "doc_Date",
-                        headerName: t("text.doc_Dates"),
+                        headerName: t("text.Date"),
                         flex: 1,
                         headerClassName: "MuiDataGrid-colCell",
                         renderCell(params) {
@@ -217,7 +223,7 @@ export default function SaleInvoiceMaster() {
                     },
                     {
                         field: "s_InvoiceDate",
-                        headerName: t("text.s_InvoiceDates"),
+                        headerName: t("text.p_InvoiceDates"),
                         flex: 1,
                         headerClassName: "MuiDataGrid-colCell",
                         renderCell(params) {

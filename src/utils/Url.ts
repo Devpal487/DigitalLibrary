@@ -16,6 +16,11 @@ const api = axios.create({
   },
 });
 
+export const Bot_URL = 'http://103.12.1.132:8184/';
+export const Chat = axios.create({
+  baseURL: Bot_URL,
+});
+
 api.interceptors.request.use(
   (config) => {
     const uniqueId = sessionStorage.getItem('uniqueId');

@@ -721,7 +721,7 @@ const Masscatentry = (props: Props) => {
                     sx={{ backgroundColor: "#3492eb", color: "#fff" }}
                   >
                     <Typography style={{ fontWeight: 600, fontSize: "16px" }}>
-                      Catalog Related Date
+                     {t("text.CatalogRelatedDate")}
                     </Typography>
                   </AccordionSummary>
                   <AccordionDetails>
@@ -828,7 +828,7 @@ const Masscatentry = (props: Props) => {
                               {...params}
                               label={
                                 <CustomLabel
-                                  text="select Antena"
+                                  text={t("text.SelectAntena")}
                                   required={false}
                                 />
                               }
@@ -1004,7 +1004,7 @@ const Masscatentry = (props: Props) => {
                   id="accession[0].biilNo"
                   name="accession[0].biilNo"
                   label={
-                    <CustomLabel text="Bill No / Invoice No" required={false} />
+                    <CustomLabel text={t("text.BillNoOrInvoiceNo")} required={false} />
                   }
                   value={formik.values.accession[0].biilNo}
                   placeholder="Bill No / Invoice No"
@@ -1141,7 +1141,7 @@ const Masscatentry = (props: Props) => {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label={<CustomLabel text="Department" required={false} />}
+                      label={<CustomLabel text={t("text.Department")} required={false} />}
                     />
                   )}
                 />
@@ -1171,7 +1171,7 @@ const Masscatentry = (props: Props) => {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label={<CustomLabel text="Item Type" required={false} />}
+                      label={<CustomLabel text={t("text.ItemType")} required={false} />}
                     />
                   )}
                 />
@@ -1211,7 +1211,7 @@ const Masscatentry = (props: Props) => {
                     <TextField
                       {...params}
                       label={
-                        <CustomLabel text="Item Category" required={false} />
+                        <CustomLabel text={t("text.ItemCategory")} required={false} />
                       }
                     />
                   )}
@@ -1368,9 +1368,9 @@ const Masscatentry = (props: Props) => {
                         // typeof="date"
                         id="catalog.volume"
                         name="catalog.volume"
-                        label={<CustomLabel text="Volume" required={false} />}
+                        label={<CustomLabel text={t("text.Volume")} required={false} />}
                         value={formik.values.catalog.volume}
-                        placeholder="Volume"
+                        placeholder={t("text.Volume")}
                         size="small"
                         fullWidth
                         style={{ backgroundColor: "white" }}
@@ -1460,7 +1460,7 @@ const Masscatentry = (props: Props) => {
                           <TextField
                             {...params}
                             label={
-                              <CustomLabel text="Category" required={false} />
+                              <CustomLabel text={t("text.Category")} required={false} />
                             }
                             style={{ backgroundColor: "white" }}
                           />
@@ -1522,7 +1522,7 @@ const Masscatentry = (props: Props) => {
                             {...params}
                             label={
                               <CustomLabel
-                                text="Item Status"
+                                text={t("text.ItemStatus")}
                                 required={false}
                               />
                             }
@@ -1563,7 +1563,7 @@ const Masscatentry = (props: Props) => {
                           <TextField
                             {...params}
                             label={
-                              <CustomLabel text="Currency" required={false} />
+                              <CustomLabel text={t("text.Currency")} required={false} />
                             }
                             style={{ backgroundColor: "white" }}
                           />
@@ -1601,7 +1601,7 @@ const Masscatentry = (props: Props) => {
                           <TextField
                             {...params}
                             label={
-                              <CustomLabel text="Language" required={false} />
+                              <CustomLabel text={t("text.Language")} required={false} />
                             }
                             style={{ backgroundColor: "white" }}
                           />
@@ -1637,7 +1637,7 @@ const Masscatentry = (props: Props) => {
                           <TextField
                             {...params}
                             label={
-                              <CustomLabel text="Department" required={false} />
+                              <CustomLabel text={t("text.Department")} required={false} />
                             }
                             style={{ backgroundColor: "white" }}
                           />
@@ -1790,10 +1790,10 @@ const Masscatentry = (props: Props) => {
                         id="catalog.pages"
                         name="catalog.pages"
                         label={
-                          <CustomLabel text="Total Page" required={false} />
+                          <CustomLabel text={t("text.TotalPage")} required={false} />
                         }
                         value={formik.values.catalog.pages}
-                        placeholder="Total Page"
+                        placeholder={t("text.TotalPage")}
                         size="small"
                         fullWidth
                         style={{ backgroundColor: "white" }}
@@ -1828,12 +1828,12 @@ const Masscatentry = (props: Props) => {
                         name="catalog.control001"
                         label={
                           <CustomLabel
-                            text="Control No(001)"
+                            text={t("text.ControlNo")}
                             required={false}
                           />
                         }
                         value={formik.values.catalog.control001}
-                        placeholder="Control No(001)"
+                        placeholder={t("text.ControlNo")}
                         size="small"
                         fullWidth
                         style={{ backgroundColor: "white" }}
@@ -1926,7 +1926,7 @@ const Masscatentry = (props: Props) => {
                           <TextField
                             {...params}
                             label={
-                              <CustomLabel text="Media" required={false} />
+                              <CustomLabel text={t("text.Media")} required={false} />
                             }
                             style={{ backgroundColor: "white" }}
                           />
@@ -1958,7 +1958,7 @@ const Masscatentry = (props: Props) => {
                         renderInput={(params) => (
                           <TextField
                             {...params}
-                            label={<CustomLabel text="Form" required={false} />}
+                            label={<CustomLabel text={t("text.Form")} required={false} />}
                             style={{ backgroundColor: "white" }}
                           />
                         )}
@@ -1991,7 +1991,7 @@ const Masscatentry = (props: Props) => {
                             {...params}
                             label={
                               <CustomLabel
-                                text="Program Course"
+                                text={t("text.ProgramCourse")}
                                 required={false}
                               />
                             }
@@ -2656,9 +2656,9 @@ const Masscatentry = (props: Props) => {
                   // typeof="date"
                   id="author.firstname1"
                   name="author.firstname1"
-                  label={<CustomLabel text="First Name" required={false} />}
+                  label={<CustomLabel text={t("text.FirstName")} required={false} />}
                   value={formik.values.author.firstname1}
-                  placeholder="First Name"
+                  placeholder={t("text.FirstName")}
                   size="small"
                   fullWidth
                   style={{ backgroundColor: "white" }}
@@ -2671,9 +2671,9 @@ const Masscatentry = (props: Props) => {
                   // typeof="date"
                   id="author.middlename1"
                   name="author.middlename1"
-                  label={<CustomLabel text="Middle Name" required={false} />}
+                  label={<CustomLabel text={t("text.MiddleName")} required={false} />}
                   value={formik.values.author.middlename1}
-                  placeholder="Middle Name"
+                  placeholder={t("text.MiddleName")}
                   size="small"
                   fullWidth
                   style={{ backgroundColor: "white" }}
@@ -2686,9 +2686,9 @@ const Masscatentry = (props: Props) => {
                   // typeof="date"
                   id="author.lastname1"
                   name="author.lastname1"
-                  label={<CustomLabel text="Last Name" required={false} />}
+                  label={<CustomLabel text={t("text.LastName")} required={false} />}
                   value={formik.values.author.lastname1}
-                  placeholder="Last Name"
+                  placeholder={t("text.LastName")}
                   size="small"
                   fullWidth
                   style={{ backgroundColor: "white" }}
@@ -2704,7 +2704,7 @@ const Masscatentry = (props: Props) => {
                   sx={{ padding: "5px",height:'2%' }}
                   align="left"
                 >
-                  Author 2 :-
+                  {t("text.Author2")} :-
                 </Typography>
               </Grid>
 
@@ -2713,9 +2713,9 @@ const Masscatentry = (props: Props) => {
                   // typeof="date"
                   id="author.firstname2"
                   name="author.firstname2"
-                  label={<CustomLabel text="First Name" required={false} />}
+                  label={<CustomLabel text={t("text.FirstName")} required={false} />}
                   value={formik.values.author.firstname2}
-                  placeholder="First Name"
+                  placeholder={t("text.FirstName")}
                   size="small"
                   fullWidth
                   style={{ backgroundColor: "white" }}
@@ -2728,9 +2728,9 @@ const Masscatentry = (props: Props) => {
                   // typeof="date"
                   id="author.middlename2"
                   name="author.middlename2"
-                  label={<CustomLabel text="Middle Name" required={false} />}
+                  label={<CustomLabel text={t("text.MiddleName")} required={false} />}
                   value={formik.values.author.middlename2}
-                  placeholder="Middle Name"
+                  placeholder={t("text.MiddleName")}
                   size="small"
                   fullWidth
                   style={{ backgroundColor: "white" }}
@@ -2743,9 +2743,9 @@ const Masscatentry = (props: Props) => {
                   // typeof="date"
                   id="author.lastname2"
                   name="author.lastname2"
-                  label={<CustomLabel text="Last Name" required={false} />}
+                  label={<CustomLabel text={t("text.LastName")} required={false} />}
                   value={formik.values.author.lastname2}
-                  placeholder="Last Name"
+                  placeholder={t("text.LastName")}
                   size="small"
                   fullWidth
                   style={{ backgroundColor: "white" }}
@@ -2761,7 +2761,7 @@ const Masscatentry = (props: Props) => {
                   sx={{ padding: "5px",height:'2%' }}
                   align="left"
                 >
-                  Author 3 :-
+                  {t("text.Author3")} :-
                 </Typography>
               </Grid>
 
@@ -2770,9 +2770,9 @@ const Masscatentry = (props: Props) => {
                   // typeof="date"
                   id="author.firstname3"
                   name="author.firstname3"
-                  label={<CustomLabel text="First Name" required={false} />}
+                  label={<CustomLabel text={t("text.FirstName")} required={false} />}
                   value={formik.values.author.firstname3}
-                  placeholder="First Name"
+                  placeholder={t("text.FirstName")}
                   size="small"
                   fullWidth
                   style={{ backgroundColor: "white" }}
@@ -2785,9 +2785,9 @@ const Masscatentry = (props: Props) => {
                   // typeof="date"
                   id="author.middlename3"
                   name="author.middlename3"
-                  label={<CustomLabel text="Middle Name" required={false} />}
+                  label={<CustomLabel text={t("text.MiddleName")} required={false} />}
                   value={formik.values.author.middlename3}
-                  placeholder="Middle Name"
+                  placeholder={t("text.MiddleName")}
                   size="small"
                   fullWidth
                   style={{ backgroundColor: "white" }}
@@ -2800,9 +2800,9 @@ const Masscatentry = (props: Props) => {
                   // typeof="date"
                   id="author.lastname3"
                   name="author.lastname3"
-                  label={<CustomLabel text="Last Name" required={false} />}
+                  label={<CustomLabel text={t("text.LastName")} required={false} />}
                   value={formik.values.author.lastname3}
-                  placeholder="Last Name"
+                  placeholder={t("text.LastName")}
                   size="small"
                   fullWidth
                   style={{ backgroundColor: "white" }}

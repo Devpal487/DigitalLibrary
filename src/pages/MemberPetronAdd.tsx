@@ -478,6 +478,40 @@ const MemberPetronAdd = (props: Props) => {
           return value && value.trim() !== "";
         }
       ),
+      designationId: Yup.number().test(
+        "required",
+        "Designation  is required",
+        function (value: any) {
+          return value > 0;
+        }
+      ),
+
+      validupto: Yup.string().test(
+        "required",
+        "Date of retirement is required",
+        function (value: any) {
+          return value && value.trim() !== "";
+        }
+      ),
+
+      phone1: Yup.string()
+        .matches(/^[0-9]{10}$/, t("text.PhoneNumberInvalid"))
+        .notRequired(),
+
+      // Fax validation (must follow a general phone number format)
+      phone2: Yup.string()
+        .matches(/^[0-9]{10}$/, t("text.FaxInvalid"))
+        .notRequired(),
+
+      // Email validation (must contain @gmail.com)
+      email1: Yup.string()
+        .email(t("text.EmailInvalid"))
+        .matches(/@/, "must contain @")
+        .notRequired(),
+
+      aadharNo: Yup.string()
+        .matches(/^\d{12}$/, t("text.AadharInvalid"))
+        .notRequired(),
     }),
   });
 
@@ -489,7 +523,7 @@ const MemberPetronAdd = (props: Props) => {
       instId: parseInt(instId),
       circUser: {
         appName: menuName,
-        designationId: null,
+        designationId: 0,
         usercode: "",
         userid: "",
         firstname: "",
@@ -965,6 +999,13 @@ const MemberPetronAdd = (props: Props) => {
                   onBlur={formik.handleBlur}
                   inputProps={{ maxLength: 12 }}
                 />
+
+                {formik.touched.circUser?.aadharNo &&
+                formik.errors.circUser?.aadharNo ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser.aadharNo)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -1000,7 +1041,7 @@ const MemberPetronAdd = (props: Props) => {
                 />
               </Grid>
 
-              <Grid item lg={4} xs={12}>
+              {/* <Grid item lg={4} xs={12}>
                 <Autocomplete
                   disablePortal
                   id="combo-box-demo"
@@ -1032,7 +1073,7 @@ const MemberPetronAdd = (props: Props) => {
                     />
                   )}
                 />
-              </Grid>
+              </Grid> */}
 
               <Grid item lg={4} xs={12}>
                 <TextField
@@ -1066,6 +1107,13 @@ const MemberPetronAdd = (props: Props) => {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                 />
+
+                {formik.touched.circUser?.phone1 &&
+                formik.errors.circUser?.phone1 ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser.phone1)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -1081,22 +1129,14 @@ const MemberPetronAdd = (props: Props) => {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                 />
-              </Grid>
 
-              {/* <Grid item lg={4} xs={12}>
-                  <TextField
-                    id="empStatus"
-                    name="empStatus"
-                    label="Enter Employee Status"
-                    value={formik.values.empStatus}
-                    placeholder="Enter Employee Status"
-                    size="small"
-                    fullWidth
-                    style={{ backgroundColor: "white" }}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                  />
-                </Grid> */}
+                {formik.touched.circUser?.phone2 &&
+                formik.errors.circUser?.phone2 ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser.phone2)}
+                  </div>
+                ) : null}
+              </Grid>
 
               <Grid item lg={4} xs={12}>
                 <TextField
@@ -1115,6 +1155,13 @@ const MemberPetronAdd = (props: Props) => {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                 />
+
+                {formik.touched.circUser?.email1 &&
+                formik.errors.circUser?.email1 ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser.email1)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -1257,9 +1304,16 @@ const MemberPetronAdd = (props: Props) => {
                     />
                   )}
                 />
+
+                {formik.touched.circUser?.designationId &&
+                formik.errors.circUser?.designationId ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser.designationId)}
+                  </div>
+                ) : null}
               </Grid>
 
-              <Grid item lg={4} xs={12}>
+              {/* <Grid item lg={4} xs={12}>
                 <TextField
                   id="yearSem"
                   name="circUser.yearSem"
@@ -1295,7 +1349,7 @@ const MemberPetronAdd = (props: Props) => {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                 />
-              </Grid>
+              </Grid> */}
 
               <Grid item lg={4} xs={12}>
                 <Autocomplete
@@ -1378,6 +1432,13 @@ const MemberPetronAdd = (props: Props) => {
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
                 />
+
+                {formik.touched.circUser?.validupto &&
+                formik.errors.circUser?.validupto ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.circUser.validupto)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item lg={4} xs={12}>
@@ -1602,7 +1663,7 @@ const MemberPetronAdd = (props: Props) => {
                           required={requiredFields.includes("toDate")}
                         />
                       }
-                      // value={formik.values.toDate}
+                      //value={formik.values.toDate}
                       placeholder={t("text.ToDate")}
                       size="small"
                       fullWidth
@@ -2039,13 +2100,10 @@ const MemberPetronAdd = (props: Props) => {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-
-                      
                       label={
                         <CustomLabel
                           text={t("text.EnterCity")}
                           required={false}
-
                         />
                       }
                       variant="outlined"

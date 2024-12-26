@@ -66,10 +66,12 @@ export default function EditDigitalContent() {
   let navigate = useNavigate();
   const { t } = useTranslation();
   const Userid = getId();
-  const instId = getinstId();
+  const instId: any = getinstId();
 
   // console.log("useLocation " + useLocation());
   const location = useLocation();
+
+  console.log("location ", location);
 
   const back = useNavigate();
   const [lang, setLang] = useState<Language>("en");
@@ -166,6 +168,11 @@ export default function EditDigitalContent() {
     { value: "-1", label: t("text.SelectTax") },
   ]);
 
+  const textType = [
+    { value: 1, label: "Included" },
+    { value: 2, label: "Excluded" },
+  ];
+
   const removeDynamicId = (id: any) => {
     return id.replace(/ /g, "");
   };
@@ -210,6 +217,12 @@ export default function EditDigitalContent() {
           setfileName(file.name);
           setPDF(file);
           setFileexten(exten);
+
+          console.log("result", reader.result);
+          console.log("fileurl", fileURL);
+          console.log("filename", file.name);
+          console.log("file", file);
+          console.log("exten", exten);
         }
       };
     }
@@ -231,6 +244,8 @@ export default function EditDigitalContent() {
     getCategory();
     GetTaxData();
     GetUnitData();
+
+    console.log("fieldValue", fieldValue);
   }, []);
 
   const GetTaxData = async () => {
@@ -530,6 +545,30 @@ export default function EditDigitalContent() {
         return value > 0;
       }
     ),
+
+    taxId: Yup.number().test(
+      "required",
+      "Tax is required",
+      function (value: any) {
+        return value > 0;
+      }
+    ),
+
+    unitId: Yup.number().test(
+      "required",
+      "Unit is required",
+      function (value: any) {
+        return value >= 0;
+      }
+    ),
+
+    taxType: Yup.string().test(
+      "required",
+      "Tax Type is required",
+      function (value: any) {
+        return value && value.trim() !== "";
+      }
+    ),
   });
 
   const formik = useFormik({
@@ -556,7 +595,7 @@ export default function EditDigitalContent() {
       audience: location.state.audience,
       dateSaved: new Date().toISOString().slice(0, 10),
       validTill: new Date().toISOString().slice(0, 10),
-      forAllUsers: location.state.forAllUsers || "",
+      forAllUsers: location.state.forAllUsers || true,
       forMember: location.state.forMember,
       noOfFiles: location.state.noOfFiles,
       files: location.state.files || "",
@@ -576,6 +615,7 @@ export default function EditDigitalContent() {
       taxId: location.state.taxId,
       unitname: location.state.unitname,
       taxName: location.state.taxName,
+      taxType: location.state.taxType,
     },
 
     validationSchema: validationSchema,
@@ -587,6 +627,13 @@ export default function EditDigitalContent() {
       if (response.data.isSuccess) {
         //setToaster(false);
         setDigId(parseInt(response.data.data));
+        // handleSubmitWrapper();
+
+        uploadThubnail();
+
+        setTimeout(() => {
+          navigate(`/AddDigitalContent`);
+        }, 700);
         setOpen(true);
         toast.success(response.data.mesg);
       } else {
@@ -961,37 +1008,40 @@ export default function EditDigitalContent() {
 
   const uploadThubnail = async () => {
     //console.log('checkthumbnail');
-    try {
-      const blob = new Blob([fieldValue], { type: pdf.type });
-      const formData = new FormData();
-      formData.append("file", blob, fileName);
-      // console.log("🚀 ~ uploadFile ~ blob:", blob);
-      // console.log("🚀 ~ uploadFile ~ formData:", formData);
-      // console.log("🚀 ~ uploadFile ~ binaryFile:", binaryFile);
-      // console.log("🚀 ~ uploadFile ~ fileName:", fileName);
 
-      const response = await axios.post(
-        "http://103.12.1.132:8156/api/MssplUploads/UploadThumbnail",
-        formData,
-        {
-          headers: {
-            //"Content-Type": "multipart/form-data",
-            //Id: fileId?.id,
-            Id: location.state.id,
-            Accept: "*/*",
-            Uniqueid: uniqueId,
-          },
+    if (fieldValue) {
+      try {
+        const blob = new Blob([fieldValue], { type: pdf.type });
+        const formData: any = new FormData();
+        formData.append("file", blob, fileName, parseInt(instId));
+        // console.log("🚀 ~ uploadFile ~ blob:", blob);
+        // console.log("🚀 ~ uploadFile ~ formData:", formData);
+        // console.log("🚀 ~ uploadFile ~ binaryFile:", binaryFile);
+        // console.log("🚀 ~ uploadFile ~ fileName:", fileName);
+
+        const response = await axios.post(
+          "http://103.12.1.132:8156/api/MssplUploads/UploadThumbnail",
+          formData,
+          {
+            headers: {
+              //"Content-Type": "multipart/form-data",
+              //Id: fileId?.id,
+              Id: location.state.id,
+              Accept: "*/*",
+              Uniqueid: uniqueId,
+            },
+          }
+        );
+
+        if (response.data.isSuccess) {
+          toast.success(response.data.succMesg);
+          //addMoreRow();
+        } else {
+          toast.error(response.data.succMesg);
         }
-      );
-
-      if (response.data.isSuccess) {
-        toast.success(response.data.succMesg);
-        //addMoreRow();
-      } else {
-        toast.error(response.data.succMesg);
+      } catch (error) {
+        //console.error("Error uploading file:", error);
       }
-    } catch (error) {
-      //console.error("Error uploading file:", error);
     }
     //console.log("object")
   };
@@ -1190,7 +1240,15 @@ export default function EditDigitalContent() {
                     formik.setFieldTouched("contentTypeId", false);
                   }}
                   renderInput={(params) => (
-                    <TextField {...params} label={t("text.typeOfContent")} />
+                    <TextField
+                      {...params}
+                      label={
+                        <CustomLabel
+                          text={t("text.typeOfContent")}
+                          required={true}
+                        />
+                      }
+                    />
                   )}
                 />
 
@@ -1219,7 +1277,15 @@ export default function EditDigitalContent() {
                     formik.setFieldTouched("audienceId", false);
                   }}
                   renderInput={(params) => (
-                    <TextField {...params} label={t("text.Audience")} />
+                    <TextField
+                      {...params}
+                      label={
+                        <CustomLabel
+                          text={t("text.Audience")}
+                          required={true}
+                        />
+                      }
+                    />
                   )}
                 />
 
@@ -1249,7 +1315,15 @@ export default function EditDigitalContent() {
                     formik.setFieldTouched("progSubjId", false);
                   }}
                   renderInput={(params) => (
-                    <TextField {...params} label={t("text.classprogramsub")} />
+                    <TextField
+                      {...params}
+                      label={
+                        <CustomLabel
+                          text={t("text.classprogramsub")}
+                          required={true}
+                        />
+                      }
+                    />
                   )}
                 />
 
@@ -1278,7 +1352,12 @@ export default function EditDigitalContent() {
                     formik.setFieldTouched("subjectId", false);
                   }}
                   renderInput={(params) => (
-                    <TextField {...params} label={t("text.sub")} />
+                    <TextField
+                      {...params}
+                      label={
+                        <CustomLabel text={t("text.sub")} required={true} />
+                      }
+                    />
                   )}
                 />
 
@@ -1447,8 +1526,7 @@ export default function EditDigitalContent() {
                   options={isCategory}
                   value={
                     isCategory.find(
-                      (option: any) =>
-                        option.value === formik.values.categoryId + ""
+                      (option: any) => option.value === formik.values.categoryId
                     ) || null
                   }
                   fullWidth
@@ -1546,10 +1624,58 @@ export default function EditDigitalContent() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label={<CustomLabel text={t("text.SelectTax")} />}
+                      label={
+                        <CustomLabel
+                          text={t("text.SelectTax")}
+                          required={true}
+                        />
+                      }
                     />
                   )}
                 />
+
+                {formik.touched.taxId && formik.errors.taxId ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.taxId)}
+                  </div>
+                ) : null}
+              </Grid>
+
+              <Grid item xs={12} sm={4} lg={4}>
+                <Autocomplete
+                  disablePortal
+                  id="combo-box-demo"
+                  options={textType}
+                  fullWidth
+                  size="small"
+                  onChange={(event, newValue: any) => {
+                    console.log(newValue);
+
+                    formik.setFieldValue("taxType", newValue?.label);
+                  }}
+                  value={
+                    textType.find(
+                      (opt: any) => opt.label === formik.values.taxType
+                    ) || null
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={
+                        <CustomLabel
+                          text={t("text.SelectTaxType")}
+                          required={true}
+                        />
+                      }
+                    />
+                  )}
+                />
+
+                {formik.touched.taxType && formik.errors.taxType ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.taxType)}
+                  </div>
+                ) : null}
               </Grid>
 
               <Grid item xs={12} sm={4} lg={4}>
@@ -1562,7 +1688,7 @@ export default function EditDigitalContent() {
                   onChange={(event, newValue: any) => {
                     console.log(newValue?.value);
                     formik.setFieldValue("unitId", newValue?.value);
-                    formik.setFieldValue('unitname', newValue?.label);
+                    formik.setFieldValue("unitname", newValue?.label);
                   }}
                   value={
                     unitOptions.find(
@@ -1572,13 +1698,24 @@ export default function EditDigitalContent() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label={<CustomLabel text={t("text.enterunit")} />}
+                      label={
+                        <CustomLabel
+                          text={t("text.enterunit")}
+                          required={true}
+                        />
+                      }
                     />
                   )}
                 />
+
+                {formik.touched.unitId && formik.errors.unitId ? (
+                  <div style={{ color: "red", margin: "5px" }}>
+                    {String(formik.errors.unitId)}
+                  </div>
+                ) : null}
               </Grid>
 
-              <Grid
+              {/* <Grid
                 xs={12}
                 sm={4}
                 lg={4}
@@ -1599,10 +1736,10 @@ export default function EditDigitalContent() {
                       color="primary"
                     />
                   }
-                  label="Check If Public for All"
+                  label={t("text.CheckIfPublicforAll")}
                   labelPlacement="end"
                 />
-              </Grid>
+              </Grid> */}
 
               <Grid xs={12} sm={12} lg={12} item>
                 <TextareaAutosize
@@ -1713,7 +1850,7 @@ export default function EditDigitalContent() {
                     )}
                   </Box>
                 </Modal>
-                <Grid item lg={2} sm={2} xs={12}>
+                {/* <Grid item lg={2} sm={2} xs={12}>
                   <Grid>
                     <Button
                       // type="reset"
@@ -1728,7 +1865,7 @@ export default function EditDigitalContent() {
                       {t("text.save")}
                     </Button>
                   </Grid>
-                </Grid>
+                </Grid> */}
               </Grid>
               <br />
               <Divider sx={{ borderWidth: "1px", borderColor: "black" }} />
@@ -2146,6 +2283,11 @@ export default function EditDigitalContent() {
                       width: "48%",
                       backgroundColor: "#059669",
                       margin: "1%",
+                    }}
+                    onClick={() => {
+                      if (thumbnail != "") {
+                        uploadThubnail();
+                      }
                     }}
                   >
                     {t("text.update")}

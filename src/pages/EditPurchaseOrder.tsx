@@ -31,11 +31,11 @@ import dayjs from "dayjs";
 const EditPurchaseOrder = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const initialRows :any = {
+  const initialRows: any = {
     id: -1,
     purchaseid: -1,
     user_Id: 0,
-    itemNameId:'',
+    itemNameId: '',
     unit: "",
     qty: '',
     rate: '',
@@ -47,12 +47,12 @@ const EditPurchaseOrder = () => {
     discountAmount: '',
     netAmount: '',
     documentNo: "",
-    documentDate: "",
+    documentDate: new Date().toISOString().slice(0, 10),
     invoiceNo: "",
     supplier: "",
     orderNo: "",
     mrnNo: "",
-    mrnDate: "",
+    mrnDate: new Date().toISOString().slice(0, 10),
     taxId3: "",
     tax3: "",
   };
@@ -62,8 +62,8 @@ const EditPurchaseOrder = () => {
   const location = useLocation();
 
 
-  console.log('location',location );
-  const [items, setItems] = useState<any>([{...initialRows}]);
+  console.log('location', location);
+  const [items, setItems] = useState<any>([{ ...initialRows }]);
   const [taxOption, setTaxOption] = useState([
     { value: "-1", label: t("text.tax") },
   ]);
@@ -169,100 +169,100 @@ const EditPurchaseOrder = () => {
     return (
       item.itemNameId &&
       item.unit &&
-      item.qty &&
+     // item.qty &&
       item.rate &&
-      item.amount &&
-      item.tax1 &&
-      item.taxId1 
+      item.amount 
+     // item.tax1 &&
+     // item.taxId1
     );
   };
 
-const handleItemChange = (index: number, field: string, value: any) => {
-  const updatedItems = [...items];
-  let item = { ...updatedItems[index] };
+  const handleItemChange = (index: number, field: string, value: any) => {
+    const updatedItems = [...items];
+    let item = { ...updatedItems[index] };
 
-  if (field === 'itemNameId') {
-    const itemNameDetails = value;
-    if (itemNameDetails) {
-      item = {
-        ...item,
-        itemNameId: itemNameDetails.value || "",
-        rate: itemNameDetails.rate || "",
-        unit: String(itemNameDetails.unitId) || "",
-        tax1: String(itemNameDetails.taxId) || "",
-        taxId1: String(itemNameDetails.taxName) || "",
-      };
+    if (field === 'itemNameId') {
+      const itemNameDetails = value;
+      if (itemNameDetails) {
+        item = {
+          ...item,
+          itemNameId: itemNameDetails.value || "",
+          rate: itemNameDetails.rate || "",
+          unit: String(itemNameDetails.unitId) || "",
+          tax1: String(itemNameDetails.taxId) || "",
+          taxId1: String(itemNameDetails.taxName) || "",
+        };
+      }
+    } else if (field === 'qty' || field === 'rate') {
+      item[field] = value === "" ? 0 : parseFloat(value);
+      item.amount = calculateAmount(item.qty, item.rate);
+      item.taxId1 = String(calculateTax(item.amount, Number(item.taxId1)));
+    } else if (field === 'tax1') {
+      const selectedTax = taxOption.find((tax: any) => tax.value === value?.value);
+      if (selectedTax) {
+        item.tax1 = String(selectedTax.value);
+        item.taxId2 = String(calculateTax(item.amount, Number(selectedTax.label)));
+      }
+    } else if (field === 'tax2') {
+      item.tax2 = value || '';
+    } else if (field === 'unit') {
+      item[field] = value;
+    } else if (field === 'discount') {
+      item.discount = value === '' ? 0 : parseFloat(value);
+      const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
+      item.discountAmount = discountAmount;
+      item.netAmount = calculateNetAmount(item.amount, Number(item.taxId2), discountAmount);
     }
-  } else if (field === 'qty' || field === 'rate') {
-    item[field] = value === "" ? 0 : parseFloat(value);
-    item.amount = calculateAmount(item.qty, item.rate);
-    item.taxId1 = String(calculateTax(item.amount, Number(item.taxId1)));
-  } else if (field === 'tax1') {
-    const selectedTax = taxOption.find((tax: any) => tax.value === value?.value);
-    if (selectedTax) {
-      item.tax1 = String(selectedTax.value);
-      item.taxId1 = String(calculateTax(item.amount, Number(selectedTax.label)));
+
+    // Recalculate dependent fields
+    if (field !== 'discount' && field !== 'tax2') {
+      const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
+      item.discountAmount = discountAmount;
+      item.netAmount = calculateNetAmount(item.amount, Number(item.taxId2), discountAmount);
     }
-  } else if (field === 'tax2') {
-    item.tax2 = value || '';
-  }else if (field === 'unit') {
-    item[field] = value ;
-  } else if (field === 'discount') {
-    item.discount = value === '' ? 0 : parseFloat(value);
-    const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
-    item.discountAmount = discountAmount;
-    item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
-  }
 
-  // Recalculate dependent fields
-  if (field !== 'discount' && field !== 'tax2') {
-    const discountAmount = calculateDiscount(item.amount, item.discount, item.tax2);
-    item.discountAmount = discountAmount;
-    item.netAmount = calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);
-  }
+    updatedItems[index] = item;
+    setItems(updatedItems);
 
-  updatedItems[index] = item;
-  setItems(updatedItems);
-
-  if (validateItem(item) && index === updatedItems.length - 1) {
-    handleAddItem();
-  }
+    if (validateItem(item) && index === updatedItems.length - 1) {
+      handleAddItem(updatedItems);
+    }
 
 
-  console.log("🚀 ~ Updated items:", updatedItems);
-};
+    console.log("🚀 ~ Updated items:", updatedItems);
+  };
 
-const calculateAmount = (qty: number, rate: number) => qty * rate;
+  const calculateAmount = (qty: number, rate: number) => qty * rate;
 
-const calculateTax = (amount: number, taxRate: number) => {
-  const tax = (amount * taxRate) / 100;
-  return parseFloat(tax.toFixed(2));
-};
+  const calculateTax = (amount: number, taxRate: number) => {
+    const tax = (amount * taxRate) / 100;
+    return parseFloat(tax.toFixed(2));
+  };
 
-const calculateDiscount = (amount: number, discount: number, type: string) => {
-  if (type === 'P') { // Percentage-based discount
-    return (amount * discount) / 100;
-  } else if (type === 'F') { // Fixed discount
-    return discount;
-  }
-  return 0; 
-};
+  const calculateDiscount = (amount: number, discount: number, type: string) => {
+    if (type === 'P') { // Percentage-based discount
+      return (amount * discount) / 100;
+    } else if (type === 'F') { // Fixed discount
+      return discount;
+    }
+    return 0;
+  };
 
-const calculateNetAmount = (amount: number, tax: number, discount: number) =>
-  amount + tax - discount;
+  const calculateNetAmount = (amount: number, tax: number, discount: number) =>
+    amount + tax - discount;
 
 
   const handleRemoveItem = (index: number) => {
     if (items.length === 1) {
       setItems([{ ...initialRows }]);
     } else {
-      const newData = items.filter((_:any, i:any) => i !== index);
+      const newData = items.filter((_: any, i: any) => i !== index);
       setItems(newData);
     }
     // updateTotalAmounts(tableData);
   };
 
-  const handleAddItem = () => {
+  const handleAddItem = (items:any) => {
     setItems([
       ...items,
       {
@@ -277,7 +277,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
         tax1: "",
         taxId1: "",
         tax2: "P",
-        discount: '',
+        discount: 0,
         discountAmount: '',
         netAmount: '',
         documentNo: formik.values.document_No,
@@ -286,7 +286,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
         supplier: formik.values.supplierName,
         orderNo: formik.values.orderNo,
         mrnNo: "",
-        mrnDate: defaultValuestime,
+        mrnDate: new Date().toISOString().slice(0, 10),
         taxId3: "",
         tax3: "",
       },
@@ -297,7 +297,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
     (acc: any, item: any) => acc + item.netAmount,
     0
   );
-  const getPurchaseOrderById = async (id: any, docNo:any) => {
+  const getPurchaseOrderById = async (id: any, docNo: any) => {
 
     const collectData = {
       id: id
@@ -332,6 +332,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
         mrnDate: transData[i]["mrnDate"],
         taxId3: transData[i]["taxId3"],
         tax3: transData[i]["tax3"],
+        
       });
     }
     arr.push({ ...initialRows });
@@ -346,7 +347,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
       doc_Date: dayjs(location.state.doc_Date).format("YYYY-MM-DD"),
       p_InvoiceDate: dayjs(location.state.p_InvoiceDate).format("YYYY-MM-DD"),
       supplierName: location.state.supplierName,
-      supplierId:location.state.supplierId,
+      supplierId: location.state.supplierId,
       orderNo: location.state.orderNo,
       tax: location.state.tax,
       freight: location.state.freight,
@@ -390,16 +391,16 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
         const baseItem = {
           ...item,
           documentNo: values.document_No,
-          documentDate: defaultValuestime,
+          documentDate: new Date().toISOString().slice(0, 10),
           invoiceNo: values.p_InvoiceNo,
           supplier: values.supplierName,
           orderNo: values.orderNo,
           mrnNo: "",
-          mrnDate: defaultValuestime,
+          mrnDate: new Date().toISOString().slice(0, 10),
           taxId3: "",
           tax3: "",
         };
-        
+
 
         if (index === 0) {
           return baseItem;
@@ -495,7 +496,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
           <form onSubmit={formik.handleSubmit}>
             {toaster && <ToastApp />}
             <Grid item xs={12} container spacing={2}>
-            <Grid item lg={4} xs={12}>
+              <Grid item lg={4} xs={12}>
                 <TextField
                   id="document_No"
                   name="document_No"
@@ -508,6 +509,10 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                   fullWidth
                   // onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
+
+                  InputProps={{readOnly: true}}
+
+
                 />
               </Grid>
 
@@ -528,6 +533,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                   value={formik.values.p_InvoiceNo}
                   placeholder={t("text.p_InvoiceNo")}
                   onChange={formik.handleChange}
+                  InputProps={{readOnly: true}}
                 />
               </Grid>
 
@@ -549,7 +555,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                 />
               </Grid> */}
 
-<Grid item lg={4} xs={12}>
+              <Grid item lg={4} xs={12}>
                 <TextField
                   id="p_InvoiceDate"
                   name="p_InvoiceDate"
@@ -583,11 +589,11 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                   disablePortal
                   id="combo-box-demo"
                   options={Option}
-                    value={
-                      Option.find(
-                        (option: any) => option.value === formik.values.supplierId
-                      ) || null
-                    }
+                  value={
+                    Option.find(
+                      (option: any) => option.value === formik.values.supplierId
+                    ) || null
+                  }
                   fullWidth
                   size="small"
                   onChange={(event, newValue: any) => {
@@ -622,7 +628,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                   id="orderNo"
                   name="orderNo"
                   label={
-                    <CustomLabel text={t("text.orderNo")} required={true} value={formik.values.orderNo}/>
+                    <CustomLabel text={t("text.orderNo")} required={true} value={formik.values.orderNo} />
                   }
                   value={formik.values.orderNo}
                   placeholder={t("text.orderNo")}
@@ -630,6 +636,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                   fullWidth
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
+                  InputProps={{readOnly: true}}
                   error={
                     formik.touched.orderNo && Boolean(formik.errors.orderNo)
                   }
@@ -737,8 +744,8 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                   fullWidth
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  //error={formik.touched.remark && Boolean(formik.errors.remark)}
-                  //helperText={formik.touched.remark && formik.errors.remark}
+                //error={formik.touched.remark && Boolean(formik.errors.remark)}
+                //helperText={formik.touched.remark && formik.errors.remark}
                 />
               </Grid>
 
@@ -778,7 +785,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                           padding: "5px",
                         }}
                       >
-                        {t("text.Unit")}
+                        {t("text.unit")}
                       </th>
                       <th
                         style={{
@@ -876,7 +883,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                     {items.map((item: any, index: any) => (
                       <tr key={item.id} style={{ border: "1px solid black" }}>
                         {/* <TableCell>{index + 1}</TableCell> */}
-                        <td style={{ width: "180px", padding:"5px" }}>
+                        <td style={{ width: "180px", padding: "5px" }}>
                           <Autocomplete
                             disablePortal
                             id="combo-box-demo"
@@ -889,7 +896,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                               ) || null
                             }
                             onChange={(event, newValue: any) => {
-                              handleItemChange(index,"itemNameId",newValue);
+                              handleItemChange(index, "itemNameId", newValue);
                             }}
                             renderInput={(params) => (
                               <TextField
@@ -950,6 +957,8 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                                 (e.target.value)
                               )
                             }
+
+                            InputProps={{ readOnly: true, }}
                             size="small"
                           />
                         </td>
@@ -969,7 +978,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                               handleItemChange(
                                 index,
                                 "tax1",
-                                newValue 
+                                newValue
                               );
                             }}
                             renderInput={(params) => (
@@ -980,7 +989,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                             )}
                           />
                         </td>
-                        <td>{item.taxId1}</td>
+                        <td>{item.taxId2}</td>
                         <td>
                           <Select
                             value={item.tax2}
@@ -1004,6 +1013,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                                 (e.target.value)
                               )
                             }
+                            onFocus={(e) => e.target.select()}
                             size="small"
                           />
                         </td>
@@ -1028,7 +1038,7 @@ const calculateNetAmount = (amount: number, tax: number, discount: number) =>
                       </td>
                       <td colSpan={3}>
                         <strong style={{ color: "#fff" }}>
-                        {isNaN(totalAmount) ? '0.00' : Number(totalAmount).toFixed(2)}
+                          {isNaN(totalAmount) ? '0.00' : Number(totalAmount).toFixed(2)}
                         </strong>
                       </td>
                     </tr>

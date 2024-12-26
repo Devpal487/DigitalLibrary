@@ -116,6 +116,7 @@ export default function DigitalContentList() {
   const [WishOpen, setWishOpen] = React.useState(false);
   const [heartData, setHeartData] = React.useState<any>([]);
   const [timerCheck, setTimerCheck] = useState<NodeJS.Timeout | null>(null);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   const [IsTitle, setTitle] = useState<any>([
     { value: "-1", label: t("text.Title") },
@@ -294,7 +295,7 @@ export default function DigitalContentList() {
           },
           {
             field: "givenFileName",
-            headerName: " Related File Name",
+            headerName: t("text.RelatedFileName"),
             flex: 1,
             renderCell: (params: any) => {
               const fileName = params.row.givenFileName;
@@ -336,12 +337,12 @@ export default function DigitalContentList() {
           },
           {
             field: "comment",
-            headerName: "Comment",
+            headerName: t("text.Comment"),
             flex: 1,
           },
           {
             field: "dateSaved",
-            headerName: "Save Date ",
+            headerName: t("text.SaveDate"),
             flex: 0.7,
             renderCell: (params: {
               row: { dateSaved: moment.MomentInput };
@@ -427,7 +428,7 @@ export default function DigitalContentList() {
           },
           {
             field: "givenFileName",
-            headerName: "Related File Name",
+            headerName: t("text.RelatedFileName"),
             flex: 1,
             headerClassName: "grid-header",
             renderCell: (params: any) => {
@@ -463,13 +464,13 @@ export default function DigitalContentList() {
           },
           {
             field: "comment",
-            headerName: "Comment",
+            headerName: t("text.Comment"),
             flex: 1,
             headerClassName: "grid-header",
           },
           {
             field: "dateSaved",
-            headerName: "Save Date",
+            headerName: t("text.SaveDate"),
             flex: 0.7,
             headerClassName: "grid-header",
             renderCell: (params: {
@@ -724,7 +725,7 @@ export default function DigitalContentList() {
               </Grid>
               <Grid xs={12} sm={4} lg={4} item>
                 <TranslateTextField
-                  label="Search By Description"
+                  label={t("text.SearchByDescription")}
                   value={formik.values.description}
                   onChangeText={(text: string) =>
                     handleConversionChange("description", text)
@@ -737,7 +738,7 @@ export default function DigitalContentList() {
                 <TextField
                   type="date"
                   InputLabelProps={{ shrink: true }}
-                  label={<CustomLabel text="From Date" />}
+                  label={<CustomLabel text={t("text.FromDate")} />}
                   size="small"
                   fullWidth
                   style={{ backgroundColor: "white" }}
@@ -750,7 +751,7 @@ export default function DigitalContentList() {
                 <TextField
                   type="date"
                   InputLabelProps={{ shrink: true }}
-                  label={<CustomLabel text="To Date" />}
+                  label={<CustomLabel text={t("text.ToDate")} />}
                   size="small"
                   fullWidth
                   style={{ backgroundColor: "white" }}
@@ -761,7 +762,7 @@ export default function DigitalContentList() {
               </Grid>
               <Grid xs={12} sm={4} lg={4} item>
                 <TranslateTextField
-                  label="Search By Group Name"
+                  label={t("text.SearchByGroupName")}
                   value={formik.values.groupName}
                   onChangeText={(text: string) =>
                     handleConversionChange("groupName", text)
@@ -772,7 +773,7 @@ export default function DigitalContentList() {
               </Grid>
               <Grid xs={12} sm={4} lg={4} item>
                 <TranslateTextField
-                  label="Search By File Name"
+                  label={t("text.SearchByFileName")}
                   value={formik.values.fileNames}
                   onChangeText={(text: string) =>
                     handleConversionChange("fileNames", text)
@@ -862,7 +863,7 @@ export default function DigitalContentList() {
                         fontSize={{ xs: 14, sm: 17 }}
                         fontWeight={600}
                       >
-                        Title/Collection:
+                        {t("text.TitleOrCollection")}:
                       </Typography>
                       {item.title}
                     </Grid>
@@ -873,9 +874,42 @@ export default function DigitalContentList() {
                         fontSize={{ xs: 14, sm: 17 }}
                         fontWeight={600}
                       >
-                        Description:
-                      </Typography>{" "}
-                      {item.descr}
+                        {t("text.Description")}:
+                      </Typography>
+                      {(() => {
+                        const words = item.descr.split(" ");
+                        const isLongDescription = words.length > 35;
+                        const shortDescription = words.slice(0, 35).join(" ");
+
+                        if (isLongDescription) {
+                          return (
+                            <>
+                              <Typography fontSize={{ xs: 14, sm: 17 }}>
+                                {showFullDescription
+                                  ? item.descr
+                                  : shortDescription}
+                              </Typography>
+                              <button
+                                style={{
+                                  color: "#BA160C",
+                                  cursor: "pointer",
+                                  background: "none",
+                                  border: "none",
+                                }}
+                                onClick={() =>
+                                  setShowFullDescription(!showFullDescription)
+                                }
+                              >
+                                {showFullDescription
+                                  ? t("text.ShowLess")
+                                  : t("text.ShowMore")}
+                              </button>
+                            </>
+                          );
+                        } else {
+                          return <>{item.descr}</>;
+                        }
+                      })()}
                     </Grid>
                   )}
                   {item.urlIfAny && (
@@ -923,7 +957,7 @@ export default function DigitalContentList() {
                         fontSize={{ xs: 14, sm: 17 }}
                         fontWeight={600}
                       >
-                        Date Saved:
+                        {t("text.DateSaved")}:
                       </Typography>
                       {new Date(item.dateSaved).toLocaleDateString()}
                     </Grid>
@@ -989,7 +1023,7 @@ export default function DigitalContentList() {
                       },
                     }}
                   >
-                    Show more
+                    {t("text.Showmore")}
                   </Button>
                 </Grid>
               </CardContent>
@@ -997,7 +1031,7 @@ export default function DigitalContentList() {
               <SwipeableDrawer
                 anchor="right"
                 open={profileDrawerOpen}
-                onClose={() => {}}
+                onClose={() => { }}
                 onOpen={() => setProfileDrawerOpen(true)}
                 style={{
                   zIndex: 1300,
@@ -1072,7 +1106,7 @@ export default function DigitalContentList() {
         <SwipeableDrawer
           anchor="right"
           open={WishOpen}
-          onClose={() => {}}
+          onClose={() => { }}
           onOpen={() => HandleWishList()}
           style={{
             zIndex: 1300,
@@ -1104,7 +1138,7 @@ export default function DigitalContentList() {
                 padding: "3vh",
               }}
             >
-              Fevorite List Content
+              {t("text.FevoriteListContent")}
             </p>
 
             <DataGrids

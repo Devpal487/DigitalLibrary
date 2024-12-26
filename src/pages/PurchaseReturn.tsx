@@ -241,7 +241,7 @@ export default function PurchaseReturn() {
             sx={{ padding: "20px" }}
             align="left"
           >
-            Purchase Return
+            {t("text.PurchaseReturn")}
           </Typography>
           <Divider />
 

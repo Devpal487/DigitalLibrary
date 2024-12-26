@@ -1,129 +1,124 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Card, Box, Divider, Paper, Dialog } from "@mui/material";
-import { ConfirmDialog } from "primereact/confirmdialog";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
-
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import CloseIcon from '@mui/icons-material/Close';
+import { Paper, Dialog } from "@mui/material";
+import { Chat } from "../../utils/Url"; // Your API helper
 
 import "./ChatBot.css";
 import { useNavigate } from "react-router-dom";
-interface ChatBotProps {
-  open: boolean; // The modal open state
-  onClose: () => void; // Function to close the modal
-}
 
-// Mock API for chatbot responses
-const API = {
-  GetChatbotResponse: async (message: string) => {
-    return new Promise<string>((resolve) => {
-      setTimeout(() => {
-        resolve(
-          message === "hi" ? "Welcome to the chatbot!" : `echo: ${message}`
-        );
-      }, 2000);
-    });
-  },
-};
+interface ChatBotProps {
+  open: boolean;
+  onClose: () => void;
+}
 
 const ChatBot: React.FC<ChatBotProps> = ({ open, onClose }) => {
   const el = useRef<HTMLDivElement | null>(null);
-  const [messages, setMessages] = useState<JSX.Element[]>([]);
+  const [messages, setMessages] = useState<JSX.Element[]>([]);  
+  const [Chattext, setChattext] = useState<string>("");  
 
-  useEffect(() => {
-    const loadWelcomeMessage = async () => {
-      const welcomeMessage = await API.GetChatbotResponse("hi");
-      setMessages([<BotMessage key="0" message={welcomeMessage} />]);
-    };
-    loadWelcomeMessage();
-  }, []);
+  
+  const getChatBot = (message: string) => {
 
-  const sendMessage = async (text: string) => {
-    setMessages((prev) => [
-      ...prev,
-      <UserMessage key={prev.length + 1} text={text} />,
-      <BotMessage
-        key={prev.length + 2}
-        fetchMessage={() => API.GetChatbotResponse(text)}
-      />,
-    ]);
+    const collectData = {
+      input_text : message
+    }
+    
+    Chat.post(`project1/`,collectData).then((res:any) => {
+
+      console.log('res',res)
+      const ChatRes = res?.data?.response; 
+      if (ChatRes) {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          <BotMessage key={prevMessages.length + 1} message={ChatRes} />,
+        ]);
+      }
+    }).catch((error) => {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        <BotMessage key={prevMessages.length + 1} message="Sorry, I couldn't understand that." />,
+      ]);
+    });
   };
 
+  
+  useEffect(() => {
+    getChatBot("hii"); 
+  }, []);
+
+  
+  const sendMessage = async (text: string) => {
+    if (text.trim()) {
+      
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        <UserMessage key={prevMessages.length + 1} text={text} />,
+      ]);
+      
+      
+      setChattext("");
+      
+     
+      setTimeout(() => {
+        getChatBot(text);
+      }, 500);
+    }
+  };
+
+  
   useEffect(() => {
     el.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   return (
-    <Dialog open={open} onClose={onClose} >
+    <Dialog open={open} onClose={onClose}>
       <Paper>
-       
         <div className="chatbot">
           <div className="header">
             ChatBot
-            {/* <span className="close-icon" onClick={onClose}>
-              <CloseIcon />
-            </span> */}
           </div>
           <div className="messages">
             {messages}
             <div ref={el} />
           </div>
-          <InputField onSend={sendMessage} />
+          <InputField text={Chattext} setText={setChattext} onSend={sendMessage} />
         </div>
       </Paper>
     </Dialog>
   );
 };
-// UserMessage Component
+
+
 const UserMessage = ({ text }: { text: string }) => (
   <div className="message-container">
     <div className="user-message">{text}</div>
   </div>
 );
 
-// BotMessage Component
-const BotMessage = ({
-  fetchMessage,
-  message,
-}: {
-  fetchMessage?: () => Promise<string>;
-  message?: string;
-}) => {
-  const [isLoading, setLoading] = useState(!message);
-  const [msg, setMsg] = useState<string>(message || "");
 
-  useEffect(() => {
-    if (fetchMessage) {
-      const loadMessage = async () => {
-        const response = await fetchMessage();
-        setLoading(false);
-        setMsg(response);
-      };
-      loadMessage();
-    }
-  }, [fetchMessage]);
-
+const BotMessage = ({ message }: { message: string }) => {
   return (
     <div className="message-container">
-      <div className="bot-message">{isLoading ? "..." : msg}</div>
+      <div className="bot-message">{message}</div>
     </div>
   );
 };
 
-// InputField Component
-const InputField = ({ onSend }: { onSend: (text: string) => void }) => {
-  const [text, setText] = useState("");
 
+const InputField = ({
+  text,
+  setText,
+  onSend,
+}: {
+  text: string;
+  setText: React.Dispatch<React.SetStateAction<string>>;
+  onSend: (text: string) => void;
+}) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setText(e.target.value);
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    if (text.trim()) {
-      onSend(text);
-      setText("");
-    }
+    onSend(text);  
   };
 
   return (

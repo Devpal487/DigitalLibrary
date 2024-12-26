@@ -1072,6 +1072,7 @@ const EditSaleReturnInvoice = () => {
                               handleItemChange(index, "rate", e.target.value)
                             }
                             size="small"
+                            InputProps={{readOnly: true,}}
                           />
                         </td>
                         <td>{item.amount ? item.amount : 0}</td>
@@ -1139,6 +1140,7 @@ const EditSaleReturnInvoice = () => {
                                 e.target.value
                               )
                             }
+                            onFocus={(e) => e.target.select()}
                             size="small"
                           />
                         </td>

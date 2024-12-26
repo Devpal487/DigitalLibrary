@@ -36,22 +36,24 @@ import { Language } from "react-transliterate";
 import { getinstId, getMenuData } from "../utils/Constant";
 import ButtonWithLoader from "../utils/ButtonWithLoader";
 import DataGrids from "../utils/Datagrids";
-import { GridColDef } from "@mui/x-data-grid";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import CloseIcon from "@mui/icons-material/Close";
 
 const style = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: "80%",
-  height: "80%",
+  // position: "absolute" as "absolute",
+  marginTop: "3%",
+  marginLeft: "5%",
+  justifyContent: "center",
+  alignItem: "center",
+  width: "90%",
+  height: "90%",
   bgcolor: "#f5f5f5",
   border: "1px solid #000",
   boxShadow: 24,
   p: 4,
-  borderRadius: 10,
+  borderRadius: 2,
 };
 
 const Membership = [
@@ -77,8 +79,29 @@ const ClassMaster = (props: Props) => {
   const [columns, setColumns] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [zones, setZones] = useState([]);
+
+  const [isAmount, setAmount] = useState(false);
+  const [columns1, setColumns1] = useState<any>([]);
+  const [timerCheck, setTimerCheck] = useState<NodeJS.Timeout | null>(null);
+  const [selectedCheckboxId, setSelectedCheckboxId] = useState(0);
+
+  const handleCheckbox = (event: any, id: any) => {
+    // Update the state with the checkbox ID
+    if (event.target.checked) {
+      setSelectedCheckboxId(id);
+    } else {
+      setSelectedCheckboxId(0); // Reset the state if unchecked
+    }
+  };
+
   useEffect(() => {
     getStudentTable();
+    getTable();
+    newFormik.setFieldValue("classMasterMod.canRequest", "N");
+    newFormik.setFieldValue("classMasterMod.status", "N");
+    formik.setFieldValue("canRequest", "N");
+    formik.setFieldValue("status", "N");
   }, []);
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -129,6 +152,68 @@ const ClassMaster = (props: Props) => {
     formik.setFieldValue("daysAfterOverdue", row.daysAfterOverdue);
 
     setAccordionExpanded(true);
+
+    //setEditId(row.id);
+  };
+
+  const routeChangeEdit1 = (row: any) => {
+    //console.log(row);
+    newFormik.setFieldValue("classMasterMod.classname", row.classname);
+    newFormik.setFieldValue(
+      "classMasterMod.totalissueddays",
+      row.totalissueddays
+    );
+    newFormik.setFieldValue(
+      "classMasterMod.noofbookstobeissued",
+      row.noofbookstobeissued
+    );
+    newFormik.setFieldValue("classMasterMod.finperday", row.finperday);
+    newFormik.setFieldValue("classMasterMod.reservedays", row.reservedays);
+    newFormik.setFieldValue(
+      "classMasterMod.totalissueddays_jour",
+      row.totalissueddays_jour
+    );
+    newFormik.setFieldValue(
+      "classMasterMod.noofjournaltobeissued",
+      row.noofjournaltobeissued
+    );
+    newFormik.setFieldValue(
+      "classMasterMod.fineperday_jour",
+      row.fineperday_jour
+    );
+    newFormik.setFieldValue(
+      "classMasterMod.reservedays_jour",
+      row.reservedays_jour
+    );
+    newFormik.setFieldValue("classMasterMod.status", row.status);
+    newFormik.setFieldValue("classMasterMod.canRequest", row.canRequest);
+    newFormik.setFieldValue("classMasterMod.valueLimit", row.valueLimit);
+    newFormik.setFieldValue("classMasterMod.days_1Phase", row.days_1Phase);
+    newFormik.setFieldValue("classMasterMod.amt_1Phase", row.amt_1Phase);
+
+    newFormik.setFieldValue("classMasterMod.days_2Phase", row.days_2Phase);
+    newFormik.setFieldValue("classMasterMod.amt_2Phase", row.amt_2Phase);
+    newFormik.setFieldValue("classMasterMod.days_1Phasej", row.days_1Phasej);
+    newFormik.setFieldValue("classMasterMod.amt_1Phasej", row.amt_1Phasej);
+    newFormik.setFieldValue("classMasterMod.days_2Phasej", row.days_2Phasej);
+    newFormik.setFieldValue("classMasterMod.amt_2Phasej", row.amt_2Phasej);
+    newFormik.setFieldValue("classMasterMod.shortname", row.shortname);
+    newFormik.setFieldValue("classMasterMod.userid", row.userid);
+    newFormik.setFieldValue("classMasterMod.policystatus", row.policystatus);
+    newFormik.setFieldValue(
+      "classMasterMod.membershipType",
+      row.membershipType
+    );
+    newFormik.setFieldValue("classMasterMod.security", row.security);
+    newFormik.setFieldValue("classMasterMod.isSecurity", row.isSecurity);
+    newFormik.setFieldValue(
+      "classMasterMod.securityAmount",
+      row.securityAmount
+    );
+    newFormik.setFieldValue(
+      "classMasterMod.daysAfterOverdue",
+      row.daysAfterOverdue
+    );
 
     //setEditId(row.id);
   };
@@ -232,6 +317,108 @@ const ClassMaster = (props: Props) => {
     ...column,
   }));
 
+  const getTable = async () => {
+    try {
+      const response = await api.get(
+        `api/CircUser/Getclassmasterloadingstatus`
+      );
+      const data = response?.data?.data;
+      //console.log("CheckTable", data);
+      const formattedData = data?.map((student: any, index: number) => ({
+        ...student,
+        id: index + 1,
+        serialNo: index + 1,
+      }));
+      setZones(formattedData);
+      if (data.length > 0) {
+        const columns: GridColDef[] = [
+          {
+            field: "actions",
+            // headerClassName: "MuiDataGrid-colCell",
+            headerName: t("text.Action"),
+            width: 80,
+            renderCell: (params) => {
+              return [
+                <Stack
+                  spacing={1}
+                  direction="row"
+                  sx={{ alignItems: "center", marginTop: "5px" }}
+                >
+                  <EditIcon
+                    style={{
+                      fontSize: "20px",
+                      color: "blue",
+                      cursor: "pointer",
+                    }}
+                    className="cursor-pointer"
+                    onClick={() => routeChangeEdit1(params.row)}
+                  />
+                </Stack>,
+              ];
+            },
+          },
+          {
+            field: "serialNo",
+            headerName: t("text.SrNo"),
+            flex: 0.5,
+            headerClassName: "MuiDataGrid-colCell",
+          },
+          {
+            field: "classname",
+            headerName: t("text.MemberGroup"),
+            flex: 1,
+            headerClassName: "MuiDataGrid-colCell",
+          },
+          {
+            field: "totalissueddays",
+            headerName: t("text.totalissueddays"),
+            flex: 1,
+            headerClassName: "MuiDataGrid-colCell",
+          },
+          {
+            field: "noofjournaltobeissued",
+            headerName: t("text.noofjournaltobeissued"),
+            flex: 1,
+            headerClassName: "MuiDataGrid-colCell",
+          },
+          {
+            field: "fineperday_jour",
+            headerName: t("text.fineperday"),
+            flex: 1,
+            headerClassName: "MuiDataGrid-colCell",
+          },
+          {
+            field: "reservedays_jour",
+            headerName: t("text.reservedays"),
+            flex: 1,
+            headerClassName: "MuiDataGrid-colCell",
+          },
+          {
+            field: "valueLimit",
+            headerName: t("text.ValueLimit"),
+            flex: 1,
+            headerClassName: "MuiDataGrid-colCell",
+          },
+
+          {
+            field: "shortname",
+            headerName: t("text.ShortName"),
+            flex: 1,
+            headerClassName: "MuiDataGrid-colCell",
+          },
+        ];
+        setColumns1(columns as any);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      // setLoading(false);
+    }
+  };
+
+  const adjustedColumns1 = columns1.map((column: any) => ({
+    ...column,
+  }));
+
   const getClassTable = () => {
     api.get(`api/Basic/GetCategory`).then((res) => {
       const arr: any = [];
@@ -248,83 +435,98 @@ const ClassMaster = (props: Props) => {
 
   const instId: any = getinstId();
 
-  const SaveClassMaster = () => {
-    const collectData = {
+  const newFormik: any = useFormik({
+    initialValues: {
       classMasterMod: {
-        appId: menuId,
-        appName: menuName,
+        appId: "",
+        appName: "",
         instId: parseInt(instId),
-        classname: formik.values.classname || "",
-        totalissueddays: formik.values.totalissueddays || 0,
-        noofbookstobeissued: formik.values.noofbookstobeissued || 0,
-        finperday: formik.values.finperday || 0,
-        reservedays: formik.values.reservedays || 0,
-        totalissueddays_jour: formik.values.totalissueddays_jour || 0,
-        noofjournaltobeissued: formik.values.noofjournaltobeissued || 0,
-        fineperday_jour: formik.values.fineperday_jour || 0,
-        reservedays_jour: formik.values.reservedays_jour || 0,
-        status: formik.values.status || "",
-        canRequest: formik.values.canRequest || "",
-        valueLimit: formik.values.valueLimit || 0,
-        days_1Phase: formik.values.days_1Phase || 0,
-        amt_1Phase: formik.values.amt_1Phase || 0,
-        days_2Phase: formik.values.days_2Phase || 0,
-        amt_2Phase: formik.values.amt_2Phase || 0,
-        days_1Phasej: formik.values.days_1Phasej || 0,
-        amt_1Phasej: formik.values.amt_1Phasej || 0,
-        days_2Phasej: formik.values.days_2Phasej || 0,
-        amt_2Phasej: formik.values.amt_2Phasej || 0,
-        shortname: formik.values.shortname || "",
-        userid: formik.values.userid || "",
-        policystatus: formik.values.policystatus || "",
-        membershipType: formik.values.membershipType || "",
-        security: formik.values.security || "",
+        classname: "",
+        totalissueddays: 0,
+        noofbookstobeissued: 0,
+        finperday: 0,
+        reservedays: 0,
+        totalissueddays_jour: 0,
+        noofjournaltobeissued: 0,
+        fineperday_jour: 0,
+        reservedays_jour: 0,
+        status: "",
+        canRequest: "",
+        valueLimit: 0,
+        days_1Phase: 0,
+        amt_1Phase: 0,
+        days_2Phase: 0,
+        amt_2Phase: 0,
+        days_1Phasej: 0,
+        amt_1Phasej: 0,
+        days_2Phasej: 0,
+        amt_2Phasej: 0,
+        shortname: "",
+        userid: "",
+        policystatus: "",
+        membershipType: "",
+        security: "",
         isSecurity: true,
-        securityAmount: formik.values.securityAmount || 0,
-        daysAfterOverdue: formik.values.daysAfterOverdue || 0,
+        securityAmount: 0,
+        daysAfterOverdue: 0,
       },
       classMasterLoadingMod: {
+        appId: "",
+        appName: "",
+        instId: parseInt(instId),
+        classname: "",
+        loadingStatus: 0,
+        status: "",
+        totalissueddays: 0,
+        noofbookstobeissued: 0,
+        finperday: 0,
+        reservedays: 0,
+        totalissueddays_jour: 0,
+        noofjournaltobeissued: 0,
+        fineperday_jour: 0,
+        reservedays_jour: 0,
+        valueLimit: 0,
+        days_1phase: 0,
+        amt_1phase: 0,
+        days_2phase: 0,
+        amt_2phase: 0,
+        days_1phasej: 0,
+        amt_1phasej: 0,
+        days_2phasej: 0,
+        amt_2phasej: 0,
+        shortname: "",
+        isSecurity: true,
+        securityAmount: 0,
+        daysAfterOverDue: 0,
+      },
+    },
+
+    onSubmit: async (values) => {
+      newFormik.values.classMasterLoadingMod = {
+        ...newFormik.values.classMasterMod,
+
+        loadingStatus: selectedCheckboxId,
         appId: menuId,
         appName: menuName,
-        instId: parseInt(instId),
-        classname: formik.values.classname || "",
-        loadingStatus: 0,
-        status: formik.values.status || "",
-        totalissueddays: formik.values.totalissueddays || 0,
-        noofbookstobeissued: formik.values.noofbookstobeissued || 0,
-        finperday: formik.values.finperday || 0,
-        reservedays: formik.values.reservedays || 0,
-        totalissueddays_jour: formik.values.totalissueddays_jour || 0,
-        noofjournaltobeissued: formik.values.noofjournaltobeissued || 0,
-        fineperday_jour: formik.values.fineperday_jour || 0,
-        reservedays_jour: formik.values.reservedays_jour || 0,
-        valueLimit: formik.values.valueLimit || 0,
-        days_1phase: formik.values.days_1Phase || 0,
-        amt_1phase: formik.values.amt_1Phase || 0,
-        days_2phase: formik.values.days_2Phase || 0,
-        amt_2phase: formik.values.amt_2Phase || 0,
-        days_1phasej: formik.values.days_1Phasej || 0,
-        amt_1phasej: formik.values.amt_1Phasej || 0,
-        days_2phasej: formik.values.days_2Phasej || 0,
-        amt_2phasej: formik.values.amt_2Phasej || 0,
-        shortname: formik.values.shortname || "",
-        isSecurity: true,
-        securityAmount: formik.values.securityAmount || 0,
-        daysAfterOverDue: formik.values.daysAfterOverdue || 0,
-      },
-    };
+      };
 
-    api
-      .post(`api/CircUser/AddUpdCircClassMasterLoading`, collectData)
-      .then((res) => {
-        if (res.data.isSuccess) {
-          toast.success(res.data.mesg);
-          formik.resetForm();
-        } else {
-          toast.error(res.data.mesg);
-        }
-      });
-  };
+      newFormik.values.classMasterMod.appId = menuId;
+      newFormik.values.classMasterMod.appName = String(menuName);
+
+      const response = await api.post(
+        `api/CircUser/AddUpdCircClassMasterLoading`,
+        values
+      );
+
+      if (response.data.isSuccess) {
+        toast.success(response.data.mesg);
+        newFormik.resetForm();
+        getTable();
+      } else {
+        toast.error(response.data.mesg);
+      }
+    },
+  });
 
   const handleCheckboxChange = (event: any) => {
     if (event.target.checked) {
@@ -348,6 +550,22 @@ const ClassMaster = (props: Props) => {
       formik.setFieldValue("canRequest", "Y");
     } else {
       formik.setFieldValue("canRequest", "N");
+    }
+  };
+
+  const handleDeactivate1 = (event: any) => {
+    if (event.target.checked) {
+      newFormik.setFieldValue("classMasterMod.status", "Y");
+    } else {
+      newFormik.setFieldValue("classMasterMod.status", "N");
+    }
+  };
+
+  const handleRequest1 = (event: any) => {
+    if (event.target.checked) {
+      newFormik.setFieldValue("classMasterMod.canRequest", "Y");
+    } else {
+      newFormik.setFieldValue("classMasterMod.canRequest", "N");
     }
   };
 
@@ -382,14 +600,6 @@ const ClassMaster = (props: Props) => {
     noofbookstobeissued: Yup.number().test(
       "required",
       "Issued Item Limit is required",
-      function (value: any) {
-        return value > 0;
-      }
-    ),
-
-    reservedays: Yup.number().test(
-      "required",
-      "Reservation Limit (Days) is required",
       function (value: any) {
         return value > 0;
       }
@@ -488,6 +698,7 @@ const ClassMaster = (props: Props) => {
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
+      console.log("values", values);
       const response = await api.post(
         `api/CircUser/InsertCircClassMaster`,
         values
@@ -496,22 +707,12 @@ const ClassMaster = (props: Props) => {
       if (response.data.isSuccess) {
         toast.success(response.data.mesg);
         formik.resetForm();
+        getStudentTable();
       } else {
         toast.error(response.data.mesg);
       }
     },
   });
-
-  const requiredFields = [
-    "totalissueddays",
-    "noofbookstobeissued",
-    "reservedays",
-    "finperday",
-    "days_1Phase",
-    "days_2Phase",
-    "amt_1Phase",
-    "amt_2Phase",
-  ];
 
   const handleConversionChange = (params: any, text: string) => {
     formik.setFieldValue(params, text);
@@ -606,14 +807,19 @@ const ClassMaster = (props: Props) => {
               </Grid>
 
               <Grid xs={12} sm={4} item>
-                <TranslateTextField
-                  label={t("text.ShortName")}
-                  value={formik.values.shortname}
-                  onChangeText={(text: string) =>
-                    handleConversionChange("shortname", text)
+                <TextField
+                  id="shortname"
+                  name="shortname"
+                  inputProps={{ maxLength: 5 }}
+                  label={
+                    <CustomLabel text={t("text.ShortName")} required={false} />
                   }
-                  required={true}
-                  lang={lang}
+                  value={formik.values.shortname}
+                  placeholder={t("text.ShortName")}
+                  size="small"
+                  fullWidth
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                 />
                 {formik.touched.shortname && formik.errors.shortname ? (
                   <div style={{ color: "red", margin: "5px" }}>
@@ -637,8 +843,14 @@ const ClassMaster = (props: Props) => {
                   placeholder={t("text.MaxValueLimit")}
                   size="small"
                   fullWidth
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    formik.setFieldValue(
+                      "valueLimit",
+                      isNaN(value) ? "" : value
+                    );
+                  }}
+                  onFocus={(e) => e.target.select()}
                 />
               </Grid>
 
@@ -690,8 +902,11 @@ const ClassMaster = (props: Props) => {
                   // }
                   onChange={(event, newValue: any) => {
                     formik.setFieldValue("security", newValue?.value + "");
-                    formik.setFieldTouched("security", true);
-                    formik.setFieldTouched("security", false);
+                    if (newValue?.value === "Y") {
+                      setAmount(true);
+                    } else if (newValue?.value === "N") {
+                      setAmount(false);
+                    }
                   }}
                   renderInput={(params) => (
                     <TextField
@@ -706,28 +921,39 @@ const ClassMaster = (props: Props) => {
                   )}
                 />
               </Grid>
-
-              <Grid item lg={4} xs={12}>
-                <TextField
-                  id="securityAmount"
-                  name="securityAmount"
-                  type="number"
-                  inputProps={{ maxLength: 10 }}
-                  label={
-                    <CustomLabel text={t("text.Ammount")} required={false} />
-                  }
-                  //value={formik.values.circUser.phone1}
-                  placeholder={t("text.Ammount")}
-                  size="small"
-                  fullWidth
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-              </Grid>
+              {isAmount && (
+                <Grid item lg={4} xs={12}>
+                  <TextField
+                    id="securityAmount"
+                    name="securityAmount"
+                    inputProps={{ maxLength: 10 }}
+                    label={
+                      <CustomLabel text={t("text.Ammount")} required={false} />
+                    }
+                    value={formik.values.securityAmount}
+                    placeholder={t("text.Ammount")}
+                    size="small"
+                    fullWidth
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value);
+                      formik.setFieldValue(
+                        "securityAmount",
+                        isNaN(value) ? "" : value
+                      );
+                    }}
+                    onFocus={(e) => e.target.select()}
+                  />
+                </Grid>
+              )}
 
               <Grid item lg={4} xs={12}>
                 <FormControlLabel
-                  control={<Checkbox checked={formik.values.status === "Y"} onChange={handleDeactivate} />}
+                  control={
+                    <Checkbox
+                      checked={formik.values.status === "Y" ? true : false}
+                      onChange={handleDeactivate}
+                    />
+                  }
                   label={t("text.AllowedToBeDeactivated")}
                 />
               </Grid>
@@ -736,7 +962,7 @@ const ClassMaster = (props: Props) => {
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={formik.values.canRequest === "Y"}
+                      checked={formik.values.canRequest === "Y" ? true : false}
                       onChange={handleRequest}
                     />
                   }
@@ -756,7 +982,7 @@ const ClassMaster = (props: Props) => {
                     sx={{ backgroundColor: "#2B4593", color: "#ffff" }}
                   >
                     <Typography style={{ fontWeight: 600, fontSize: "16px" }}>
-                      Books Related
+                      {t("text.BooksRelated")}
                     </Typography>
                   </AccordionSummary>
                   <AccordionDetails>
@@ -800,7 +1026,7 @@ const ClassMaster = (props: Props) => {
                           component="div"
                           align="left"
                         >
-                          Issued Days Limit* :
+                          {t("text.IssueDayesLimit")}* :
                         </Typography>
                       </Grid>
 
@@ -812,9 +1038,14 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "totalissueddays",
+                              isNaN(value) ? "" : value
+                            );
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
 
                         {formik.touched.totalissueddays &&
@@ -833,9 +1064,14 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "totalissueddays_jour",
+                              isNaN(value) ? "" : value
+                            );
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
                       </Grid>
 
@@ -846,7 +1082,7 @@ const ClassMaster = (props: Props) => {
                           component="div"
                           align="left"
                         >
-                          Issued Item Limit* :
+                          {t("text.IssuedItemLimit")}* :
                         </Typography>
                       </Grid>
 
@@ -858,9 +1094,14 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "noofbookstobeissued",
+                              isNaN(value) ? "" : value
+                            );
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
 
                         {formik.touched.noofbookstobeissued &&
@@ -879,9 +1120,14 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "noofjournaltobeissued",
+                              isNaN(value) ? "" : value
+                            );
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
                       </Grid>
 
@@ -892,7 +1138,7 @@ const ClassMaster = (props: Props) => {
                           component="div"
                           align="left"
                         >
-                          Reservation Limit (Days) * :
+                          {t("text.ReservationLimitDays")} :
                         </Typography>
                       </Grid>
 
@@ -904,17 +1150,15 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "reservedays",
+                              isNaN(value) ? "" : value
+                            );
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
-
-                        {formik.touched.reservedays &&
-                        formik.errors.reservedays ? (
-                          <div style={{ color: "red", margin: "5px" }}>
-                            {String(formik.errors.reservedays)}
-                          </div>
-                        ) : null}
                       </Grid>
 
                       <Grid item lg={4} xs={12}>
@@ -925,9 +1169,14 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "reservedays_jour",
+                              isNaN(value) ? "" : value
+                            );
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
                       </Grid>
 
@@ -938,7 +1187,7 @@ const ClassMaster = (props: Props) => {
                           component="div"
                           align="left"
                         >
-                          Over Due Charges Per Day * :
+                          {t("text.OverDueChargesPerDay")}* :
                         </Typography>
                       </Grid>
 
@@ -950,9 +1199,14 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "finperday",
+                              isNaN(value) ? "" : value
+                            );
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
 
                         {formik.touched.finperday && formik.errors.finperday ? (
@@ -969,9 +1223,14 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "fineperday_jour",
+                              isNaN(value) ? "" : value
+                            );
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
                       </Grid>
 
@@ -982,7 +1241,7 @@ const ClassMaster = (props: Props) => {
                           component="div"
                           align="left"
                         >
-                          Phase - I Days Limit :
+                          {t("text.PhaseIDaysLimit")} :
                         </Typography>
                       </Grid>
 
@@ -994,9 +1253,30 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value: any = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "days_1Phase",
+                              isNaN(value) ? "" : value
+                            );
+
+                            if (value !== 0 || value !== null) {
+                              if (timerCheck) {
+                                clearTimeout(timerCheck);
+                              }
+
+                              if (value <= formik.values.totalissueddays) {
+                                const checkResult = setTimeout(() => {
+                                  alert(
+                                    " Phase - I Days Limit must be greater than Issue days limit"
+                                  );
+                                  formik.setFieldValue("days_1Phase", "");
+                                }, 700);
+                                setTimerCheck(checkResult);
+                              }
+                            }
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
 
                         {formik.touched.days_1Phase &&
@@ -1014,9 +1294,14 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "days_1Phasej",
+                              isNaN(value) ? "" : value
+                            );
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
                       </Grid>
 
@@ -1027,7 +1312,7 @@ const ClassMaster = (props: Props) => {
                           component="div"
                           align="left"
                         >
-                          Phase - I Over Due Charge Per Day * :
+                          {t("text.PhaseIOverDueChargePerDay")} * :
                         </Typography>
                       </Grid>
 
@@ -1039,9 +1324,30 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "days_2Phase",
+                              isNaN(value) ? "" : value
+                            );
+
+                            if (value !== 0 || value !== null) {
+                              if (timerCheck) {
+                                clearTimeout(timerCheck);
+                              }
+
+                              if (value <= formik.values.finperday) {
+                                const checkResult = setTimeout(() => {
+                                  alert(
+                                    " Phase - I Over Due Charge Per Day  must be greater than Over Due Charges Per Day"
+                                  );
+                                  formik.setFieldValue("days_2Phase", "");
+                                }, 700);
+                                setTimerCheck(checkResult);
+                              }
+                            }
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
 
                         {formik.touched.days_2Phase &&
@@ -1059,9 +1365,14 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "days_2Phasej",
+                              isNaN(value) ? "" : value
+                            );
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
                       </Grid>
 
@@ -1072,7 +1383,7 @@ const ClassMaster = (props: Props) => {
                           component="div"
                           align="left"
                         >
-                          Phase - II Days Limit* :
+                          {t("text.PhaseIIDaysLimit")}* :
                         </Typography>
                       </Grid>
 
@@ -1084,9 +1395,30 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "amt_1Phase",
+                              isNaN(value) ? "" : value
+                            );
+
+                            if (value !== 0 || value !== null) {
+                              if (timerCheck) {
+                                clearTimeout(timerCheck);
+                              }
+
+                              if (value <= formik.values.days_1Phase) {
+                                const checkResult = setTimeout(() => {
+                                  alert(
+                                    "Phase - II Days Limit must be greater than Phase - I Days Limit "
+                                  );
+                                  formik.setFieldValue("amt_1Phase", "");
+                                }, 700);
+                                setTimerCheck(checkResult);
+                              }
+                            }
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
                         {formik.touched.amt_1Phase &&
                         formik.errors.amt_1Phase ? (
@@ -1103,9 +1435,14 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "amt_1Phasej",
+                              isNaN(value) ? "" : value
+                            );
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
                       </Grid>
 
@@ -1116,7 +1453,7 @@ const ClassMaster = (props: Props) => {
                           component="div"
                           align="left"
                         >
-                          Phase - II Over Due Charge Per Day* :
+                          {t("text.PhaseIIOverDueChargePerDay")} * :
                         </Typography>
                       </Grid>
 
@@ -1128,9 +1465,30 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "amt_2Phase",
+                              isNaN(value) ? "" : value
+                            );
+
+                            if (value !== 0 || value !== null) {
+                              if (timerCheck) {
+                                clearTimeout(timerCheck);
+                              }
+
+                              if (value <= formik.values.days_2Phase) {
+                                const checkResult = setTimeout(() => {
+                                  alert(
+                                    " Phase - II Over Due Charge Per Day  must be greater than  Phase - I Over Due Charges Per Day"
+                                  );
+                                  formik.setFieldValue("amt_2Phase", "");
+                                }, 700);
+                                setTimerCheck(checkResult);
+                              }
+                            }
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
                         {formik.touched.amt_2Phase &&
                         formik.errors.amt_2Phase ? (
@@ -1147,9 +1505,14 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "amt_2Phasej",
+                              isNaN(value) ? "" : value
+                            );
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
                       </Grid>
 
@@ -1160,7 +1523,7 @@ const ClassMaster = (props: Props) => {
                           component="div"
                           align="left"
                         >
-                          Days After Overdue* :
+                          {t("text.DaysAfterOverdueStops")}* :
                         </Typography>
                       </Grid>
 
@@ -1172,9 +1535,30 @@ const ClassMaster = (props: Props) => {
                           inputProps={{ maxLength: 10 }}
                           size="small"
                           fullWidth
-                          onChange={formik.handleChange}
-                          onBlur={formik.handleBlur}
-                          type="number"
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            formik.setFieldValue(
+                              "daysAfterOverdue",
+                              isNaN(value) ? "" : value
+                            );
+
+                            if (value !== 0 || value !== null) {
+                              if (timerCheck) {
+                                clearTimeout(timerCheck);
+                              }
+
+                              if (value <= formik.values.amt_2Phase) {
+                                const checkResult = setTimeout(() => {
+                                  alert(
+                                    " Days After Overdue Stops  must be greater than  Phase - II Over Due Charges Per Day"
+                                  );
+                                  formik.setFieldValue("daysAfterOverdue", "");
+                                }, 700);
+                                setTimerCheck(checkResult);
+                              }
+                            }
+                          }}
+                          onFocus={(e) => e.target.select()}
                         />
                       </Grid>
                     </Grid>
@@ -1186,7 +1570,7 @@ const ClassMaster = (props: Props) => {
               <Grid item lg={4} xs={12}>
                 <FormControlLabel
                   control={<Checkbox onChange={handleCheckboxChange} />}
-                  label="Category Based*"
+                  label={t("text.CategoryBased")}
                 />
               </Grid>
 
@@ -1231,7 +1615,7 @@ const ClassMaster = (props: Props) => {
                                 width: "60%",
                               }}
                             >
-                              Category
+                              {t("text.Category")}
                             </th>
                             <th
                               style={{
@@ -1262,6 +1646,7 @@ const ClassMaster = (props: Props) => {
                                 <input
                                   type="checkbox"
                                   id={`checkbox-${row.id}`}
+                                  onChange={(e) => handleCheckbox(e, row.id)}
                                 />
                               </td>
 
@@ -1305,7 +1690,7 @@ const ClassMaster = (props: Props) => {
                                     cursor: "pointer",
                                   }}
                                 >
-                                  Policy
+                                  {t("text.Policy")}
                                 </button>
                               </td>
                             </tr>
@@ -1380,46 +1765,76 @@ const ClassMaster = (props: Props) => {
               >
                 <Grid container spacing={1}>
                   <Grid item lg={12} sm={12} xs={12}>
-                    <Typography
-                      gutterBottom
-                      variant="h6"
-                      component="div"
-                      align="left"
-                      style={{ textDecoration: "underline" }}
+                    <Grid
+                      container
+                      alignItems="center"
+                      justifyContent="space-between"
                     >
-                      For Class Name and Selected Category, set Items allowed
-                      for transaction
-                    </Typography>
+                      <Typography
+                        gutterBottom
+                        variant="h6"
+                        component="div"
+                        style={{ textDecoration: "underline" }}
+                      >
+                        {t("text.CategoryBased")}
+                      </Typography>
+
+                      <Typography
+                        gutterBottom
+                        variant="h6"
+                        component="div"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => setIsModalOpen(false)}
+                      >
+                        <CloseIcon />
+                      </Typography>
+                    </Grid>
                   </Grid>
 
                   <Grid xs={12} sm={4} item>
-                    <TranslateTextField
-                      label={t("text.MemberGroup")}
-                      value={formik.values.classname}
-                      onChangeText={(text: string) =>
-                        handleConversionChange("classname", text)
+                    <TextField
+                      id="classMasterMod.classname"
+                      name="classMasterMod.classname"
+                      inputProps={{ maxLength: 10 }}
+                      label={
+                        <CustomLabel
+                          text={t("text.MemberGroup")}
+                          required={false}
+                        />
                       }
-                      required={false}
-                      lang={lang}
+                      value={newFormik.values.classMasterMod.classname}
+                      placeholder={t("text.MemberGroup")}
+                      size="small"
+                      fullWidth
+                      onChange={newFormik.handleChange}
+                      onBlur={newFormik.handleBlur}
                     />
                   </Grid>
 
                   <Grid xs={12} sm={4} item>
-                    <TranslateTextField
-                      label={t("text.ShortName")}
-                      value={formik.values.shortname}
-                      onChangeText={(text: string) =>
-                        handleConversionChange("shortname", text)
+                    <TextField
+                      id="classMasterMod.shortname"
+                      name="classMasterMod.shortname"
+                      inputProps={{ maxLength: 5 }}
+                      label={
+                        <CustomLabel
+                          text={t("text.ShortName")}
+                          required={false}
+                        />
                       }
-                      required={false}
-                      lang={lang}
+                      value={newFormik.values.classMasterMod.shortname}
+                      placeholder={t("text.ShortName")}
+                      size="small"
+                      fullWidth
+                      onChange={newFormik.handleChange}
+                      onBlur={newFormik.handleBlur}
                     />
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="valueLimit"
-                      name="valueLimit"
+                      id="classMasterMod.valueLimit"
+                      name="classMasterMod.valueLimit"
                       inputProps={{ maxLength: 10 }}
                       label={
                         <CustomLabel
@@ -1427,25 +1842,49 @@ const ClassMaster = (props: Props) => {
                           required={false}
                         />
                       }
-                      value={formik.values.valueLimit}
+                      value={newFormik.values.classMasterMod.valueLimit}
                       placeholder={t("text.MaxValueLimit")}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.valueLimit",
+                          intValue
+                        );
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <FormControlLabel
-                      control={<Checkbox onChange={handleDeactivate} />}
+                      control={
+                        <Checkbox
+                          checked={
+                            newFormik.values.classMasterMod.status === "Y"
+                              ? true
+                              : false
+                          }
+                          onChange={handleDeactivate1}
+                        />
+                      }
                       label={t("text.AllowedToBeDeactivated")}
                     />
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <FormControlLabel
-                      control={<Checkbox onChange={handleRequest} />}
+                      control={
+                        <Checkbox
+                          checked={
+                            newFormik.values.classMasterMod.canRequest === "Y"
+                              ? true
+                              : false
+                          }
+                          onChange={handleRequest1}
+                        />
+                      }
                       label={t("text.AllowedToRecommendForPurchase")}
                     />
                   </Grid>
@@ -1484,42 +1923,48 @@ const ClassMaster = (props: Props) => {
                       component="div"
                       align="left"
                     >
-                      Issued Days Limit* :
+                      {t("text.IssueDayesLimit")}* :
                     </Typography>
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="totalissueddays"
-                      name="totalissueddays"
-                      value={formik.values.totalissueddays}
+                      id="classMasterMod.totalissueddays"
+                      name="classMasterMod.totalissueddays"
+                      value={newFormik.values.classMasterMod.totalissueddays}
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.totalissueddays",
+                          intValue
+                        );
+                      }}
+                      onFocus={(e) => e.target.select()}
                       type="number"
                     />
-
-                    {formik.touched.totalissueddays &&
-                    formik.errors.totalissueddays ? (
-                      <div style={{ color: "red", margin: "5px" }}>
-                        {String(formik.errors.totalissueddays)}
-                      </div>
-                    ) : null}
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="totalissueddays_jour"
-                      name="totalissueddays_jour"
-                      value={formik.values.totalissueddays_jour}
+                      id="classMasterMod.totalissueddays_jour"
+                      name="classMasterMod.totalissueddays_jour"
+                      value={
+                        newFormik.values.classMasterMod.totalissueddays_jour
+                      }
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.totalissueddays_jour",
+                          intValue
+                        );
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Grid>
 
@@ -1530,42 +1975,49 @@ const ClassMaster = (props: Props) => {
                       component="div"
                       align="left"
                     >
-                      Issued Item Limit* :
+                      {t("text.IssuedItemLimit")}* :
                     </Typography>
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="noofbookstobeissued"
-                      name="noofbookstobeissued"
-                      value={formik.values.noofbookstobeissued}
+                      id="classMasterMod.noofbookstobeissued"
+                      name="classMasterMod.noofbookstobeissued"
+                      value={
+                        newFormik.values.classMasterMod.noofbookstobeissued
+                      }
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.noofbookstobeissued",
+                          intValue
+                        );
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
-
-                    {formik.touched.noofbookstobeissued &&
-                    formik.errors.noofbookstobeissued ? (
-                      <div style={{ color: "red", margin: "5px" }}>
-                        {String(formik.errors.noofbookstobeissued)}
-                      </div>
-                    ) : null}
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="noofjournaltobeissued"
-                      name="noofjournaltobeissued"
-                      value={formik.values.noofjournaltobeissued}
+                      id="classMasterMod.noofjournaltobeissued"
+                      name="classMasterMod.noofjournaltobeissued"
+                      value={
+                        newFormik.values.classMasterMod.noofjournaltobeissued
+                      }
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.noofjournaltobeissued",
+                          intValue
+                        );
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Grid>
 
@@ -1576,41 +2028,45 @@ const ClassMaster = (props: Props) => {
                       component="div"
                       align="left"
                     >
-                      Reservation Limit (Days) * :
+                      {t("text.ReservationLimitDays")} :
                     </Typography>
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="reservedays"
-                      name="reservedays"
-                      value={formik.values.reservedays}
+                      id="classMasterMod.reservedays"
+                      name="classMasterMod.reservedays"
+                      value={newFormik.values.classMasterMod.reservedays}
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.reservedays",
+                          intValue
+                        );
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
-
-                    {formik.touched.reservedays && formik.errors.reservedays ? (
-                      <div style={{ color: "red", margin: "5px" }}>
-                        {String(formik.errors.reservedays)}
-                      </div>
-                    ) : null}
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="reservedays_jour"
-                      name="reservedays_jour"
-                      value={formik.values.reservedays_jour}
+                      id="classMasterMod.reservedays_jour"
+                      name="classMasterMod.reservedays_jour"
+                      value={newFormik.values.classMasterMod.reservedays_jour}
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.reservedays_jour",
+                          intValue
+                        );
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Grid>
 
@@ -1621,40 +2077,44 @@ const ClassMaster = (props: Props) => {
                       component="div"
                       align="left"
                     >
-                      Over Due Charges Per Day* :
+                      {t("text.OverDueChargesPerDay")}* :
                     </Typography>
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="finperday"
-                      name="finperday"
-                      value={formik.values.finperday}
+                      id="classMasterMod.finperday"
+                      name="classMasterMod.finperday"
+                      value={newFormik.values.classMasterMod.finperday}
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.finperday",
+                          intValue
+                        );
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
-
-                    {formik.touched.finperday && formik.errors.finperday ? (
-                      <div style={{ color: "red", margin: "5px" }}>
-                        {String(formik.errors.finperday)}
-                      </div>
-                    ) : null}
                   </Grid>
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="fineperday_jour"
-                      name="fineperday_jour"
-                      value={formik.values.fineperday_jour}
+                      id="classMasterMod.fineperday_jour"
+                      name="classMasterMod.fineperday_jour"
+                      value={newFormik.values.classMasterMod.fineperday_jour}
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.fineperday_jour",
+                          intValue
+                        );
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Grid>
 
@@ -1665,40 +2125,66 @@ const ClassMaster = (props: Props) => {
                       component="div"
                       align="left"
                     >
-                      Phase - I Days Limit* :
+                      {t("text.PhaseIDaysLimit")}* :
                     </Typography>
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="days_1Phase"
-                      name="days_1Phase"
-                      value={formik.values.days_1Phase}
+                      id="classMasterMod.days_1Phase"
+                      name="classMasterMod.days_1Phase"
+                      value={newFormik.values.classMasterMod.days_1Phase}
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
-                    />
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.days_1Phase",
+                          intValue
+                        );
 
-                    {formik.touched.days_1Phase && formik.errors.days_1Phase ? (
-                      <div style={{ color: "red", margin: "5px" }}>
-                        {String(formik.errors.days_1Phase)}
-                      </div>
-                    ) : null}
+                        if (intValue !== 0 || intValue !== null) {
+                          if (timerCheck) {
+                            clearTimeout(timerCheck);
+                          }
+
+                          if (
+                            intValue <=
+                            newFormik.values.classMasterMod.totalissueddays
+                          ) {
+                            const checkResult = setTimeout(() => {
+                              alert(
+                                " Phase - I Days Limit  must be greater than  Issued Dayes Limit"
+                              );
+                              newFormik.setFieldValue(
+                                "classMasterMod.days_1Phase",
+                                ""
+                              );
+                            }, 700);
+                            setTimerCheck(checkResult);
+                          }
+                        }
+                      }}
+                      onFocus={(e) => e.target.select()}
+                    />
                   </Grid>
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="days_1Phasej"
-                      name="days_1Phasej"
-                      value={formik.values.days_1Phasej}
+                      id="classMasterMod.days_1Phasej"
+                      name="classMasterMod.days_1Phasej"
+                      value={newFormik.values.classMasterMod.days_1Phasej}
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.days_1Phasej",
+                          intValue
+                        );
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Grid>
 
@@ -1709,40 +2195,66 @@ const ClassMaster = (props: Props) => {
                       component="div"
                       align="left"
                     >
-                      Phase - I Over Due Charge Per Day* :
+                      {t("text.PhaseIOverDueChargePerDay")}* :
                     </Typography>
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="days_2Phase"
-                      name="days_2Phase"
-                      value={formik.values.days_2Phase}
+                      id="classMasterMod.days_2Phase"
+                      name="classMasterMod.days_2Phase"
+                      value={newFormik.values.classMasterMod.days_2Phase}
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
-                    />
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.days_2Phase",
+                          intValue
+                        );
 
-                    {formik.touched.days_2Phase && formik.errors.days_2Phase ? (
-                      <div style={{ color: "red", margin: "5px" }}>
-                        {String(formik.errors.days_2Phase)}
-                      </div>
-                    ) : null}
+                        if (intValue !== 0 || intValue !== null) {
+                          if (timerCheck) {
+                            clearTimeout(timerCheck);
+                          }
+
+                          if (
+                            intValue <=
+                            newFormik.values.classMasterMod.finperday
+                          ) {
+                            const checkResult = setTimeout(() => {
+                              alert(
+                                " Phase - I Over Due Charge Per Day  must be greater than   Over Due Charges Per Day"
+                              );
+                              newFormik.setFieldValue(
+                                "classMasterMod.days_2Phase",
+                                ""
+                              );
+                            }, 700);
+                            setTimerCheck(checkResult);
+                          }
+                        }
+                      }}
+                      onFocus={(e) => e.target.select()}
+                    />
                   </Grid>
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="days_2Phasej"
-                      name="days_2Phasej"
-                      value={formik.values.days_2Phasej}
+                      id="classMasterMod.days_2Phasej"
+                      name="classMasterMod.days_2Phasej"
+                      value={newFormik.values.classMasterMod.days_2Phasej}
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.days_2Phasej",
+                          intValue
+                        );
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Grid>
 
@@ -1753,39 +2265,66 @@ const ClassMaster = (props: Props) => {
                       component="div"
                       align="left"
                     >
-                      Phase - II Days Limit* :
+                      {t("text.PhaseIIDaysLimit")}* :
                     </Typography>
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="amt_1Phase"
-                      name="amt_1Phase"
-                      value={formik.values.amt_1Phase}
+                      id="classMasterMod.amt_1Phase"
+                      name="classMasterMod.amt_1Phase"
+                      value={newFormik.values.classMasterMod.amt_1Phase}
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.amt_1Phase",
+                          intValue
+                        );
+
+                        if (intValue !== 0 || intValue !== null) {
+                          if (timerCheck) {
+                            clearTimeout(timerCheck);
+                          }
+
+                          if (
+                            intValue <=
+                            newFormik.values.classMasterMod.days_1Phase
+                          ) {
+                            const checkResult = setTimeout(() => {
+                              alert(
+                                " Phase - II Days Limit  must be greater than  Phase-I Dayes Limit"
+                              );
+                              newFormik.setFieldValue(
+                                "classMasterMod.amt_1Phase",
+                                ""
+                              );
+                            }, 700);
+                            setTimerCheck(checkResult);
+                          }
+                        }
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
-                    {formik.touched.amt_1Phase && formik.errors.amt_1Phase ? (
-                      <div style={{ color: "red", margin: "5px" }}>
-                        {String(formik.errors.amt_1Phase)}
-                      </div>
-                    ) : null}
                   </Grid>
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="amt_1Phasej"
-                      name="amt_1Phasej"
-                      value={formik.values.amt_1Phasej}
+                      id="classMasterMod.amt_1Phasej"
+                      name="classMasterMod.amt_1Phasej"
+                      value={newFormik.values.classMasterMod.amt_1Phasej}
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.amt_1Phasej",
+                          intValue
+                        );
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Grid>
 
@@ -1796,39 +2335,66 @@ const ClassMaster = (props: Props) => {
                       component="div"
                       align="left"
                     >
-                      Phase - II Over Due Charge Per Day*:
+                      {t("text.PhaseIIOverDueChargePerDay")}*:
                     </Typography>
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="amt_2Phase"
-                      name="amt_2Phase"
-                      value={formik.values.amt_2Phase}
+                      id="classMasterMod.amt_2Phase"
+                      name="classMasterMod.amt_2Phase"
+                      value={newFormik.values.classMasterMod.amt_2Phase}
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.amt_2Phase",
+                          intValue
+                        );
+
+                        if (intValue !== 0 || intValue !== null) {
+                          if (timerCheck) {
+                            clearTimeout(timerCheck);
+                          }
+
+                          if (
+                            intValue <=
+                            newFormik.values.classMasterMod.days_2Phase
+                          ) {
+                            const checkResult = setTimeout(() => {
+                              alert(
+                                " Phase - II Over Due Charge Per Day  must be greater than Phase-I  Over Due Charges Per Day"
+                              );
+                              newFormik.setFieldValue(
+                                "classMasterMod.amt_2Phase",
+                                ""
+                              );
+                            }, 700);
+                            setTimerCheck(checkResult);
+                          }
+                        }
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
-                    {formik.touched.amt_2Phase && formik.errors.amt_2Phase ? (
-                      <div style={{ color: "red", margin: "5px" }}>
-                        {String(formik.errors.amt_2Phase)}
-                      </div>
-                    ) : null}
                   </Grid>
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="amt_2Phasej"
-                      name="amt_2Phasej"
-                      value={formik.values.amt_2Phasej}
+                      id="classMasterMod.amt_2Phasej"
+                      name="classMasterMod.amt_2Phasej"
+                      value={newFormik.values.classMasterMod.amt_2Phasej}
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.amt_2Phasej",
+                          intValue
+                        );
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Grid>
                   <Grid item lg={4} xs={12}>
@@ -1838,21 +2404,48 @@ const ClassMaster = (props: Props) => {
                       component="div"
                       align="left"
                     >
-                      Days After Overdue* :
+                      {t("text.DaysAfterOVDCalc")}* :
                     </Typography>
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="daysAfterOverdue"
-                      name="daysAfterOverdue"
-                      value={formik.values.daysAfterOverdue}
+                      id="classMasterMod.daysAfterOverdue"
+                      name="classMasterMod.daysAfterOverdue"
+                      value={newFormik.values.classMasterMod.daysAfterOverdue}
                       inputProps={{ maxLength: 10 }}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      type="number"
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.daysAfterOverdue",
+                          intValue
+                        );
+
+                        if (intValue !== 0 || intValue !== null) {
+                          if (timerCheck) {
+                            clearTimeout(timerCheck);
+                          }
+
+                          if (
+                            intValue <=
+                            newFormik.values.classMasterMod.amt_2Phase
+                          ) {
+                            const checkResult = setTimeout(() => {
+                              alert(
+                                "Days After OVD Calc.(For All Categories) must be greater than Phase-II  Over Due Charges Per Day"
+                              );
+                              newFormik.setFieldValue(
+                                "classMasterMod.daysAfterOverdue",
+                                ""
+                              );
+                            }, 700);
+                            setTimerCheck(checkResult);
+                          }
+                        }
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Grid>
                   <Grid item lg={4} xs={12}></Grid>
@@ -1864,21 +2457,26 @@ const ClassMaster = (props: Props) => {
                       component="div"
                       align="left"
                     >
-                      Security Money (For All Categories) :
+                      {t("text.SecurityMoneyForAllCategory")} :
                     </Typography>
                   </Grid>
 
                   <Grid item lg={4} xs={12}>
                     <TextField
-                      id="securityAmount"
-                      name="securityAmount"
-                      type="number"
+                      id="classMasterMod.securityAmount"
+                      name="classMasterMod.securityAmount"
                       inputProps={{ maxLength: 10 }}
-                      value={formik.values.securityAmount}
+                      value={newFormik.values.classMasterMod.securityAmount}
                       size="small"
                       fullWidth
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
+                      onChange={(e) => {
+                        const intValue = parseInt(e.target.value) || 0;
+                        newFormik.setFieldValue(
+                          "classMasterMod.securityAmount",
+                          intValue
+                        );
+                      }}
+                      onFocus={(e) => e.target.select()}
                     />
                   </Grid>
                 </Grid>
@@ -1893,7 +2491,7 @@ const ClassMaster = (props: Props) => {
                           color: "white",
                           marginTop: "10px",
                         }}
-                        onClick={SaveClassMaster}
+                        onClick={() => newFormik.handleSubmit()}
                       >
                         {t("text.save")}
                       </Button>
@@ -1915,14 +2513,43 @@ const ClassMaster = (props: Props) => {
                   </Grid>
 
                   <Grid item lg={6} sm={6} xs={12}>
-                    <Typography
+                    {/* <Typography
                       gutterBottom
                       variant="h6"
                       component="div"
                       align="left"
                     >
                       After Saving, Press Reset on Main Page to refresh form.
-                    </Typography>
+                    </Typography> */}
+                  </Grid>
+
+                  <Grid item xs={12} sm={12} lg={12}>
+                    <DataGrid
+                      rows={zones}
+                      columns={adjustedColumns1}
+                      rowSpacingType="border"
+                      autoHeight
+                      // checkboxSelection
+                      pageSizeOptions={[5, 10, 25, 50, 100].map((size) => ({
+                        value: size,
+                        label: `${size}`,
+                      }))}
+                      // onRowSelectionModelChange={handleRowSelection}
+                      // rowSelectionModel={selectedRows} // Default selected rows
+                      initialState={{
+                        pagination: { paginationModel: { pageSize: 5 } },
+                      }}
+                      sx={{
+                        border: 0,
+                        "& .MuiDataGrid-columnHeaders": {
+                          backgroundColor: "#42b6f5",
+                          color: "white",
+                        },
+                        "& .MuiDataGrid-columnHeaderTitle": {
+                          color: "white",
+                        },
+                      }}
+                    />
                   </Grid>
                 </Grid>
               </Box>

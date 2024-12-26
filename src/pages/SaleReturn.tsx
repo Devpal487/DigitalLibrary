@@ -172,21 +172,21 @@ export default function SaleReturn() {
                         flex: 1,
                         headerClassName: "MuiDataGrid-colCell",
                     },
-                    // {
-                    //     field: "document_No",
-                    //     headerName: t("text.document_Nos"),
-                    //     flex: 1,
-                    //     headerClassName: "MuiDataGrid-colCell",
-                    // },
+                    {
+                        field: "others",
+                        headerName: t("text.OnlineUser"),
+                        flex: 1,
+                        headerClassName: "MuiDataGrid-colCell",
+                    },
                     {
                         field: "sR_InvoiceNo",
-                        headerName: t("text.s_InvoiceNos"),
+                        headerName: t("text.p_InvoiceNos"),
                         flex: 1,
                         headerClassName: "MuiDataGrid-colCell",
                     },
                     {
                         field: "doc_Date",
-                        headerName: t("text.doc_Dates"),
+                        headerName: t("text.Date"),
                         flex: 1,
                         headerClassName: "MuiDataGrid-colCell",
                         renderCell(params) {
@@ -195,7 +195,7 @@ export default function SaleReturn() {
                     },
                     {
                         field: "s_InvoiceDate",
-                        headerName: t("text.s_InvoiceDates"),
+                        headerName: t("text.p_InvoiceDates"),
                         flex: 1,
                         headerClassName: "MuiDataGrid-colCell",
                         renderCell(params) {

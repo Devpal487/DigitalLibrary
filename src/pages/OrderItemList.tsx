@@ -35,6 +35,8 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import "react-transliterate/dist/index.css";
 import CustomLabel from "../utils/CustomLabel";
 import { getId } from "../utils/Constant";
+import OrderComponent from "../utils/OrderComponent";
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 interface MenuPermission {
   isAdd: boolean;
@@ -49,6 +51,9 @@ export default function OrderItemList() {
   const [columns, setColumns] = useState<any>([]);
   const [open, setOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState<any>(null);
+
+  const [openComp, setOpenComp] = useState(false);
+
 
   const [Item, setItem] = useState<any>([]);
 
@@ -105,9 +110,9 @@ export default function OrderItemList() {
       paymentStatus: Item[0]?.paymentStatus || 0,
       orderStatus: orderId,
       status: orderSt,
-      createdBy: "",
-      updatedBy: "",
-      remark:isRemark,
+      createdBy: Item[0]?.createdBy,
+      updatedBy: Item[0]?.updatedBy,
+      remark: isRemark,
       createdOn: new Date().toISOString(),
       updatedOn: new Date().toISOString(),
       ordeItemDetails: Item[0]?.ordeItemDetails,
@@ -256,6 +261,20 @@ export default function OrderItemList() {
                     onClick={() => {
                       setOpen(true);
 
+                      UpdateOrder(params.row);
+                    }}
+                  />
+
+
+                  <VisibilityIcon
+                    style={{
+                      fontSize: "20px",
+                      color: "blue",
+                      cursor: "pointer",
+                    }}
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setOpenComp(true);
                       UpdateOrder(params.row);
                     }}
                   />
@@ -447,6 +466,17 @@ export default function OrderItemList() {
                     color: "white",
                   },
                 }}
+              />
+            </Grid>
+
+
+            <Grid item sm={12} lg={12} xs={12}>
+              <OrderComponent
+
+                open={openComp}
+                onClose={() => { setOpenComp(false) }}
+                orderData={Item}
+
               />
             </Grid>
           </Grid>
