@@ -75,7 +75,9 @@ const EditSaleInvoice = () => {
     { value: "-1", label: t("text.SelectSupplierName") },
   ]);
 
-  console.log("items", items);
+  const [isBalqty, setBalQty] = useState<any>([]);
+
+  
 
   const back = useNavigate();
 
@@ -85,7 +87,39 @@ const EditSaleInvoice = () => {
     getTaxData();
     GetUnitData();
     getSupliar();
+    getBalQty();
   }, []);
+
+
+
+  const getBalQty = async () => {
+    const collectData = {
+      "voucherId": -1,
+      "stockBinId": 5,
+      "itemId": -1,
+      "fromDate": "1999-11-04",
+      "toDate": new Date().toISOString().slice(0, 10)
+    };
+    const res = await api.post(
+      `api/StockLedger/GetStockReport`,
+      collectData
+    );
+
+    const data = res?.data?.data
+
+    const arr = data?.map((item: any) => ({
+      outQty: item?.outQty,
+      inQty: item?.inQty,
+      value: item?.itemId,
+      label: item?.titleName,
+
+    }));
+    setBalQty(arr);
+  };
+
+
+
+
 
   const getSupliar = async () => {
     const collectData = {
@@ -262,8 +296,16 @@ const EditSaleInvoice = () => {
     const updatedItems = [...items];
     let item = { ...updatedItems[index] };
 
+    const itemNameDetails = value;
+
+
+    const res = isBalqty.find(
+      (opt: any) => opt.value === itemNameDetails?.value
+    );
+
+    
     if (field === "itemNameId") {
-      const itemNameDetails = value;
+      
       if (itemNameDetails) {
         item = {
           ...item,
@@ -272,19 +314,20 @@ const EditSaleInvoice = () => {
           unit: String(itemNameDetails.unitId) || "",
           tax1: String(itemNameDetails.taxId) || "",
           taxId1: String(itemNameDetails.taxName) || "",
+          taxId3:String(res?.inQty- res?.outQty) || 0
         };
       }
     } else if (field === "qty" || field === "rate") {
       item[field] = value === "" ? 0 : parseFloat(value);
       item.amount = calculateAmount(item.qty, item.rate);
-      item.taxId1 = String(calculateTax(item.amount, parseFloat(item.taxId1)));
+      item.taxId2 = String(calculateTax(item.amount, parseFloat(item.taxId1)));
     } else if (field === "tax1") {
       const selectedTax = taxOption.find(
         (tax: any) => tax.value === value?.value
       );
       if (selectedTax) {
         item.tax1 = String(selectedTax.value);
-        item.taxId1 = String(
+        item.taxId2 = String(
           calculateTax(item.amount, parseFloat(selectedTax.label))
         );
       }
@@ -302,7 +345,7 @@ const EditSaleInvoice = () => {
       item.discountAmount = discountAmount;
       item.netAmount = calculateNetAmount(
         item.amount,
-        parseFloat(item.taxId1),
+        parseFloat(item.taxId2),
         discountAmount
       );
     }
@@ -317,13 +360,13 @@ const EditSaleInvoice = () => {
       item.discountAmount = discountAmount;
       let result = calculateNetAmount(
         item.amount,
-        Number(item.taxId1),
+        Number(item.taxId2),
         discountAmount
       );
       console.log("Result", result);
       item.netAmount = calculateNetAmount(
         item.amount,
-        Number(item.taxId1),
+        Number(item.taxId2),
         discountAmount
       );
     }
@@ -332,7 +375,7 @@ const EditSaleInvoice = () => {
     setItems(updatedItems);
 
     if (validateItem(item) && index === updatedItems.length - 1) {
-      handleAddItem();
+      handleAddItem(updatedItems);
     }
 
     console.log("🚀 ~ Updated items:", updatedItems);
@@ -382,7 +425,7 @@ const EditSaleInvoice = () => {
     // updateTotalAmounts(tableData);
   };
 
-  const handleAddItem = () => {
+  const handleAddItem = (items:any) => {
     setItems([
       ...items,
       {
@@ -562,6 +605,7 @@ const EditSaleInvoice = () => {
                   value={formik.values.s_InvoiceNo}
                   placeholder={t("text.s_InvoiceNo")}
                   onChange={formik.handleChange}
+                  InputProps={{readOnly: true}}
                 />
               </Grid>
 
@@ -831,6 +875,15 @@ const EditSaleInvoice = () => {
                           padding: "5px",
                         }}
                       >
+                        {t("text.BalQty")}
+                      </th>
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          textAlign: "center",
+                          padding: "5px",
+                        }}
+                      >
                         {t("text.unit")}
                       </th>
                       <th
@@ -953,6 +1006,7 @@ const EditSaleInvoice = () => {
                             )}
                           />
                         </td>
+                        <td>{item?.taxId3} </td>
                         <td>
                           <Autocomplete
                             disablePortal
@@ -1001,6 +1055,8 @@ const EditSaleInvoice = () => {
                             onChange={(e) =>
                               handleItemChange(index, "rate", e.target.value)
                             }
+
+                            InputProps={{readOnly: true,}}
                             size="small"
                           />
                         </td>
@@ -1045,7 +1101,7 @@ const EditSaleInvoice = () => {
                             )}
                           />
                         </td>
-                        <td>{item.taxId1}</td>
+                        <td>{item.taxId2}</td>
                         <td>
                           <Select
                             value={item.tax2}
@@ -1069,6 +1125,7 @@ const EditSaleInvoice = () => {
                                 e.target.value
                               )
                             }
+                            onFocus={(e) => e.target.select()}
                             size="small"
                           />
                         </td>

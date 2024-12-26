@@ -66,12 +66,12 @@ export default function EditDigitalContent() {
   let navigate = useNavigate();
   const { t } = useTranslation();
   const Userid = getId();
-  const instId = getinstId();
+  const instId: any = getinstId();
 
   // console.log("useLocation " + useLocation());
   const location = useLocation();
 
-    console.log("location " ,location);
+  console.log("location ", location);
 
   const back = useNavigate();
   const [lang, setLang] = useState<Language>("en");
@@ -217,6 +217,12 @@ export default function EditDigitalContent() {
           setfileName(file.name);
           setPDF(file);
           setFileexten(exten);
+
+          console.log("result", reader.result);
+          console.log("fileurl", fileURL);
+          console.log("filename", file.name);
+          console.log("file", file);
+          console.log("exten", exten);
         }
       };
     }
@@ -238,6 +244,8 @@ export default function EditDigitalContent() {
     getCategory();
     GetTaxData();
     GetUnitData();
+
+    console.log("fieldValue", fieldValue);
   }, []);
 
   const GetTaxData = async () => {
@@ -550,7 +558,7 @@ export default function EditDigitalContent() {
       "required",
       "Unit is required",
       function (value: any) {
-        return value > 0;
+        return value >= 0;
       }
     ),
 
@@ -619,6 +627,13 @@ export default function EditDigitalContent() {
       if (response.data.isSuccess) {
         //setToaster(false);
         setDigId(parseInt(response.data.data));
+        // handleSubmitWrapper();
+
+        uploadThubnail();
+
+        setTimeout(() => {
+          navigate(`/AddDigitalContent`);
+        }, 700);
         setOpen(true);
         toast.success(response.data.mesg);
       } else {
@@ -993,37 +1008,40 @@ export default function EditDigitalContent() {
 
   const uploadThubnail = async () => {
     //console.log('checkthumbnail');
-    try {
-      const blob = new Blob([fieldValue], { type: pdf.type });
-      const formData = new FormData();
-      formData.append("file", blob, fileName);
-      // console.log("🚀 ~ uploadFile ~ blob:", blob);
-      // console.log("🚀 ~ uploadFile ~ formData:", formData);
-      // console.log("🚀 ~ uploadFile ~ binaryFile:", binaryFile);
-      // console.log("🚀 ~ uploadFile ~ fileName:", fileName);
 
-      const response = await axios.post(
-        "http://103.12.1.132:8156/api/MssplUploads/UploadThumbnail",
-        formData,
-        {
-          headers: {
-            //"Content-Type": "multipart/form-data",
-            //Id: fileId?.id,
-            Id: location.state.id,
-            Accept: "*/*",
-            Uniqueid: uniqueId,
-          },
+    if (fieldValue) {
+      try {
+        const blob = new Blob([fieldValue], { type: pdf.type });
+        const formData: any = new FormData();
+        formData.append("file", blob, fileName, parseInt(instId));
+        // console.log("🚀 ~ uploadFile ~ blob:", blob);
+        // console.log("🚀 ~ uploadFile ~ formData:", formData);
+        // console.log("🚀 ~ uploadFile ~ binaryFile:", binaryFile);
+        // console.log("🚀 ~ uploadFile ~ fileName:", fileName);
+
+        const response = await axios.post(
+          "http://103.12.1.132:8156/api/MssplUploads/UploadThumbnail",
+          formData,
+          {
+            headers: {
+              //"Content-Type": "multipart/form-data",
+              //Id: fileId?.id,
+              Id: location.state.id,
+              Accept: "*/*",
+              Uniqueid: uniqueId,
+            },
+          }
+        );
+
+        if (response.data.isSuccess) {
+          toast.success(response.data.succMesg);
+          //addMoreRow();
+        } else {
+          toast.error(response.data.succMesg);
         }
-      );
-
-      if (response.data.isSuccess) {
-        toast.success(response.data.succMesg);
-        //addMoreRow();
-      } else {
-        toast.error(response.data.succMesg);
+      } catch (error) {
+        //console.error("Error uploading file:", error);
       }
-    } catch (error) {
-      //console.error("Error uploading file:", error);
     }
     //console.log("object")
   };
@@ -1222,7 +1240,15 @@ export default function EditDigitalContent() {
                     formik.setFieldTouched("contentTypeId", false);
                   }}
                   renderInput={(params) => (
-                    <TextField {...params} label={t("text.typeOfContent")} />
+                    <TextField
+                      {...params}
+                      label={
+                        <CustomLabel
+                          text={t("text.typeOfContent")}
+                          required={true}
+                        />
+                      }
+                    />
                   )}
                 />
 
@@ -1251,7 +1277,15 @@ export default function EditDigitalContent() {
                     formik.setFieldTouched("audienceId", false);
                   }}
                   renderInput={(params) => (
-                    <TextField {...params} label={t("text.Audience")} />
+                    <TextField
+                      {...params}
+                      label={
+                        <CustomLabel
+                          text={t("text.Audience")}
+                          required={true}
+                        />
+                      }
+                    />
                   )}
                 />
 
@@ -1281,7 +1315,15 @@ export default function EditDigitalContent() {
                     formik.setFieldTouched("progSubjId", false);
                   }}
                   renderInput={(params) => (
-                    <TextField {...params} label={t("text.classprogramsub")} />
+                    <TextField
+                      {...params}
+                      label={
+                        <CustomLabel
+                          text={t("text.classprogramsub")}
+                          required={true}
+                        />
+                      }
+                    />
                   )}
                 />
 
@@ -1310,7 +1352,12 @@ export default function EditDigitalContent() {
                     formik.setFieldTouched("subjectId", false);
                   }}
                   renderInput={(params) => (
-                    <TextField {...params} label={t("text.sub")} />
+                    <TextField
+                      {...params}
+                      label={
+                        <CustomLabel text={t("text.sub")} required={true} />
+                      }
+                    />
                   )}
                 />
 
@@ -1479,8 +1526,7 @@ export default function EditDigitalContent() {
                   options={isCategory}
                   value={
                     isCategory.find(
-                      (option: any) =>
-                        option.value === formik.values.categoryId 
+                      (option: any) => option.value === formik.values.categoryId
                     ) || null
                   }
                   fullWidth
@@ -1578,7 +1624,12 @@ export default function EditDigitalContent() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label={<CustomLabel text={t("text.SelectTax")} />}
+                      label={
+                        <CustomLabel
+                          text={t("text.SelectTax")}
+                          required={true}
+                        />
+                      }
                     />
                   )}
                 />
@@ -1604,13 +1655,18 @@ export default function EditDigitalContent() {
                   }}
                   value={
                     textType.find(
-                      (opt: any) => opt.label === formik.values.taxType 
+                      (opt: any) => opt.label === formik.values.taxType
                     ) || null
                   }
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label={<CustomLabel text={t("text.SelectTaxType")} />}
+                      label={
+                        <CustomLabel
+                          text={t("text.SelectTaxType")}
+                          required={true}
+                        />
+                      }
                     />
                   )}
                 />
@@ -1642,7 +1698,12 @@ export default function EditDigitalContent() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label={<CustomLabel text={t("text.enterunit")} />}
+                      label={
+                        <CustomLabel
+                          text={t("text.enterunit")}
+                          required={true}
+                        />
+                      }
                     />
                   )}
                 />
@@ -2223,7 +2284,11 @@ export default function EditDigitalContent() {
                       backgroundColor: "#059669",
                       margin: "1%",
                     }}
-                    onClick={uploadThubnail}
+                    onClick={() => {
+                      if (thumbnail != "") {
+                        uploadThubnail();
+                      }
+                    }}
                   >
                     {t("text.update")}
                   </Button>

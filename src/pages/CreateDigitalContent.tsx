@@ -515,7 +515,7 @@ export default function CreateDigitalContent() {
       "required",
       "Unit is required",
       function (value: any) {
-        return value > 0;
+        return value >= 0;
       }
     ),
 
@@ -568,7 +568,7 @@ export default function CreateDigitalContent() {
       categoryId: 0,
       categoryLoadStatus: "",
       accessionNo: "",
-      unitId: 0,
+      unitId: -1,
       taxId: 0,
       unitname: "",
       taxName: "",
@@ -1087,7 +1087,7 @@ export default function CreateDigitalContent() {
                 <TextField
                   type="date"
                   label={
-                    <CustomLabel text={t("text.validupto")} required={true} />
+                    <CustomLabel text={t("text.validupto")} required={false} />
                   }
                   value={formik.values.validTill}
                   name="validTill"
@@ -1141,7 +1141,7 @@ export default function CreateDigitalContent() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label={<CustomLabel text={t("text.SelectTax")} />}
+                      label={<CustomLabel text={t("text.SelectTax")} required={true}/>}
                     />
                   )}
                 />
@@ -1174,7 +1174,7 @@ export default function CreateDigitalContent() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label={<CustomLabel text={t("text.SelectTaxType")} />}
+                      label={<CustomLabel text={t("text.SelectTaxType")}  required={true}/>}
                     />
                   )}
                 />
@@ -1206,7 +1206,7 @@ export default function CreateDigitalContent() {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label={<CustomLabel text={t("text.enterunit")} />}
+                      label={<CustomLabel text={t("text.enterunit")} required={true}/>}
                     />
                   )}
                 />

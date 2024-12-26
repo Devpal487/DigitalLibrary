@@ -1082,7 +1082,8 @@ const CreateSaleReturnInvoice = () => {
                             onChange={(e) =>
                               handleItemChange(index, "rate", e.target.value)
                             }
-                            onFocus={(e) => e.target.select()}
+                           // onFocus={(e) => e.target.select()}
+                           InputProps={{readOnly: true,}}
                             size="small"
                           />
                         </td>

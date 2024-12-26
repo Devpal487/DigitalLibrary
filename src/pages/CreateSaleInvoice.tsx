@@ -72,6 +72,8 @@ const CreateSaleInvoice = () => {
     { value: "-1", label: t("text.SelectSupplierName") },
   ]);
 
+  const [isBalqty, setBalQty] = useState<any>([]);
+
   // console.log("items", items);
 
   const back = useNavigate();
@@ -83,6 +85,7 @@ const CreateSaleInvoice = () => {
     getSupliar();
     //  getDocNo();
     gets_InvoiceNo();
+    getBalQty();
   }, []);
 
   // const getDocNo = async () => {
@@ -105,6 +108,33 @@ const CreateSaleInvoice = () => {
       })) || [];
 
     setOption(arr);
+  };
+
+
+
+  const getBalQty = async () => {
+    const collectData = {
+      "voucherId": -1,
+      "stockBinId": 5,
+      "itemId": -1,
+      "fromDate": "1999-11-04",
+      "toDate": new Date().toISOString().slice(0, 10)
+    };
+    const res = await api.post(
+      `api/StockLedger/GetStockReport`,
+      collectData
+    );
+
+    const data = res?.data?.data
+
+    const arr = data?.map((item: any) => ({
+      outQty: item?.outQty,
+      inQty: item?.inQty,
+      value: item?.itemId,
+      label: item?.titleName,
+
+    }));
+    setBalQty(arr);
   };
 
   const getTaxData = async () => {
@@ -184,11 +214,22 @@ const CreateSaleInvoice = () => {
   };
 
   const handleItemChange = (index: number, field: string, value: any) => {
+
+    let tax_value ;
     const updatedItems = [...items];
     let item = { ...updatedItems[index] };
 
+
+   
+
     if (field === "itemNameId") {
       const itemNameDetails = value;
+
+
+      const res = isBalqty.find(
+        (opt: any) => opt.value === itemNameDetails?.value
+      );
+      
       if (itemNameDetails) {
         item = {
           ...item,
@@ -197,21 +238,36 @@ const CreateSaleInvoice = () => {
           unit: String(itemNameDetails.unitId) || "",
           tax1: String(itemNameDetails.taxId) || "",
           taxId1: String(itemNameDetails.taxName) || "",
+          taxId3:String(res?.inQty- res?.outQty) || 0
+
+
         };
+
+
+        //console.log("checkValue", item.taxId1);
       }
     } else if (field === "qty" || field === "rate") {
-      item[field] = value === "" ? 0 : parseFloat(value);
+      item[field] = value === "" ? 0 : parseInt(value);
       item.amount = calculateAmount(item.qty, item.rate);
-      item.taxId1 = String(calculateTax(item.amount, Number(item.taxId1)));
+     
+     
+      item.taxId2 = String(calculateTax(item.amount, Number(item.taxId1)));
+      
+      
+
+
     } else if (field === "tax1") {
       const selectedTax = taxOption.find(
         (tax: any) => tax.value === value?.value
       );
       if (selectedTax) {
         item.tax1 = String(selectedTax.value);
-        item.taxId1 = String(
+      
+        item.taxId2 = String(
           calculateTax(item.amount, Number(selectedTax.label))
         );
+
+
       }
     } else if (field === "tax2") {
       item.tax2 = value || "";
@@ -227,10 +283,12 @@ const CreateSaleInvoice = () => {
       item.discountAmount = discountAmount;
       item.netAmount = calculateNetAmount(
         item.amount,
-        Number(item.taxId1),
+        Number(item.taxId2),
         discountAmount
       );
     }
+
+
 
     // Recalculate dependent fields
     if (field !== "discount" && field !== "tax2") {
@@ -242,27 +300,34 @@ const CreateSaleInvoice = () => {
       item.discountAmount = discountAmount;
       item.netAmount = calculateNetAmount(
         item.amount,
-        Number(item.taxId1),
+        Number(item.taxId2),
         discountAmount
       );
     }
 
     updatedItems[index] = item;
-    setItems(updatedItems);
 
+
+    setItems(updatedItems);
+    
     if (validateItem(item) && index === updatedItems.length - 1) {
-      handleAddItem();
+      handleAddItem(updatedItems);
     }
 
-    console.log("🚀 ~ Updated items:", updatedItems);
+   
   };
   const calculateAmount = (qty: number, rate: number) => {
+   
     const amount = qty * rate;
     return amount.toFixed(2);
   };
 
   const calculateTax = (amount: number, taxRate: number) => {
+    console.log({ amount, taxRate })
+
     const tax = (amount * taxRate) / 100;
+
+    console.log('tax', tax);
     return tax.toFixed(2);
   };
 
@@ -302,11 +367,15 @@ const CreateSaleInvoice = () => {
     // updateTotalAmounts(tableData);
   };
 
-  const handleAddItem = () => {
+  const handleAddItem = (items: any) => {
+
+    console.log('items', items);
     setItems([
       ...items,
+
+
       {
-        id: -1,
+        id: items.length + 1,
         saleid: -1,
         user_Id: 0,
         itemNameId: "",
@@ -366,7 +435,7 @@ const CreateSaleInvoice = () => {
       supplierName: Yup.string().required(t("text.supNameReq")),
     }),
     onSubmit: async (values) => {
-      
+
       console.log("Form Submitted with values:", values);
       console.log("Formik Errors:", formik.errors);
       values.amount = totalAmount;
@@ -515,9 +584,9 @@ const CreateSaleInvoice = () => {
                   value={formik.values.s_InvoiceNo}
                   placeholder={t("text.s_InvoiceNo")}
                   onChange={formik.handleChange}
-                  // InputProps={{
-                  //   readOnly: true
-                  // }}
+                // InputProps={{
+                //   readOnly: true
+                // }}
                 />
               </Grid>
 
@@ -649,6 +718,16 @@ const CreateSaleInvoice = () => {
                       >
                         {t("text.ItemName")}
                       </th>
+
+                      <th
+                        style={{
+                          border: "1px solid black",
+                          textAlign: "center",
+                          padding: "5px",
+                        }}
+                      >
+                        {t("text.BalQty")}
+                      </th>
                       <th
                         style={{
                           border: "1px solid black",
@@ -751,6 +830,7 @@ const CreateSaleInvoice = () => {
                     </tr>
                   </thead>
                   <tbody>
+
                     {items.map((item: any, index: any) => (
                       <tr key={item.id} style={{ border: "1px solid black" }}>
                         {/* <TableCell>{index + 1}</TableCell> */}
@@ -761,7 +841,17 @@ const CreateSaleInvoice = () => {
                             options={contentOptions}
                             size="small"
                             onChange={(event, newValue: any) => {
+
+
+
+
                               handleItemChange(index, "itemNameId", newValue);
+                              // const res = isBalqty.find(
+                              //   (opt: any) => opt.value === newValue?.value
+                              // );
+                              // handleItemChange(index, "taxId3", String(res?.inQty - res?.outQty))
+
+
                             }}
                             renderInput={(params) => (
                               <TextField
@@ -770,10 +860,12 @@ const CreateSaleInvoice = () => {
                                   <CustomLabel text={t("text.enteritem")} />
                                 }
 
-                                // placeholder={t("text.enteritem")}
+                              // placeholder={t("text.enteritem")}
                               />
                             )}
                           />
+                        </td>
+                        <td>{item?.taxId3}                        
                         </td>
                         <td>
                           <Autocomplete
@@ -803,7 +895,7 @@ const CreateSaleInvoice = () => {
                                   />
                                 }
 
-                                // placeholder={t("text.unit")}
+                              // placeholder={t("text.unit")}
                               />
                             )}
                           />
@@ -817,7 +909,7 @@ const CreateSaleInvoice = () => {
                             }
                             // onFocus={(e) => e.target.select()}
 
-                           
+
                             size="small"
                           />
                         </td>
@@ -828,7 +920,9 @@ const CreateSaleInvoice = () => {
                             onChange={(e) =>
                               handleItemChange(index, "rate", e.target.value)
                             }
-                            onFocus={(e) => e.target.select()}
+                            //onFocus={(e) => e.target.select()}
+
+                            InputProps={{ readOnly: true, }}
                             size="small"
                           />
                         </td>
@@ -860,7 +954,7 @@ const CreateSaleInvoice = () => {
                             )}
                           />
                         </td>
-                        <td>{item.taxId1}</td>
+                        <td>{item.taxId2}</td>
                         <td>
                           <Select
                             value={item.tax2}

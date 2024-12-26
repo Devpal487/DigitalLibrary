@@ -172,12 +172,12 @@ export default function SaleReturn() {
                         flex: 1,
                         headerClassName: "MuiDataGrid-colCell",
                     },
-                    // {
-                    //     field: "document_No",
-                    //     headerName: t("text.document_Nos"),
-                    //     flex: 1,
-                    //     headerClassName: "MuiDataGrid-colCell",
-                    // },
+                    {
+                        field: "others",
+                        headerName: t("text.OnlineUser"),
+                        flex: 1,
+                        headerClassName: "MuiDataGrid-colCell",
+                    },
                     {
                         field: "sR_InvoiceNo",
                         headerName: t("text.p_InvoiceNos"),

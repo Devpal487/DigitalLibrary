@@ -6,9 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faStop, faPause } from '@fortawesome/free-solid-svg-icons';
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
 import { franc } from 'franc-min';
-///import CircularProgress from '@mui/material/CircularProgress'; // Import CircularProgress
 
-// Set the workerSrc for pdfjs
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 function Flipbook({ filePath }) {
@@ -21,12 +19,11 @@ function Flipbook({ filePath }) {
   const [isPaused, setIsPaused] = useState(false);
   const [language, setLanguage] = useState('hi-IN');
   const [isTextLayerActive, setIsTextLayerActive] = useState(false);
-  const [loading, setLoading] = useState(true); 
-  const [cachedPages, setCachedPages] = useState({});  
+  const [loading, setLoading] = useState(true);
+  const [cachedPages, setCachedPages] = useState({});
 
   const flipBookRef = useRef(null);
 
-  // Validate filePath
   useEffect(() => {
     if (filePath) {
       extractTextFromPDF(filePath);
@@ -55,7 +52,7 @@ function Flipbook({ filePath }) {
     }
   }
 
-  // Extract text from PDF and handle errors
+  // Optimized extract text function
   function extractTextFromPDF(file) {
     const loadingTask = pdfjs.getDocument(file);
     loadingTask.promise
@@ -64,7 +61,7 @@ function Flipbook({ filePath }) {
         setNumPages(numPages);
         const textPromises = [];
 
-        // Start loading pages concurrently, for faster data retrieval
+        // Preload the first few pages and start loading ahead
         for (let i = 1; i <= numPages; i++) {
           textPromises.push(
             pdf.getPage(i).then((page) =>
@@ -76,7 +73,7 @@ function Flipbook({ filePath }) {
           );
         }
 
-        // Wait for all pages to be processed
+        // Load pages in parallel and cache them
         Promise.all(textPromises)
           .then((texts) => {
             setTextContents(texts);
@@ -169,7 +166,7 @@ function Flipbook({ filePath }) {
     }
     setCurrentPage(pageNumber);
 
-    // Preload the next page text if not cached
+    // Preload next page text if not cached
     if (!cachedPages[pageNumber + 1] && pageNumber < numPages) {
       const nextPageText = textContents.find(item => item.pageNumber === pageNumber + 1)?.text;
       if (nextPageText) {
@@ -221,12 +218,9 @@ function Flipbook({ filePath }) {
                 alignItems: 'center',
                 boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
                 transition: 'background-color 0.3s, box-shadow 0.3s',
+                
               }}
-              onMouseEnter={() => {
-                if(!page.text) {
-                 alert("This page is not readable")
-                }
-               }}
+              
             >
               <FontAwesomeIcon icon={faPlay} style={{ marginRight: '8px' }} />
               Start Reading
@@ -314,11 +308,8 @@ function Flipbook({ filePath }) {
       backgroundPosition: 'center',
       height: '100vh',
     }}>
-      {/* Loading Spinner */}
       {loading && (
-        <div className="spinner">
-          
-        </div>
+        <div className="spinner"></div>
       )}
       <div style={{
         position: 'absolute',
@@ -349,16 +340,8 @@ function Flipbook({ filePath }) {
           <option value="en-US">English</option>
         </select>
       </div>
-      <Document
-        file={filePath}
-        onLoadSuccess={onDocumentLoadSuccess}
-        className="modal-90w"
-      >
-        <HTMLFlipBook
-          width={600}
-          height={550}
-          ref={flipBookRef}
-        >
+      <Document file={filePath} onLoadSuccess={onDocumentLoadSuccess} className="modal-90w">
+        <HTMLFlipBook width={600} height={550} ref={flipBookRef}>
           {pagesList()}
         </HTMLFlipBook>
       </Document>

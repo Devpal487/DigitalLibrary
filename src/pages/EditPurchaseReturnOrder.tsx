@@ -365,11 +365,11 @@ const EditPurchaseReturnOrder = () => {
     return (
       item.itemNameId &&
       item.unit &&
-      item.qty &&
+     // item.qty &&
       item.rate &&
-      item.amount &&
-      item.tax1 &&
-      item.taxId1
+      item.amount 
+     // item.tax1 &&
+     // item.taxId1
     );
   };
 
@@ -389,36 +389,10 @@ const EditPurchaseReturnOrder = () => {
           taxId1: String(itemNameDetails.taxName) || "",
         };
       }
-    } else if (field === "qty") {
-      const qtyValue = value === "" ? 0 : parseFloat(value);
-      item.taxId3 = String(Number(item.retqty) - qtyValue);
-      // console.log("taxval", taxval);
-      // = String(taxval);
-      // Validation to ensure qty does not exceed retqty
-      if (qtyValue > item.retqty) {
-        alert(`Quantity cannot exceed the purchase quantity ${item.retqty}.`);
-        return;
-      }
-
-      item[field] = qtyValue;
-      const selectedTax = taxOption.find((tax: any) => tax.value == item.tax1);
-      if (selectedTax) {
-        item.tax1 = String(selectedTax.value);
-        console.log(
-          "check Value",
-          calculateTax(item.amount, Number(selectedTax.label))
-        );
-        item.taxId1 = String(
-          calculateTax(item.amount, Number(selectedTax.label))
-        );
-      }
-
-      item.amount = calculateAmount(item.qty, item.rate);
-      // item.taxId1 = String(calculateTax(item.amount, Number(item.taxId1)));
-    } else if (field === "rate") {
+    } else if (field === "qty" || field === "rate") {
       item[field] = value === "" ? 0 : parseFloat(value);
       item.amount = calculateAmount(item.qty, item.rate);
-      item.taxId1 = String(calculateTax(item.amount, 0));
+      item.taxId1 = String(calculateTax(item.amount, parseFloat(item.taxId1)));
     } else if (field === "tax1") {
       const selectedTax = taxOption.find(
         (tax: any) => tax.value === value?.value
@@ -426,28 +400,16 @@ const EditPurchaseReturnOrder = () => {
       if (selectedTax) {
         item.tax1 = String(selectedTax.value);
         item.taxId1 = String(
-          calculateTax(item.amount, Number(selectedTax.label))
+          calculateTax(item.amount, parseFloat(selectedTax.label))
         );
       }
-
-      const discountAmount = calculateDiscount(
-        item.amount,
-        item.discount,
-        item.tax2
-      );
-      item.discountAmount = discountAmount;
-      item.netAmount = calculateNetAmount(
-        item.amount,
-        Number(item.taxId1),
-        discountAmount
-      );
     } else if (field === "tax2") {
       item.tax2 = value || "";
     } else if (field === "unit") {
       item[field] = value;
     } else if (field === "discount") {
       item.discount = value === "" ? 0 : parseFloat(value);
-      const discountAmount = calculateDiscount(
+      const discountAmount: any = calculateDiscount(
         item.amount,
         item.discount,
         item.tax2
@@ -455,41 +417,49 @@ const EditPurchaseReturnOrder = () => {
       item.discountAmount = discountAmount;
       item.netAmount = calculateNetAmount(
         item.amount,
-        Number(item.taxId1),
+        parseFloat(item.taxId1),
         discountAmount
       );
     }
 
+    // Recalculate dependent fields
     if (field !== "discount" && field !== "tax2") {
-      const discountAmount = calculateDiscount(
+      const discountAmount: any = calculateDiscount(
         item.amount,
         item.discount,
         item.tax2
       );
       item.discountAmount = discountAmount;
+      let result = calculateNetAmount(
+        item.amount,
+        Number(item.taxId1),
+        discountAmount
+      );
+      console.log("Result", result);
       item.netAmount = calculateNetAmount(
         item.amount,
         Number(item.taxId1),
         discountAmount
       );
-      // console.log("calculateNetAmount(item.amount, Number(item.taxId1), discountAmount);",calculateNetAmount(item.amount, Number(item.taxId1), discountAmount))
     }
 
     updatedItems[index] = item;
+    setItems(updatedItems);
 
     if (validateItem(item) && index === updatedItems.length - 1) {
       handleAddItem();
     }
 
-    // console.log("🚀 ~ Updated items:", updatedItems);
-    setItems(updatedItems);
+    console.log("🚀 ~ Updated items:", updatedItems);
   };
-
-  const calculateAmount = (qty: number, rate: number) => qty * rate;
+  const calculateAmount = (qty: number, rate: number) => {
+    const amount = qty * rate;
+    return amount.toFixed(2);
+  };
 
   const calculateTax = (amount: number, taxRate: number) => {
     const tax = (amount * taxRate) / 100;
-    return parseFloat(tax.toFixed(2));
+    return tax.toFixed(2);
   };
 
   const calculateDiscount = (
@@ -497,16 +467,25 @@ const EditPurchaseReturnOrder = () => {
     discount: number,
     type: string
   ) => {
+    let discountValue = 0;
     if (type === "P") {
-      return (amount * discount) / 100;
+      discountValue = (amount * discount) / 100;
     } else if (type === "F") {
-      return discount;
+      discountValue = discount;
     }
-    return 0;
+    return discountValue.toFixed(2);
   };
 
-  const calculateNetAmount = (amount: number, tax: number, discount: number) =>
-    amount + tax - discount;
+  const calculateNetAmount = (
+    amount: number,
+    tax: number,
+    discount: number
+  ) => {
+    console.log("amount tax discount", amount, tax, discount);
+    const netAmount = Number(amount) + Number(tax) - Number(discount);
+    console.log("netAmount", netAmount);
+    return netAmount.toFixed(2);
+  };
 
   const handleRemoveItem = (index: number) => {
     if (items.length === 1) {
@@ -533,7 +512,7 @@ const EditPurchaseReturnOrder = () => {
         tax1: "",
         taxId1: "",
         tax2: "P",
-        discount: "",
+        discount: 0,
         discountAmount: "",
         netAmount: "",
         documentNo: formik.values.document_No,
@@ -602,6 +581,7 @@ const EditPurchaseReturnOrder = () => {
           mrnDate: transData[i]["mrnDate"],
           taxId3: String(Number(transData[i]["taxId3"]) - transData[i]["qty"]),
           tax3: transData[i]["tax3"],
+          tax1: transData[i]["tax1"],
         });
       }
       setItems(arr);
@@ -737,6 +717,7 @@ const EditPurchaseReturnOrder = () => {
                   fullWidth
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
+                  InputProps={{readOnly: true}}
                 />
               </Grid>
 
@@ -757,6 +738,7 @@ const EditPurchaseReturnOrder = () => {
                   value={formik.values.pR_InvoiceNo}
                   placeholder={t("text.pR_InvoiceNo")}
                   onChange={formik.handleChange}
+                  InputProps={{readOnly: true}}
                 />
               </Grid>
 
@@ -864,6 +846,7 @@ const EditPurchaseReturnOrder = () => {
                       ? formik.errors.orderNo
                       : "" // Fallback to empty string
                   }
+                  InputProps={{readOnly: true}}
                 />
               </Grid>
 
@@ -1058,6 +1041,7 @@ const EditPurchaseReturnOrder = () => {
                               handleItemChange(index, "rate", e.target.value)
                             }
                             size="small"
+                            InputProps={{readOnly: true,}}
                           />
                         </td>
                         <td>{item.amount ? item.amount.toFixed(2) : 0}</td>
@@ -1069,7 +1053,7 @@ const EditPurchaseReturnOrder = () => {
                             size="small"
                             value={taxOption.find(
                               (opt: any) => opt.value == item.tax1
-                            )}
+                            ) || null}
                             onChange={(event, newValue: any) => {
                               handleItemChange(index, "tax1", newValue);
                             }}
@@ -1105,6 +1089,7 @@ const EditPurchaseReturnOrder = () => {
                                 e.target.value
                               )
                             }
+                            onFocus={(e) => e.target.select()}
                             size="small"
                           />
                         </td>

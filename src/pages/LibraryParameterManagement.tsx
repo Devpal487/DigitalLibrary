@@ -55,12 +55,12 @@ const LibraryParameterManagement = (props: Props) => {
   const back = useNavigate();
   const [library, setLibrary] = useState<any>([]);
   const [initialValue, setInitialValue] = useState<any>({
-    instId: "0",
+    instId: 0,
     instName: "",
   });
 
   console.log("initial Values", initialValue);
-  const [librarysetupinformation, setLibrarysetupinformation] = useState<any>(
+  const [librarysetupinformations, setLibrarysetupinformation] = useState<any>(
     []
   );
   const [currencyData, setCurrencyData] = useState<any>([]);
@@ -76,8 +76,36 @@ const LibraryParameterManagement = (props: Props) => {
       instName: sessionStorage.getItem("institute") || "",
     });
     getLibraryData();
-    getImageData();
+    if (createNewLibraryCond === 0) {
+      getImageData();
+    }
+
   }, []);
+
+
+  useEffect(() => {
+
+    if (librarysetupinformations.length > 0 && initialValue.instId !== 0) {
+      const selectedInstitute = librarysetupinformations.find(
+        (item: any) => item.value === initialValue.instId
+      );
+      if (selectedInstitute) {
+        formik.setFieldValue("librarysetupinformation.id", selectedInstitute?.value);
+        formik.setFieldValue("librarysetupinformation.institutename", selectedInstitute?.label);
+        formik.setFieldValue("librarysetupinformation.shortname", selectedInstitute?.details?.shortname);
+        formik.setFieldValue("librarysetupinformation.libraryname", selectedInstitute?.details?.libraryname);
+        formik.setFieldValue("librarysetupinformation.address", selectedInstitute?.details?.address);
+        formik.setFieldValue("librarysetupinformation.city", selectedInstitute?.details?.city);
+        formik.setFieldValue("librarysetupinformation.state", selectedInstitute?.details?.state);
+        formik.setFieldValue("librarysetupinformation.phoneno", selectedInstitute?.details?.phoneno);
+        formik.setFieldValue("librarysetupinformation.email", selectedInstitute?.details?.email);
+        formik.setFieldValue("librarysetupinformation.webSite", selectedInstitute?.details?.webSite);
+        formik.setFieldValue("librarysetupinformation.defUserTypeId", selectedInstitute?.details?.defUserTypeId);
+        formik.setFieldValue("librarysetupinformation.currency", selectedInstitute?.details?.currency);
+        formik.setFieldValue("librarysetupinformation.pincode", parseInt(selectedInstitute?.details?.pincode));
+      }
+    }
+  }, [librarysetupinformations, initialValue]);
 
   const getLibraryData = async () => {
     const collectData = {
@@ -143,10 +171,15 @@ const LibraryParameterManagement = (props: Props) => {
           imageData: resp[i]["imageData"],
           descr: resp[i]["descr"],
           delete: resp[i]["delete"],
-          libId: resp[i]["libId"],
+          libId: initialValue.instId,
         });
       }
-      formik.setFieldValue("libImages[0]", arr[0]);
+
+
+      if (createNewLibraryCond === 0) {
+        formik.setFieldValue("libImages[0]", arr[0]);
+      }
+      
     }
   };
 
@@ -184,7 +217,7 @@ const LibraryParameterManagement = (props: Props) => {
           imageData: "",
           descr: "",
           delete: true,
-          libId:parseInt(instId),
+          libId: 0,
         },
       ],
       dashboard: [
@@ -379,7 +412,9 @@ const LibraryParameterManagement = (props: Props) => {
     // validationSchema: validationSchema,
 
     onSubmit: async (values: any) => {
-      console.log("Before submission formik values", values);
+      console.log("Before submission formik parameter values", values);
+
+
 
       try {
         const response = await api.post(
@@ -387,25 +422,22 @@ const LibraryParameterManagement = (props: Props) => {
           values
         );
         if (response.data.isSuccess) {
-          // setToaster(false);
+
           toast.success(response.data.mesg);
 
-          // setTimeout(() => {
-          //     navigate("/UserManagement");
-          // }, 800);
         } else {
           toast.error(response.data.mesg);
         }
       } catch (error) {
-        //setToaster(true);
-        console.error("Error:", error);
+
+        // console.error("Error:", error);
         toast.error("An error occurred. Please try again.");
       }
     },
   });
 
-  console.log("Formik errors:", formik.errors);
-  console.log("Formik touched:", formik.touched);
+  // console.log("Formik errors:", formik.errors);
+  // console.log("Formik touched:", formik.touched);
 
   const requiredFields = [
     "circUser.doj",
@@ -459,32 +491,32 @@ const LibraryParameterManagement = (props: Props) => {
     console.log("Image file change detected");
 
     if (event.target.files && event.target.files[0]) {
-        const file = event.target.files[0];
-        const fileNameParts = file.name.split(".");
-        const fileName = file.name;
-        const fileExtension =
-          fileNameParts[fileNameParts.length - 1].toLowerCase();
-  
-        if (!fileExtension.match(/(jpg|jpeg|bmp|gif|png)$/)) {
-          alert(
-            "Only image files (.jpg, .jpeg, .bmp, .gif, .png) are allowed to be uploaded."
-          );
-          event.target.value = null;
-          return;
-        }
-  
-        try {
-          const base64Data = (await ConvertBase64(file)) as string;
-          console.log("Base64 image data:", base64Data);
-  
-          // Convert Base64 to Uint8Array
-          const byteArray = base64ToByteArray(base64Data);
-          console.log("🚀 ~ otherDocChangeHandler ~ byteArray:", byteArray);
-  
-          // Convert Uint8Array to base64 string
-          const base64String = uint8ArrayToBase64(byteArray);
-          console.log("🚀 ~ otherDocChangeHandler ~ base64String:", base64String);
-  
+      const file = event.target.files[0];
+      const fileNameParts = file.name.split(".");
+      const fileName = file.name;
+      const fileExtension =
+        fileNameParts[fileNameParts.length - 1].toLowerCase();
+
+      if (!fileExtension.match(/(jpg|jpeg|bmp|gif|png)$/)) {
+        alert(
+          "Only image files (.jpg, .jpeg, .bmp, .gif, .png) are allowed to be uploaded."
+        );
+        event.target.value = null;
+        return;
+      }
+
+      try {
+        const base64Data = (await ConvertBase64(file)) as string;
+        console.log("Base64 image data:", base64Data);
+
+        // Convert Base64 to Uint8Array
+        const byteArray = base64ToByteArray(base64Data);
+        console.log("🚀 ~ otherDocChangeHandler ~ byteArray:", byteArray);
+
+        // Convert Uint8Array to base64 string
+        const base64String = uint8ArrayToBase64(byteArray);
+        console.log("🚀 ~ otherDocChangeHandler ~ base64String:", base64String);
+
 
         // Set value in Formik
         formik.setFieldValue(params, base64String);
@@ -541,6 +573,7 @@ const LibraryParameterManagement = (props: Props) => {
     e.preventDefault();
     setCreateNewLibraryCond(1);
     formik.resetForm();
+    setInitialValue({})
 
     // setTimeout(() => {
     //   getImageData();
@@ -621,31 +654,34 @@ const LibraryParameterManagement = (props: Props) => {
                     size="small"
                     value={library.find(
                       (opt: any) => opt.value == initialValue?.instId
-                    )}
+                    ) || null}
                     onChange={(event, newValue: any) => {
                       console.log("newValue", newValue);
-                      setCreateNewLibraryCond(0);
+                      //setCreateNewLibraryCond(0);
                       if (newValue) {
+                        setInitialValue({
+                          instId: parseInt(newValue?.value || "0"),
+                          instName: sessionStorage.getItem("institute") || "",
+                        });
+
+                        let res = librarysetupinformations.find(
+                          (opt: any) => opt.value === newValue?.value
+                        );
+                        console.log("librarySetupInformation", res);
+                        console.log("librarySetupInformation", res?.details?.id);
+                        console.log("librarySetupInformation", res?.details?.institutename);
+
+
+
                         formik.setFieldValue(
                           "librarysetupinformation.id",
                           newValue?.value
                         );
                         formik.setFieldValue(
                           "librarysetupinformation.institutename",
-                          newValue?.label
+                          res?.details?.institutename
                         );
-                        let res = librarysetupinformation.find(
-                          (opt: any) => opt.value === newValue?.value
-                        );
-                        console.log("librarySetupInformation", res);
-                        console.log(
-                          "librarySetupInformation",
-                          res?.details?.defUserTypeId
-                        );
-                        console.log(
-                          "librarySetupInformation",
-                          res?.details?.currency
-                        );
+
                         formik.setFieldValue(
                           "librarysetupinformation.institutename",
                           res?.details?.institutename
@@ -655,12 +691,12 @@ const LibraryParameterManagement = (props: Props) => {
                           res?.details?.shortname
                         );
                         formik.setFieldValue(
-                          "librarysetupinformation.libraryname",
+                          "libImages.libraryname",
                           res?.details?.libraryname
                         );
                         formik.setFieldValue(
-                          "librarysetupinformation.id",
-                          res?.details?.id
+                          "libImages[0]?.libId",
+                          newValue?.value
                         );
                         formik.setFieldValue(
                           "librarysetupinformation.address",
@@ -980,7 +1016,7 @@ const LibraryParameterManagement = (props: Props) => {
                 />
               </Grid>
 
-              {createNewLibraryCond ===1 && (
+              {createNewLibraryCond === 1 && (
                 <Grid item lg={4} xs={12}>
                   <TextField
                     id="newLibUser.loginName"
@@ -1002,7 +1038,7 @@ const LibraryParameterManagement = (props: Props) => {
                   />
                 </Grid>
               )}
-              {createNewLibraryCond ===1 && (
+              {createNewLibraryCond === 1 && (
                 <Grid item lg={4} xs={12}>
                   <TextField
                     id="newLibUser.passw1"
@@ -1025,7 +1061,7 @@ const LibraryParameterManagement = (props: Props) => {
                 </Grid>
               )}
 
-              {createNewLibraryCond ===1 && (
+              {createNewLibraryCond === 1 && (
                 <Grid item lg={4} xs={12}>
                   <TextField
                     id="newLibUser.passw2"

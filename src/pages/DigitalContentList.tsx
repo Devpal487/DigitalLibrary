@@ -116,6 +116,7 @@ export default function DigitalContentList() {
   const [WishOpen, setWishOpen] = React.useState(false);
   const [heartData, setHeartData] = React.useState<any>([]);
   const [timerCheck, setTimerCheck] = useState<NodeJS.Timeout | null>(null);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   const [IsTitle, setTitle] = useState<any>([
     { value: "-1", label: t("text.Title") },
@@ -463,13 +464,13 @@ export default function DigitalContentList() {
           },
           {
             field: "comment",
-            headerName:t("text.Comment"),
+            headerName: t("text.Comment"),
             flex: 1,
             headerClassName: "grid-header",
           },
           {
             field: "dateSaved",
-            headerName:t("text.SaveDate"),
+            headerName: t("text.SaveDate"),
             flex: 0.7,
             headerClassName: "grid-header",
             renderCell: (params: {
@@ -873,9 +874,42 @@ export default function DigitalContentList() {
                         fontSize={{ xs: 14, sm: 17 }}
                         fontWeight={600}
                       >
-                       {t("text.Description")}:
-                      </Typography>{" "}
-                      {item.descr}
+                        {t("text.Description")}:
+                      </Typography>
+                      {(() => {
+                        const words = item.descr.split(" ");
+                        const isLongDescription = words.length > 35;
+                        const shortDescription = words.slice(0, 35).join(" ");
+
+                        if (isLongDescription) {
+                          return (
+                            <>
+                              <Typography fontSize={{ xs: 14, sm: 17 }}>
+                                {showFullDescription
+                                  ? item.descr
+                                  : shortDescription}
+                              </Typography>
+                              <button
+                                style={{
+                                  color: "#BA160C",
+                                  cursor: "pointer",
+                                  background: "none",
+                                  border: "none",
+                                }}
+                                onClick={() =>
+                                  setShowFullDescription(!showFullDescription)
+                                }
+                              >
+                                {showFullDescription
+                                  ? t("text.ShowLess")
+                                  : t("text.ShowMore")}
+                              </button>
+                            </>
+                          );
+                        } else {
+                          return <>{item.descr}</>;
+                        }
+                      })()}
                     </Grid>
                   )}
                   {item.urlIfAny && (
@@ -997,7 +1031,7 @@ export default function DigitalContentList() {
               <SwipeableDrawer
                 anchor="right"
                 open={profileDrawerOpen}
-                onClose={() => {}}
+                onClose={() => { }}
                 onOpen={() => setProfileDrawerOpen(true)}
                 style={{
                   zIndex: 1300,
@@ -1072,7 +1106,7 @@ export default function DigitalContentList() {
         <SwipeableDrawer
           anchor="right"
           open={WishOpen}
-          onClose={() => {}}
+          onClose={() => { }}
           onOpen={() => HandleWishList()}
           style={{
             zIndex: 1300,

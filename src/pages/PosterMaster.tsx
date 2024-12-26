@@ -127,17 +127,17 @@ export default function PosterMaster() {
           const imageWidth = image.width;
   
           
-          if (imageHeight < 200 || imageHeight > 250) {
-            alert("Image height should be between 200px and 250px.");
-            event.target.value = null;
-            return;
-          }
+          // if (imageHeight < 200 || imageHeight > 250) {
+          //   alert("Image height should be between 200px and 250px.");
+          //   event.target.value = null;
+          //   return;
+          // }
  
-          if (imageWidth < 2000) {
-            alert("Image width should be greater than or equal to 2000px.");
-            event.target.value = null;
-            return;
-          }
+          // if (imageWidth < 2000) {
+          //   alert("Image width should be greater than or equal to 2000px.");
+          //   event.target.value = null;
+          //   return;
+          // }
   
           
           ConvertBase64(file).then((base64) => {
